@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TK - Shape Knowledge</title>
+    <!-- Add D3.js for network visualization -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            display: flex;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .sidebar {
+            width: 250px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 15px;
+            margin-right: 20px;
+        }
+
+        .filter-section {
+            margin-bottom: 30px;
+        }
+
+        .filter-section h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .filter-option {
+            margin-bottom: 8px;
+        }
+
+        .filter-option label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .filter-option input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .visualization {
+            flex-grow: 1;
+            background: white;
+            border-radius: 15px;
+            position: relative;
+        }
+
+        .node {
+            cursor: pointer;
+        }
+
+        .node circle {
+            fill: #90EE90;
+            stroke: #fff;
+            stroke-width: 2px;
+        }
+
+        .node text {
+            font-size: 12px;
+        }
+
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.6;
+            stroke-width: 1px;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            pointer-events: none;
+            display: none;
+        }
+
+        .home-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #90EE90;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .home-button:hover {
+            background: #7CCD7C;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="filter-section">
+            <h3>Document Types</h3>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="experiments">
+                    Experiments & Offers
+                </label>
+            </div>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="campaigns">
+                    Campaigns
+                </label>
+            </div>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="analyses">
+                    Grab Bag
+                </label>
+            </div>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="insights">
+                    Consumer Insights
+                </label>
+            </div>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="ideas">
+                    Idea Board
+                </label>
+            </div>
+        </div>
+
+        <div class="filter-section">
+            <h3>Metadata Fields</h3>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="date">
+                    Date
+                </label>
+            </div>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="product">
+                    Product Surface
+                </label>
+            </div>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="audience">
+                    Target Audience
+                </label>
+            </div>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="outcome">
+                    Outcomes
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="visualization" id="network"></div>
+    <div class="tooltip"></div>
+    <button class="home-button" onclick="window.location.href='index.html'">Home</button>
+
+    <script>
+        // Sample data structure
+        const documents = [
+            {
+                id: "card-hab",
+                title: "Card Habituation Q2 Experiment",
+                type: "experiments",
+                metadata: {
+                    date: "June-July 2025",
+                    product: "Cash App Card",
+                    audience: "508.5K users",
+                    outcome: "Pending"
+                }
+            },
+            {
+                id: "asap",
+                title: "A$AP Giveaway",
+                type: "experiments",
+                metadata: {
+                    date: "June 6th, 2025",
+                    product: "Cash App Afterpay",
+                    audience: "400K users",
+                    outcome: "Increased engagement"
+                }
+            },
+            {
+                id: "holiday",
+                title: "Holiday Campaign",
+                type: "campaigns",
+                metadata: {
+                    date: "Q4 2024",
+                    product: "Afterpay",
+                    audience: "All users",
+                    outcome: "Planning"
+                }
+            },
+            {
+                id: "banking-tracker",
+                title: "Banking Product Tracker Q1",
+                type: "insights",
+                metadata: {
+                    date: "Dec 2024 - Jan 2025",
+                    product: "Cash App",
+                    audience: "6,001 respondents",
+                    outcome: "Research findings"
+                }
+            }
+        ];
+
+        // Create network visualization
+        const width = document.getElementById('network').offsetWidth;
+        const height = document.getElementById('network').offsetHeight;
+
+        const svg = d3.select('#network')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Create force simulation
+        const simulation = d3.forceSimulation()
+            .force('link', d3.forceLink().id(d => d.id))
+            .force('charge', d3.forceManyBody().strength(-200))
+            .force('center', d3.forceCenter(width / 2, height / 2));
+
+        // Create links based on shared metadata
+        const links = [];
+        for (let i = 0; i < documents.length; i++) {
+            for (let j = i + 1; j < documents.length; j++) {
+                const doc1 = documents[i];
+                const doc2 = documents[j];
+                const sharedMetadata = [];
+                
+                Object.keys(doc1.metadata).forEach(key => {
+                    if (doc1.metadata[key] === doc2.metadata[key]) {
+                        sharedMetadata.push(key);
+                    }
+                });
+
+                if (sharedMetadata.length > 0) {
+                    links.push({
+                        source: doc1.id,
+                        target: doc2.id,
+                        shared: sharedMetadata
+                    });
+                }
+            }
+        }
+
+        // Draw links
+        const link = svg.append('g')
+            .selectAll('line')
+            .data(links)
+            .enter().append('line')
+            .attr('class', 'link');
+
+        // Draw nodes
+        const node = svg.append('g')
+            .selectAll('g')
+            .data(documents)
+            .enter().append('g')
+            .attr('class', 'node')
+            .call(d3.drag()
+                .on('start', dragstarted)
+                .on('drag', dragged)
+                .on('end', dragended));
+
+        node.append('circle')
+            .attr('r', 8)
+            .attr('fill', d => getColorByType(d.type));
+
+        node.append('text')
+            .attr('dx', 12)
+            .attr('dy', '.35em')
+            .text(d => d.title);
+
+        // Update simulation
+        simulation
+            .nodes(documents)
+            .on('tick', ticked);
+
+        simulation.force('link')
+            .links(links);
+
+        // Tooltip functionality
+        const tooltip = d3.select('.tooltip');
+
+        node.on('mouseover', function(event, d) {
+            tooltip.style('display', 'block')
+                .html(`
+                    <strong>${d.title}</strong><br>
+                    Type: ${d.type}<br>
+                    Date: ${d.metadata.date}<br>
+                    Product: ${d.metadata.product}<br>
+                    Audience: ${d.metadata.audience}<br>
+                    Outcome: ${d.metadata.outcome}
+                `)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY + 10) + 'px');
+        })
+        .on('mouseout', function() {
+            tooltip.style('display', 'none');
+        });
+
+        // Helper functions
+        function ticked() {
+            link
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+
+            node
+                .attr('transform', d => `translate(${d.x},${d.y})`);
+        }
+
+        function dragstarted(event) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+        }
+
+        function dragged(event) {
+            event.subject.fx = event.x;
+            event.subject.fy = event.y;
+        }
+
+        function dragended(event) {
+            if (!event.active) simulation.alphaTarget(0);
+            event.subject.fx = null;
+            event.subject.fy = null;
+        }
+
+        function getColorByType(type) {
+            const colors = {
+                experiments: '#90EE90',
+                campaigns: '#87CEEB',
+                analyses: '#DDA0DD',
+                insights: '#FFB6C1',
+                ideas: '#F0E68C'
+            };
+            return colors[type] || '#90EE90';
+        }
+
+        // Filter functionality
+        function updateVisualization() {
+            const selectedTypes = Array.from(document.querySelectorAll('.filter-section:first-child input:checked'))
+                .map(cb => cb.value);
+            
+            const selectedMetadata = Array.from(document.querySelectorAll('.filter-section:last-child input:checked'))
+                .map(cb => cb.value);
+
+            // Filter nodes
+            node.style('display', d => 
+                selectedTypes.includes(d.type) ? 'block' : 'none'
+            );
+
+            // Filter links
+            link.style('display', d => {
+                const sourceVisible = selectedTypes.includes(d.source.type);
+                const targetVisible = selectedTypes.includes(d.target.type);
+                const hasSelectedMetadata = d.shared.some(m => selectedMetadata.includes(m));
+                return sourceVisible && targetVisible && hasSelectedMetadata ? 'block' : 'none';
+            });
+        }
+
+        // Add event listeners to filters
+        document.querySelectorAll('.filter-option input').forEach(checkbox => {
+            checkbox.addEventListener('change', updateVisualization);
+        });
+    </script>
+</body>
+</html>
