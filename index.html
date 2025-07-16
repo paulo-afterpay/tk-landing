@@ -88,7 +88,7 @@
             background-color: #7CCD7C;
         }
 
-        /* Popup styles */
+        /* Share popup styles */
         .popup-overlay {
             display: none;
             position: fixed;
@@ -177,7 +177,7 @@
         <button class="main-button">Shift</button>
     </div>
 
-    <!-- Popup markup -->
+    <!-- Share popup -->
     <div class="popup-overlay" id="sharePopup">
         <div class="popup">
             <button class="popup-close" onclick="closePopup()">&times;</button>
@@ -204,9 +204,14 @@
     </div>
 
     <script>
-        // Add JavaScript for popup functionality
+        // Share button functionality
         document.querySelector('.main-button').addEventListener('click', function() {
             document.getElementById('sharePopup').style.display = 'flex';
+        });
+
+        // Shape button functionality - route to shape.html
+        document.querySelectorAll('.main-button')[1].addEventListener('click', function() {
+            window.location.href = 'shape.html';
         });
 
         function closePopup() {
