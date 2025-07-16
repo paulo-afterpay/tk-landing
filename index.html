@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TK</title>
-    <!-- Add EB Garamond font -->
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@700&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
-            padding: 40px;
+            padding: 20px;  /* Reduced from 40px */
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             display: flex;
             flex-direction: column;
@@ -20,10 +19,10 @@
         .header {
             display: flex;
             justify-content: flex-start;
-            margin-bottom: 60px;
+            margin-bottom: 30px;  /* Reduced from 60px */
             max-width: 1200px;
             width: 100%;
-            margin: 0 auto 60px auto;
+            margin: 0 auto 30px auto;  /* Reduced from 60px */
         }
 
         .feedback-button {
@@ -39,14 +38,14 @@
             box-sizing: border-box;
             clip-path: inset(0 0 100% 0);
             animation: reveal 1.5s ease-out forwards;
-            animation-delay: 0.5s;  /* Delay after TK appears */
+            animation-delay: 0.5s;  /* Appears after TK */
         }
 
         .logo {
             text-align: center;
-            font-size: 200px;  /* Increased from 138px */
+            font-size: 180px;
             font-weight: bold;
-            margin: 40px 0 80px 0;
+            margin: 20px 0 40px 0;  /* Reduced from 40px 0 80px 0 */
             font-family: 'EB Garamond', serif;
             clip-path: inset(0 0 100% 0);
             animation: reveal 1.5s ease-out forwards;
@@ -82,17 +81,7 @@
             box-sizing: border-box;
             clip-path: inset(0 0 100% 0);
             animation: reveal 1.5s ease-out forwards;
-        }
-
-        /* Stagger the animation of the main buttons */
-        .main-button:nth-child(1) {
-            animation-delay: 1s;  /* Share button */
-        }
-        .main-button:nth-child(2) {
-            animation-delay: 1.2s;  /* Shape button */
-        }
-        .main-button:nth-child(3) {
-            animation-delay: 1.4s;  /* Shift button */
+            animation-delay: 0.5s;  /* All buttons appear together after TK */
         }
 
         .main-button:hover {
@@ -113,5 +102,4 @@
         <button class="main-button">Shift</button>
     </div>
 </body>
-</html>
 </html>
