@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TK</title>
+    <!-- Add EB Garamond font -->
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@700&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
@@ -35,13 +37,17 @@
             width: 350px;
             text-align: center;
             box-sizing: border-box;
+            clip-path: inset(0 0 100% 0);
+            animation: reveal 1.5s ease-out forwards;
+            animation-delay: 0.5s;  /* Delay after TK appears */
         }
 
         .logo {
             text-align: center;
-            font-size: 138px;
+            font-size: 200px;  /* Increased from 138px */
             font-weight: bold;
             margin: 40px 0 80px 0;
+            font-family: 'EB Garamond', serif;
             clip-path: inset(0 0 100% 0);
             animation: reveal 1.5s ease-out forwards;
         }
@@ -74,6 +80,19 @@
             transition: background-color 0.2s;
             width: 350px;
             box-sizing: border-box;
+            clip-path: inset(0 0 100% 0);
+            animation: reveal 1.5s ease-out forwards;
+        }
+
+        /* Stagger the animation of the main buttons */
+        .main-button:nth-child(1) {
+            animation-delay: 1s;  /* Share button */
+        }
+        .main-button:nth-child(2) {
+            animation-delay: 1.2s;  /* Shape button */
+        }
+        .main-button:nth-child(3) {
+            animation-delay: 1.4s;  /* Shift button */
         }
 
         .main-button:hover {
@@ -94,4 +113,5 @@
         <button class="main-button">Shift</button>
     </div>
 </body>
+</html>
 </html>
