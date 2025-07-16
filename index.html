@@ -88,7 +88,6 @@
             background-color: #7CCD7C;
         }
 
-        /* Share popup styles */
         .popup-overlay {
             display: none;
             position: fixed;
@@ -162,6 +161,23 @@
         .submit-button:hover {
             background-color: #7CCD7C;
         }
+
+        .status-message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .status-message.success {
+            background-color: #90EE90;
+            color: #234723;
+        }
+
+        .status-message.error {
+            background-color: #FFB6C1;
+            color: #8B0000;
+        }
     </style>
 </head>
 <body>
@@ -199,6 +215,7 @@
                     </select>
                 </div>
                 <button type="submit" class="submit-button">Share</button>
+                <div id="statusMessage" class="status-message"></div>
             </form>
         </div>
     </div>
@@ -214,24 +231,89 @@
             window.location.href = 'shape.html';
         });
 
-        function closePopup() {
-            document.getElementById('sharePopup').style.display = 'none';
+        function showStatus(message, isError = false) {
+            const statusElement = document.getElementById('statusMessage');
+            statusElement.textContent = message;
+            statusElement.className = 'status-message ' + (isError ? 'error' : 'success');
+            statusElement.style.display = 'block';
+            
+            if (!isError) {
+                setTimeout(() => {
+                    closePopup();
+                }, 2000);
+            }
         }
 
-        function handleSubmit(event) {
+        function closePopup() {
+            document.getElementById('sharePopup').style.display = 'none';
+            document.getElementById('statusMessage').style.display = 'none';
+            document.getElementById('shareForm').reset();
+        }
+
+        async function handleSubmit(event) {
             event.preventDefault();
             const fileLink = document.getElementById('fileLink').value;
             const fileType = document.getElementById('fileType').value;
             
-            // Here you can add logic to handle the submission
-            console.log('File Link:', fileLink);
-            console.log('File Type:', fileType);
-            
-            // Close the popup
-            closePopup();
-            
-            // Clear the form
-            event.target.reset();
+            // Extract file ID from Google Drive link
+            const fileId = extractFileId(fileLink);
+            if (!fileId) {
+                showStatus('Please provide a valid Google Drive link', true);
+                return;
+            }
+
+            try {
+                // Create shortcut
+                const result = await createGoogleDriveShortcut(fileId, fileType);
+                if (result) {
+                    showStatus('File added successfully!');
+                } else {
+                    showStatus('Error adding file. Please try again.', true);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus('Error adding file. Please try again.', true);
+            }
+        }
+
+        function extractFileId(url) {
+            // Handle different Google Drive URL formats
+            const patterns = [
+                /\/d\/([a-zA-Z0-9-_]+)/,  // Format: /d/FILE_ID
+                /id=([a-zA-Z0-9-_]+)/,    // Format: id=FILE_ID
+                /folders\/([a-zA-Z0-9-_]+)/ // Format: folders/FILE_ID
+            ];
+
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match) return match[1];
+            }
+            return null;
+        }
+
+        function createGoogleDriveShortcut(fileId, fileType) {
+            const folderIds = {
+                'experiments': '1pDpOReilu4rwu3y_rJzy2K1v5YdDO0gq',
+                'campaigns': '1w9eOuQYcD1j3EowVK-weQXcMoR0ittio',
+                'grabbag': '18KYfOHRWY0OnSG_2G-oaCRzG32y8m0Wv',
+                'insights': '13XBsF88e6g6PDx4JPNVpbBwtPY8uQ0ZA',
+                'ideas': '1SlvGatlbYAfwcy2FGFLoeUlkiVumsd-3'
+            };
+
+            return new Promise((resolve, reject) => {
+                // Use googledrive__create_file to create a shortcut
+                googledrive__create_file({
+                    mimeType: 'application/vnd.google-apps.shortcut',
+                    name: 'Shortcut',  // This will be replaced by the original file name
+                    parentId: folderIds[fileType],
+                    targetId: fileId
+                }).then(response => {
+                    resolve(true);
+                }).catch(error => {
+                    console.error('Error creating shortcut:', error);
+                    reject(error);
+                });
+            });
         }
 
         // Close popup when clicking outside
