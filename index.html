@@ -8,7 +8,7 @@
     <style>
         body {
             margin: 0;
-            padding: 20px;  /* Reduced from 40px */
+            padding: 20px;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             display: flex;
             flex-direction: column;
@@ -19,10 +19,10 @@
         .header {
             display: flex;
             justify-content: flex-start;
-            margin-bottom: 30px;  /* Reduced from 60px */
+            margin-bottom: 30px;
             max-width: 1200px;
             width: 100%;
-            margin: 0 auto 30px auto;  /* Reduced from 60px */
+            margin: 0 auto 30px auto;
         }
 
         .feedback-button {
@@ -38,14 +38,14 @@
             box-sizing: border-box;
             clip-path: inset(0 0 100% 0);
             animation: reveal 1.5s ease-out forwards;
-            animation-delay: 0.5s;  /* Appears after TK */
+            animation-delay: 0.5s;
         }
 
         .logo {
             text-align: center;
             font-size: 180px;
             font-weight: bold;
-            margin: 20px 0 40px 0;  /* Reduced from 40px 0 80px 0 */
+            margin: 20px 0 40px 0;
             font-family: 'EB Garamond', serif;
             clip-path: inset(0 0 100% 0);
             animation: reveal 1.5s ease-out forwards;
@@ -81,10 +81,85 @@
             box-sizing: border-box;
             clip-path: inset(0 0 100% 0);
             animation: reveal 1.5s ease-out forwards;
-            animation-delay: 0.5s;  /* All buttons appear together after TK */
+            animation-delay: 0.5s;
         }
 
         .main-button:hover {
+            background-color: #7CCD7C;
+        }
+
+        /* Popup styles */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .popup {
+            background: white;
+            padding: 30px;
+            border-radius: 25px;
+            width: 500px;
+            max-width: 90%;
+            position: relative;
+        }
+
+        .popup h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .submit-button {
+            background-color: #90EE90;
+            border: none;
+            border-radius: 25px;
+            padding: 15px 30px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+
+        .submit-button:hover {
             background-color: #7CCD7C;
         }
     </style>
@@ -101,5 +176,65 @@
         <button class="main-button">Shape</button>
         <button class="main-button">Shift</button>
     </div>
+
+    <!-- Popup markup -->
+    <div class="popup-overlay" id="sharePopup">
+        <div class="popup">
+            <button class="popup-close" onclick="closePopup()">&times;</button>
+            <h2>Share Knowledge</h2>
+            <form id="shareForm" onsubmit="handleSubmit(event)">
+                <div class="form-group">
+                    <label for="fileLink">File Link</label>
+                    <input type="url" id="fileLink" required placeholder="Paste Google Drive link here">
+                </div>
+                <div class="form-group">
+                    <label for="fileType">File Type</label>
+                    <select id="fileType" required>
+                        <option value="">Select a category</option>
+                        <option value="experiments">Experiments & Offers</option>
+                        <option value="campaigns">Campaigns</option>
+                        <option value="grabbag">Grab Bag</option>
+                        <option value="insights">Consumer Insights Research</option>
+                        <option value="ideas">Idea Board</option>
+                    </select>
+                </div>
+                <button type="submit" class="submit-button">Share</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Add JavaScript for popup functionality
+        document.querySelector('.main-button').addEventListener('click', function() {
+            document.getElementById('sharePopup').style.display = 'flex';
+        });
+
+        function closePopup() {
+            document.getElementById('sharePopup').style.display = 'none';
+        }
+
+        function handleSubmit(event) {
+            event.preventDefault();
+            const fileLink = document.getElementById('fileLink').value;
+            const fileType = document.getElementById('fileType').value;
+            
+            // Here you can add logic to handle the submission
+            console.log('File Link:', fileLink);
+            console.log('File Type:', fileType);
+            
+            // Close the popup
+            closePopup();
+            
+            // Clear the form
+            event.target.reset();
+        }
+
+        // Close popup when clicking outside
+        document.getElementById('sharePopup').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closePopup();
+            }
+        });
+    </script>
 </body>
 </html>
