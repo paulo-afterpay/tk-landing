@@ -182,7 +182,7 @@
 </head>
 <body>
     <div class="header">
-        <button class="feedback-button">feedback</button>
+        <button class="feedback-button">Feedback</button>
     </div>
 
     <div class="logo">TK</div>
@@ -221,6 +221,11 @@
     </div>
 
     <script>
+        // Feedback button functionality
+        document.querySelector('.feedback-button').addEventListener('click', function() {
+            window.open('https://docs.google.com/forms/d/1G5wWg86Wew402ZESlc1cABvGNdDsXucmaq5B4JKFxJg/edit', '_blank');
+        });
+
         // Share button functionality
         document.querySelector('.main-button').addEventListener('click', function() {
             document.getElementById('sharePopup').style.display = 'flex';
