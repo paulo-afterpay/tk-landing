@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TK - Shape Knowledge</title>
-    <!-- Add D3.js for network visualization -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         body {
@@ -14,14 +13,16 @@
             display: flex;
             min-height: 100vh;
             box-sizing: border-box;
+            background: #fafafa;
         }
 
         .sidebar {
             width: 250px;
             padding: 20px;
-            background: #f5f5f5;
+            background: white;
             border-radius: 15px;
             margin-right: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .filter-section {
@@ -30,17 +31,19 @@
 
         .filter-section h3 {
             margin-top: 0;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            color: #333;
         }
 
         .filter-option {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .filter-option label {
             display: flex;
             align-items: center;
             cursor: pointer;
+            color: #555;
         }
 
         .filter-option input[type="checkbox"] {
@@ -52,24 +55,22 @@
             background: white;
             border-radius: 15px;
             position: relative;
-        }
-
-        .node {
-            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .node circle {
             fill: #90EE90;
-            stroke: #fff;
+            stroke: white;
             stroke-width: 2px;
+            transition: r 0.2s ease;
         }
 
-        .node text {
-            font-size: 12px;
+        .node:hover circle {
+            r: 8;
         }
 
         .link {
-            stroke: #999;
+            stroke: #ddd;
             stroke-opacity: 0.6;
             stroke-width: 1px;
         }
@@ -77,11 +78,23 @@
         .tooltip {
             position: absolute;
             background: white;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             pointer-events: none;
             display: none;
+            font-size: 14px;
+            max-width: 300px;
+        }
+
+        .tooltip h3 {
+            margin: 0 0 8px 0;
+            color: #333;
+        }
+
+        .tooltip p {
+            margin: 4px 0;
+            color: #666;
         }
 
         .home-button {
@@ -94,6 +107,8 @@
             border-radius: 20px;
             cursor: pointer;
             font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: background-color 0.2s;
         }
 
         .home-button:hover {
@@ -129,38 +144,26 @@
                     Consumer Insights
                 </label>
             </div>
-            <div class="filter-option">
-                <label>
-                    <input type="checkbox" checked value="ideas">
-                    Idea Board
-                </label>
-            </div>
         </div>
 
         <div class="filter-section">
-            <h3>Metadata Fields</h3>
+            <h3>Connection Types</h3>
             <div class="filter-option">
                 <label>
                     <input type="checkbox" checked value="date">
-                    Date
+                    Same Time Period
                 </label>
             </div>
             <div class="filter-option">
                 <label>
                     <input type="checkbox" checked value="product">
-                    Product Surface
+                    Same Product
                 </label>
             </div>
             <div class="filter-option">
                 <label>
                     <input type="checkbox" checked value="audience">
-                    Target Audience
-                </label>
-            </div>
-            <div class="filter-option">
-                <label>
-                    <input type="checkbox" checked value="outcome">
-                    Outcomes
+                    Same Audience
                 </label>
             </div>
         </div>
@@ -171,17 +174,16 @@
     <button class="home-button" onclick="window.location.href='index.html'">Home</button>
 
     <script>
-        // Sample data structure
+        // Document data with metadata
         const documents = [
             {
                 id: "card-hab",
                 title: "Card Habituation Q2 Experiment",
                 type: "experiments",
                 metadata: {
-                    date: "June-July 2025",
+                    date: "2025-Q2",
                     product: "Cash App Card",
-                    audience: "508.5K users",
-                    outcome: "Pending"
+                    audience: "Active Card Users"
                 }
             },
             {
@@ -189,37 +191,74 @@
                 title: "A$AP Giveaway",
                 type: "experiments",
                 metadata: {
-                    date: "June 6th, 2025",
+                    date: "2025-06",
                     product: "Cash App Afterpay",
-                    audience: "400K users",
-                    outcome: "Increased engagement"
+                    audience: "CAAP Users"
+                }
+            },
+            {
+                id: "green-promo",
+                title: "Afterpay Goes Green Promo",
+                type: "experiments",
+                metadata: {
+                    date: "2025-02",
+                    product: "Afterpay",
+                    audience: "All Users"
                 }
             },
             {
                 id: "holiday",
-                title: "Holiday Campaign",
+                title: "Holiday Campaign Preparation",
                 type: "campaigns",
                 metadata: {
-                    date: "Q4 2024",
+                    date: "2024-Q4",
                     product: "Afterpay",
-                    audience: "All users",
-                    outcome: "Planning"
+                    audience: "All Users"
                 }
             },
             {
-                id: "banking-tracker",
+                id: "gtm",
+                title: "CAAP GTM Campaign",
+                type: "campaigns",
+                metadata: {
+                    date: "2025-07",
+                    product: "Cash App Afterpay",
+                    audience: "Non CAAP Users"
+                }
+            },
+            {
+                id: "crm-audit",
+                title: "Campaign Opt-out Audit",
+                type: "campaigns",
+                metadata: {
+                    date: "2025-02",
+                    product: "Multiple",
+                    audience: "All Users"
+                }
+            },
+            {
+                id: "banking-q1",
                 title: "Banking Product Tracker Q1",
                 type: "insights",
                 metadata: {
-                    date: "Dec 2024 - Jan 2025",
+                    date: "2025-Q1",
                     product: "Cash App",
-                    audience: "6,001 respondents",
-                    outcome: "Research findings"
+                    audience: "Survey Panel"
+                }
+            },
+            {
+                id: "banking-q3",
+                title: "Banking Product Tracker Q3",
+                type: "insights",
+                metadata: {
+                    date: "2024-Q3",
+                    product: "Cash App",
+                    audience: "Survey Panel"
                 }
             }
         ];
 
-        // Create network visualization
+        // Set up the visualization
         const width = document.getElementById('network').offsetWidth;
         const height = document.getElementById('network').offsetHeight;
 
@@ -231,28 +270,24 @@
         // Create force simulation
         const simulation = d3.forceSimulation()
             .force('link', d3.forceLink().id(d => d.id))
-            .force('charge', d3.forceManyBody().strength(-200))
+            .force('charge', d3.forceManyBody().strength(-300))
             .force('center', d3.forceCenter(width / 2, height / 2));
 
-        // Create links based on shared metadata
+        // Function to check if documents share any metadata
+        function shareMetadata(doc1, doc2) {
+            return Object.keys(doc1.metadata).some(key => 
+                doc1.metadata[key] === doc2.metadata[key]
+            );
+        }
+
+        // Create links between documents with shared metadata
         const links = [];
         for (let i = 0; i < documents.length; i++) {
             for (let j = i + 1; j < documents.length; j++) {
-                const doc1 = documents[i];
-                const doc2 = documents[j];
-                const sharedMetadata = [];
-                
-                Object.keys(doc1.metadata).forEach(key => {
-                    if (doc1.metadata[key] === doc2.metadata[key]) {
-                        sharedMetadata.push(key);
-                    }
-                });
-
-                if (sharedMetadata.length > 0) {
+                if (shareMetadata(documents[i], documents[j])) {
                     links.push({
-                        source: doc1.id,
-                        target: doc2.id,
-                        shared: sharedMetadata
+                        source: documents[i].id,
+                        target: documents[j].id
                     });
                 }
             }
@@ -277,13 +312,32 @@
                 .on('end', dragended));
 
         node.append('circle')
-            .attr('r', 8)
-            .attr('fill', d => getColorByType(d.type));
+            .attr('r', 6);
 
-        node.append('text')
-            .attr('dx', 12)
-            .attr('dy', '.35em')
-            .text(d => d.title);
+        // Tooltip functionality
+        const tooltip = d3.select('.tooltip');
+
+        node.on('mouseover', function(event, d) {
+            // Enlarge the circle
+            d3.select(this).select('circle').attr('r', 8);
+            
+            // Show tooltip with metadata
+            tooltip.style('display', 'block')
+                .html(`
+                    <h3>${d.title}</h3>
+                    <p><strong>Type:</strong> ${d.type}</p>
+                    <p><strong>Date:</strong> ${d.metadata.date}</p>
+                    <p><strong>Product:</strong> ${d.metadata.product}</p>
+                    <p><strong>Audience:</strong> ${d.metadata.audience}</p>
+                `)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY + 10) + 'px');
+        })
+        .on('mouseout', function() {
+            // Restore circle size
+            d3.select(this).select('circle').attr('r', 6);
+            tooltip.style('display', 'none');
+        });
 
         // Update simulation
         simulation
@@ -293,27 +347,6 @@
         simulation.force('link')
             .links(links);
 
-        // Tooltip functionality
-        const tooltip = d3.select('.tooltip');
-
-        node.on('mouseover', function(event, d) {
-            tooltip.style('display', 'block')
-                .html(`
-                    <strong>${d.title}</strong><br>
-                    Type: ${d.type}<br>
-                    Date: ${d.metadata.date}<br>
-                    Product: ${d.metadata.product}<br>
-                    Audience: ${d.metadata.audience}<br>
-                    Outcome: ${d.metadata.outcome}
-                `)
-                .style('left', (event.pageX + 10) + 'px')
-                .style('top', (event.pageY + 10) + 'px');
-        })
-        .on('mouseout', function() {
-            tooltip.style('display', 'none');
-        });
-
-        // Helper functions
         function ticked() {
             link
                 .attr('x1', d => d.source.x)
@@ -342,36 +375,34 @@
             event.subject.fy = null;
         }
 
-        function getColorByType(type) {
-            const colors = {
-                experiments: '#90EE90',
-                campaigns: '#87CEEB',
-                analyses: '#DDA0DD',
-                insights: '#FFB6C1',
-                ideas: '#F0E68C'
-            };
-            return colors[type] || '#90EE90';
-        }
-
         // Filter functionality
         function updateVisualization() {
             const selectedTypes = Array.from(document.querySelectorAll('.filter-section:first-child input:checked'))
                 .map(cb => cb.value);
             
-            const selectedMetadata = Array.from(document.querySelectorAll('.filter-section:last-child input:checked'))
+            const selectedConnections = Array.from(document.querySelectorAll('.filter-section:last-child input:checked'))
                 .map(cb => cb.value);
 
-            // Filter nodes
+            // Update nodes visibility
             node.style('display', d => 
-                selectedTypes.includes(d.type) ? 'block' : 'none'
+                selectedTypes.includes(d.type) ? null : 'none'
             );
 
-            // Filter links
-            link.style('display', d => {
-                const sourceVisible = selectedTypes.includes(d.source.type);
-                const targetVisible = selectedTypes.includes(d.target.type);
-                const hasSelectedMetadata = d.shared.some(m => selectedMetadata.includes(m));
-                return sourceVisible && targetVisible && hasSelectedMetadata ? 'block' : 'none';
+            // Update links visibility
+            link.style('display', (d) => {
+                const sourceDoc = documents.find(doc => doc.id === d.source.id);
+                const targetDoc = documents.find(doc => doc.id === d.target.id);
+                
+                // Check if both connected nodes are of selected types
+                const nodesVisible = selectedTypes.includes(sourceDoc.type) && 
+                                   selectedTypes.includes(targetDoc.type);
+
+                // Check if documents share any of the selected metadata types
+                const shareSelectedMetadata = selectedConnections.some(key => 
+                    sourceDoc.metadata[key] === targetDoc.metadata[key]
+                );
+
+                return nodesVisible && shareSelectedMetadata ? null : 'none';
             });
         }
 
