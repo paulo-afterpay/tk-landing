@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TK - Shape Knowledge</title>
+    <title>TK - Shape Product Zone</title>
     <!-- Add D3.js for network visualization -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
@@ -92,6 +92,24 @@
             height: calc(100vh - 140px);
         }
 
+        .product-toggle {
+            margin: 20px;
+        }
+
+        .product-toggle button {
+            padding: 8px 16px;
+            margin-right: 5px;
+            border: 1px solid #90EE90;
+            background: white;
+            border-radius: 15px;
+            cursor: pointer;
+        }
+
+        .product-toggle button.active {
+            background: #90EE90;
+            color: white;
+        }
+
         .node {
             cursor: pointer;
         }
@@ -175,44 +193,21 @@
                 </label>
             </div>
         </div>
-
-        <div class="filter-section">
-            <h3>Metadata Fields</h3>
-            <div class="filter-option">
-                <label>
-                    <input type="checkbox" checked value="date">
-                    Date
-                </label>
-            </div>
-            <div class="filter-option">
-                <label>
-                    <input type="checkbox" checked value="product">
-                    Product Surface
-                </label>
-            </div>
-            <div class="filter-option">
-                <label>
-                    <input type="checkbox" checked value="audience">
-                    Target Audience
-                </label>
-            </div>
-            <div class="filter-option">
-                <label>
-                    <input type="checkbox" checked value="outcome">
-                    Outcomes
-                </label>
-            </div>
-        </div>
     </div>
 
     <div class="content-area">
         <div class="tabs">
-            <a href="shape.html" class="tab active">Knowledge Zone</a>
-            <a href="shape-product.html" class="tab">Product Zone</a>
+            <a href="shape.html" class="tab">Knowledge Zone</a>
+            <a href="shape-product.html" class="tab active">Product Zone</a>
             <a href="shape-consumer.html" class="tab">Consumer Zone</a>
         </div>
 
-        <div class="visualization" id="knowledge-network"></div>
+        <div class="product-toggle">
+            <button class="active" data-product="afterpay">Afterpay</button>
+            <button data-product="cash-app-afterpay">Cash App Afterpay</button>
+        </div>
+
+        <div class="visualization" id="product-network"></div>
     </div>
 
     <div class="tooltip"></div>
@@ -267,8 +262,8 @@
             }
         ];
 
-        // Create network visualization with metadata nodes
-        function createKnowledgeVisualization(containerId, documents) {
+        // Create network visualization
+        function createVisualization(containerId, data) {
             const container = document.getElementById(containerId);
             const width = container.offsetWidth;
             const height = container.offsetHeight;
@@ -281,58 +276,16 @@
                 .attr('width', width)
                 .attr('height', height);
 
-            // Create metadata nodes
-            const metadataNodes = [];
-            const links = [];
-            
-            // Collect all unique metadata values
-            const metadataValues = new Set();
-            documents.forEach(doc => {
-                Object.values(doc.metadata).forEach(value => {
-                    metadataValues.add(value);
-                });
-            });
-
-            // Create metadata nodes
-            metadataValues.forEach(value => {
-                metadataNodes.push({
-                    id: `metadata-${value}`,
-                    title: value,
-                    isMetadata: true
-                });
-            });
-
-            // Create links between documents and their metadata values
-            documents.forEach(doc => {
-                Object.values(doc.metadata).forEach(value => {
-                    links.push({
-                        source: doc.id,
-                        target: `metadata-${value}`
-                    });
-                });
-            });
-
-            // Combine document and metadata nodes
-            const allNodes = [...documents, ...metadataNodes];
-
-            const simulation = d3.forceSimulation(allNodes)
-                .force('link', d3.forceLink(links).id(d => d.id))
+            const simulation = d3.forceSimulation(data)
                 .force('charge', d3.forceManyBody().strength(-200))
                 .force('center', d3.forceCenter(width / 2, height / 2));
-
-            // Draw links
-            const link = svg.append('g')
-                .selectAll('line')
-                .data(links)
-                .enter().append('line')
-                .attr('class', 'link');
 
             // Create node groups
             const node = svg.append('g')
                 .selectAll('g')
-                .data(allNodes)
+                .data(data)
                 .enter().append('g')
-                .attr('class', d => d.isMetadata ? 'node metadata-node' : 'node')
+                .attr('class', 'node')
                 .call(d3.drag()
                     .on('start', dragstarted)
                     .on('drag', dragged)
@@ -340,30 +293,28 @@
 
             // Add circles to nodes
             node.append('circle')
-                .attr('r', d => d.isMetadata ? 5 : 8)
-                .attr('fill', d => d.isMetadata ? '#FFB6C1' : getColorByType(d.type));
+                .attr('r', 8)
+                .attr('fill', d => getColorByType(d.type));
 
             // Add labels to nodes
             node.append('text')
-                .attr('dx', d => d.isMetadata ? 8 : 12)
+                .attr('dx', 12)
                 .attr('dy', '.35em')
                 .text(d => d.title);
 
             // Tooltip functionality
             node.on('mouseover', function(event, d) {
-                if (!d.isMetadata) {
-                    tooltip.style('display', 'block')
-                        .html(`
-                            <strong>${d.title}</strong><br>
-                            Type: ${d.type}<br>
-                            Date: ${d.metadata.date}<br>
-                            Product: ${d.metadata.product}<br>
-                            Audience: ${d.metadata.audience}<br>
-                            Outcome: ${d.metadata.outcome}
-                        `)
-                        .style('left', (event.pageX + 10) + 'px')
-                        .style('top', (event.pageY + 10) + 'px');
-                }
+                tooltip.style('display', 'block')
+                    .html(`
+                        <strong>${d.title}</strong><br>
+                        Type: ${d.type}<br>
+                        Date: ${d.metadata.date}<br>
+                        Product: ${d.metadata.product}<br>
+                        Audience: ${d.metadata.audience}<br>
+                        Outcome: ${d.metadata.outcome}
+                    `)
+                    .style('left', (event.pageX + 10) + 'px')
+                    .style('top', (event.pageY + 10) + 'px');
             })
             .on('mouseout', function() {
                 tooltip.style('display', 'none');
@@ -371,17 +322,10 @@
 
             // Update positions on tick
             simulation.on('tick', () => {
-                link
-                    .attr('x1', d => d.source.x)
-                    .attr('y1', d => d.source.y)
-                    .attr('x2', d => d.target.x)
-                    .attr('y2', d => d.target.y);
-
-                node
-                    .attr('transform', d => `translate(${d.x},${d.y})`);
+                node.attr('transform', d => `translate(${d.x},${d.y})`);
             });
 
-            return { simulation, node, link };
+            return { simulation, node };
         }
 
         // Helper functions
@@ -415,25 +359,47 @@
 
         // Initialize visualization
         const tooltip = d3.select('.tooltip');
-        let knowledgeViz = createKnowledgeVisualization('knowledge-network', documents);
 
-        // Filter functionality
-        function updateVisualization() {
-            const selectedTypes = Array.from(document.querySelectorAll('.filter-section:first-child input:checked'))
+        function updateProductZone(product) {
+            const selectedTypes = Array.from(document.querySelectorAll('.filter-section input:checked'))
                 .map(cb => cb.value);
             
-            knowledgeViz = createKnowledgeVisualization('knowledge-network', 
-                documents.filter(d => selectedTypes.includes(d.type)));
+            const filteredDocs = documents.filter(d => 
+                d.metadata.product.includes(product) && 
+                selectedTypes.includes(d.type)
+            );
+            
+            createVisualization('product-network', filteredDocs);
         }
 
         // Add event listeners
         document.querySelectorAll('.filter-option input').forEach(checkbox => {
-            checkbox.addEventListener('change', updateVisualization);
+            checkbox.addEventListener('change', () => {
+                const activeProduct = document.querySelector('.product-toggle button.active').dataset.product;
+                updateProductZone(activeProduct);
+            });
         });
+
+        document.querySelectorAll('.product-toggle button').forEach(button => {
+            button.addEventListener('click', function() {
+                // Update active state
+                document.querySelectorAll('.product-toggle button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // Update visualization
+                updateProductZone(this.dataset.product);
+            });
+        });
+
+        // Initial setup
+        updateProductZone('afterpay');
 
         // Handle window resize
         window.addEventListener('resize', () => {
-            knowledgeViz = createKnowledgeVisualization('knowledge-network', documents);
+            const activeProduct = document.querySelector('.product-toggle button.active').dataset.product;
+            updateProductZone(activeProduct);
         });
     </script>
 </body>
