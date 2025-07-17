@@ -73,6 +73,8 @@
             cursor: pointer;
             opacity: 0.7;
             border: 2px solid transparent;
+            text-decoration: none;
+            color: inherit;
         }
 
         .tab.active {
@@ -82,27 +84,12 @@
             border-top: 2px solid #90EE90;
             border-left: 2px solid #90EE90;
             border-right: 2px solid #90EE90;
+            pointer-events: none;
         }
 
-        .zone {
-            display: none;
+        .visualization {
             padding: 20px;
             height: calc(100vh - 140px);
-        }
-
-        .zone.active {
-            display: block;
-        }
-
-        .zone-header {
-            margin-top: 0;
-            margin-bottom: 15px;
-            color: #333;
-        }
-
-        .zone-content {
-            height: calc(100% - 50px);
-            position: relative;
         }
 
         .node {
@@ -150,34 +137,6 @@
 
         .home-button:hover {
             background: #7CCD7C;
-        }
-
-        .product-toggle {
-            margin-bottom: 20px;
-        }
-
-        .product-toggle button {
-            padding: 8px 16px;
-            margin-right: 5px;
-            border: 1px solid #90EE90;
-            background: white;
-            border-radius: 15px;
-            cursor: pointer;
-        }
-
-        .product-toggle button.active {
-            background: #90EE90;
-            color: white;
-        }
-
-        /* SVG styles for metadata nodes */
-        .metadata-node circle {
-            fill: #FFB6C1;
-        }
-
-        .metadata-node text {
-            font-size: 10px;
-            fill: #666;
         }
     </style>
 </head>
@@ -248,26 +207,12 @@
 
     <div class="content-area">
         <div class="tabs">
-            <button class="tab active" data-tab="knowledge">Knowledge Zone</button>
-            <button class="tab" data-tab="product">Product Zone</button>
-            <button class="tab" data-tab="consumer">Consumer Zone</button>
+            <a href="shape.html" class="tab active">Knowledge Zone</a>
+            <a href="shape-product.html" class="tab">Product Zone</a>
+            <a href="shape-consumer.html" class="tab">Consumer Zone</a>
         </div>
 
-        <div class="zone active" id="knowledge-zone">
-            <div class="zone-content" id="knowledge-network"></div>
-        </div>
-
-        <div class="zone" id="product-zone">
-            <div class="product-toggle">
-                <button class="active" data-product="afterpay">Afterpay</button>
-                <button data-product="cash-app-afterpay">Cash App Afterpay</button>
-            </div>
-            <div class="zone-content" id="product-network"></div>
-        </div>
-
-        <div class="zone" id="consumer-zone">
-            <div class="zone-content" id="consumer-network"></div>
-        </div>
+        <div class="visualization" id="knowledge-network"></div>
     </div>
 
     <div class="tooltip"></div>
@@ -439,133 +384,6 @@
             return { simulation, node, link };
         }
 
-        // Create regular network visualization for product and consumer zones
-        function createVisualization(containerId, data, links) {
-            const container = document.getElementById(containerId);
-            const width = container.offsetWidth;
-            const height = container.offsetHeight;
-
-            // Clear existing visualization
-            d3.select(`#${containerId}`).selectAll('*').remove();
-
-            const svg = d3.select(`#${containerId}`)
-                .append('svg')
-                .attr('width', width)
-                .attr('height', height);
-
-            const simulation = d3.forceSimulation()
-                .force('link', d3.forceLink().id(d => d.id))
-                .force('charge', d3.forceManyBody().strength(-200))
-                .force('center', d3.forceCenter(width / 2, height / 2));
-
-            const link = svg.append('g')
-                .selectAll('line')
-                .data(links)
-                .enter().append('line')
-                .attr('class', 'link');
-
-            const node = svg.append('g')
-                .selectAll('g')
-                .data(data)
-                .enter().append('g')
-                .attr('class', 'node')
-                .call(d3.drag()
-                    .on('start', dragstarted)
-                    .on('drag', dragged)
-                    .on('end', dragended));
-
-            node.append('circle')
-                .attr('r', 8)
-                .attr('fill', d => getColorByType(d.type));
-
-            node.append('text')
-                .attr('dx', 12)
-                .attr('dy', '.35em')
-                .text(d => d.title);
-
-            simulation
-                .nodes(data)
-                .on('tick', ticked);
-
-            simulation.force('link')
-                .links(links);
-
-            // Tooltip functionality
-            node.on('mouseover', function(event, d) {
-                tooltip.style('display', 'block')
-                    .html(`
-                        <strong>${d.title}</strong><br>
-                        Type: ${d.type}<br>
-                        Date: ${d.metadata.date}<br>
-                        Product: ${d.metadata.product}<br>
-                        Audience: ${d.metadata.audience}<br>
-                        Outcome: ${d.metadata.outcome}
-                    `)
-                    .style('left', (event.pageX + 10) + 'px')
-                    .style('top', (event.pageY + 10) + 'px');
-            })
-            .on('mouseout', function() {
-                tooltip.style('display', 'none');
-            });
-
-            function ticked() {
-                link
-                    .attr('x1', d => d.source.x)
-                    .attr('y1', d => d.source.y)
-                    .attr('x2', d => d.target.x)
-                    .attr('y2', d => d.target.y);
-
-                node
-                    .attr('transform', d => `translate(${d.x},${d.y})`);
-            }
-
-            return { simulation, node, link };
-        }
-
-        // Create links between documents
-        function createLinks(docs) {
-            const links = [];
-            for (let i = 0; i < docs.length; i++) {
-                for (let j = i + 1; j < docs.length; j++) {
-                    const doc1 = docs[i];
-                    const doc2 = docs[j];
-                    const sharedMetadata = [];
-                    
-                    Object.keys(doc1.metadata).forEach(key => {
-                        if (doc1.metadata[key] === doc2.metadata[key]) {
-                            sharedMetadata.push(key);
-                        }
-                    });
-
-                    if (sharedMetadata.length > 0) {
-                        links.push({
-                            source: doc1.id,
-                            target: doc2.id,
-                            shared: sharedMetadata
-                        });
-                    }
-                }
-            }
-            return links;
-        }
-
-        // Initialize visualizations
-        const tooltip = d3.select('.tooltip');
-        
-        // Knowledge Zone
-        let knowledgeViz = createKnowledgeVisualization('knowledge-network', documents);
-
-        // Product Zone
-        function updateProductZone(product) {
-            const productDocs = documents.filter(d => d.metadata.product.includes(product));
-            const productLinks = createLinks(productDocs);
-            return createVisualization('product-network', productDocs, productLinks);
-        }
-
-        // Consumer Zone
-        const consumerLinks = createLinks(documents);
-        let consumerViz = createVisualization('consumer-network', documents, consumerLinks);
-
         // Helper functions
         function dragstarted(event) {
             if (!event.active) event.subject.simulation.alphaTarget(0.3).restart();
@@ -595,65 +413,17 @@
             return colors[type] || '#90EE90';
         }
 
-        // Tab switching
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                // Update active tab
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-
-                // Update active zone
-                document.querySelectorAll('.zone').forEach(zone => zone.classList.remove('active'));
-                document.getElementById(`${this.dataset.tab}-zone`).classList.add('active');
-
-                // Refresh visualizations when tab is switched
-                if (this.dataset.tab === 'knowledge') {
-                    knowledgeViz = createKnowledgeVisualization('knowledge-network', documents);
-                } else if (this.dataset.tab === 'product') {
-                    const activeProduct = document.querySelector('.product-toggle button.active').dataset.product;
-                    updateProductZone(activeProduct);
-                } else if (this.dataset.tab === 'consumer') {
-                    consumerViz = createVisualization('consumer-network', documents, consumerLinks);
-                }
-            });
-        });
-
-        // Product toggle
-        document.querySelectorAll('.product-toggle button').forEach(button => {
-            button.addEventListener('click', function() {
-                // Update active state
-                document.querySelectorAll('.product-toggle button').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                this.classList.add('active');
-                
-                // Update visualization
-                updateProductZone(this.dataset.product);
-            });
-        });
+        // Initialize visualization
+        const tooltip = d3.select('.tooltip');
+        let knowledgeViz = createKnowledgeVisualization('knowledge-network', documents);
 
         // Filter functionality
         function updateVisualization() {
             const selectedTypes = Array.from(document.querySelectorAll('.filter-section:first-child input:checked'))
                 .map(cb => cb.value);
             
-            const selectedMetadata = Array.from(document.querySelectorAll('.filter-section:last-child input:checked'))
-                .map(cb => cb.value);
-
-            // Update visualizations based on active tab
-            const activeTab = document.querySelector('.tab.active').dataset.tab;
-            
-            if (activeTab === 'knowledge') {
-                knowledgeViz = createKnowledgeVisualization('knowledge-network', 
-                    documents.filter(d => selectedTypes.includes(d.type)));
-            } else if (activeTab === 'product') {
-                const activeProduct = document.querySelector('.product-toggle button.active').dataset.product;
-                updateProductZone(activeProduct);
-            } else if (activeTab === 'consumer') {
-                const filteredDocs = documents.filter(d => selectedTypes.includes(d.type));
-                const filteredLinks = createLinks(filteredDocs);
-                consumerViz = createVisualization('consumer-network', filteredDocs, filteredLinks);
-            }
+            knowledgeViz = createKnowledgeVisualization('knowledge-network', 
+                documents.filter(d => selectedTypes.includes(d.type)));
         }
 
         // Add event listeners
@@ -661,8 +431,10 @@
             checkbox.addEventListener('change', updateVisualization);
         });
 
-        // Initial product zone setup
-        updateProductZone('afterpay');
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            knowledgeViz = createKnowledgeVisualization('knowledge-network', documents);
+        });
     </script>
 </body>
 </html>
