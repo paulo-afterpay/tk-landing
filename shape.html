@@ -22,6 +22,7 @@
             background: #f5f5f5;
             border-radius: 15px;
             margin-right: 20px;
+            height: fit-content;
         }
 
         .filter-section {
@@ -51,22 +52,52 @@
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            padding: 10px 10px 0;
+            border-bottom: 2px solid #90EE90;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            margin-right: 5px;
+            background: white;
+            border: none;
+            border-radius: 10px 10px 0 0;
+            cursor: pointer;
+            opacity: 0.7;
+            border: 2px solid transparent;
+        }
+
+        .tab.active {
+            opacity: 1;
+            border-bottom: 2px solid white;
+            margin-bottom: -2px;
+            border-top: 2px solid #90EE90;
+            border-left: 2px solid #90EE90;
+            border-right: 2px solid #90EE90;
         }
 
         .zone {
-            background: white;
-            border-radius: 15px;
+            display: none;
             padding: 20px;
-            flex: 1;
+            height: calc(100vh - 140px);
+        }
+
+        .zone.active {
+            display: block;
         }
 
         .zone-header {
             margin-top: 0;
             margin-bottom: 15px;
             color: #333;
-            border-bottom: 2px solid #90EE90;
-            padding-bottom: 10px;
         }
 
         .zone-content {
@@ -121,12 +152,12 @@
             background: #7CCD7C;
         }
 
-        .zone-toggle {
-            margin-bottom: 10px;
+        .product-toggle {
+            margin-bottom: 20px;
         }
 
-        .zone-toggle button {
-            padding: 5px 10px;
+        .product-toggle button {
+            padding: 8px 16px;
             margin-right: 5px;
             border: 1px solid #90EE90;
             background: white;
@@ -134,9 +165,19 @@
             cursor: pointer;
         }
 
-        .zone-toggle button.active {
+        .product-toggle button.active {
             background: #90EE90;
             color: white;
+        }
+
+        /* SVG styles for metadata nodes */
+        .metadata-node circle {
+            fill: #FFB6C1;
+        }
+
+        .metadata-node text {
+            font-size: 10px;
+            fill: #666;
         }
     </style>
 </head>
@@ -206,20 +247,25 @@
     </div>
 
     <div class="content-area">
-        <div class="zone" id="knowledge-zone">
-            <h2 class="zone-header">Knowledge Zone</h2>
+        <div class="tabs">
+            <button class="tab active" data-tab="knowledge">Knowledge Zone</button>
+            <button class="tab" data-tab="product">Product Zone</button>
+            <button class="tab" data-tab="consumer">Consumer Zone</button>
+        </div>
+
+        <div class="zone active" id="knowledge-zone">
             <div class="zone-content" id="knowledge-network"></div>
         </div>
+
         <div class="zone" id="product-zone">
-            <h2 class="zone-header">Product Zone</h2>
-            <div class="zone-toggle">
+            <div class="product-toggle">
                 <button class="active" data-product="afterpay">Afterpay</button>
                 <button data-product="cash-app-afterpay">Cash App Afterpay</button>
             </div>
             <div class="zone-content" id="product-network"></div>
         </div>
+
         <div class="zone" id="consumer-zone">
-            <h2 class="zone-header">Consumer Zone</h2>
             <div class="zone-content" id="consumer-network"></div>
         </div>
     </div>
@@ -276,11 +322,131 @@
             }
         ];
 
-        // Create network visualizations for each zone
+        // Create network visualization with metadata nodes
+        function createKnowledgeVisualization(containerId, documents) {
+            const container = document.getElementById(containerId);
+            const width = container.offsetWidth;
+            const height = container.offsetHeight;
+
+            // Clear existing visualization
+            d3.select(`#${containerId}`).selectAll('*').remove();
+
+            const svg = d3.select(`#${containerId}`)
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            // Create metadata nodes
+            const metadataNodes = [];
+            const links = [];
+            
+            // Collect all unique metadata values
+            const metadataValues = new Set();
+            documents.forEach(doc => {
+                Object.values(doc.metadata).forEach(value => {
+                    metadataValues.add(value);
+                });
+            });
+
+            // Create metadata nodes
+            metadataValues.forEach(value => {
+                metadataNodes.push({
+                    id: `metadata-${value}`,
+                    title: value,
+                    isMetadata: true
+                });
+            });
+
+            // Create links between documents and their metadata values
+            documents.forEach(doc => {
+                Object.values(doc.metadata).forEach(value => {
+                    links.push({
+                        source: doc.id,
+                        target: `metadata-${value}`
+                    });
+                });
+            });
+
+            // Combine document and metadata nodes
+            const allNodes = [...documents, ...metadataNodes];
+
+            const simulation = d3.forceSimulation(allNodes)
+                .force('link', d3.forceLink(links).id(d => d.id))
+                .force('charge', d3.forceManyBody().strength(-200))
+                .force('center', d3.forceCenter(width / 2, height / 2));
+
+            // Draw links
+            const link = svg.append('g')
+                .selectAll('line')
+                .data(links)
+                .enter().append('line')
+                .attr('class', 'link');
+
+            // Create node groups
+            const node = svg.append('g')
+                .selectAll('g')
+                .data(allNodes)
+                .enter().append('g')
+                .attr('class', d => d.isMetadata ? 'node metadata-node' : 'node')
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended));
+
+            // Add circles to nodes
+            node.append('circle')
+                .attr('r', d => d.isMetadata ? 5 : 8)
+                .attr('fill', d => d.isMetadata ? '#FFB6C1' : getColorByType(d.type));
+
+            // Add labels to nodes
+            node.append('text')
+                .attr('dx', d => d.isMetadata ? 8 : 12)
+                .attr('dy', '.35em')
+                .text(d => d.title);
+
+            // Tooltip functionality
+            node.on('mouseover', function(event, d) {
+                if (!d.isMetadata) {
+                    tooltip.style('display', 'block')
+                        .html(`
+                            <strong>${d.title}</strong><br>
+                            Type: ${d.type}<br>
+                            Date: ${d.metadata.date}<br>
+                            Product: ${d.metadata.product}<br>
+                            Audience: ${d.metadata.audience}<br>
+                            Outcome: ${d.metadata.outcome}
+                        `)
+                        .style('left', (event.pageX + 10) + 'px')
+                        .style('top', (event.pageY + 10) + 'px');
+                }
+            })
+            .on('mouseout', function() {
+                tooltip.style('display', 'none');
+            });
+
+            // Update positions on tick
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                node
+                    .attr('transform', d => `translate(${d.x},${d.y})`);
+            });
+
+            return { simulation, node, link };
+        }
+
+        // Create regular network visualization for product and consumer zones
         function createVisualization(containerId, data, links) {
             const container = document.getElementById(containerId);
             const width = container.offsetWidth;
             const height = container.offsetHeight;
+
+            // Clear existing visualization
+            d3.select(`#${containerId}`).selectAll('*').remove();
 
             const svg = d3.select(`#${containerId}`)
                 .append('svg')
@@ -387,34 +553,18 @@
         const tooltip = d3.select('.tooltip');
         
         // Knowledge Zone
-        const knowledgeLinks = createLinks(documents);
-        const knowledgeViz = createVisualization('knowledge-network', documents, knowledgeLinks);
+        let knowledgeViz = createKnowledgeVisualization('knowledge-network', documents);
 
         // Product Zone
         function updateProductZone(product) {
             const productDocs = documents.filter(d => d.metadata.product.includes(product));
             const productLinks = createLinks(productDocs);
-            
-            // Clear existing visualization
-            d3.select('#product-network').selectAll('*').remove();
-            
-            // Create new visualization
-            createVisualization('product-network', productDocs, productLinks);
+            return createVisualization('product-network', productDocs, productLinks);
         }
 
         // Consumer Zone
-        const audienceGroups = {};
-        documents.forEach(doc => {
-            const audience = doc.metadata.audience;
-            if (!audienceGroups[audience]) {
-                audienceGroups[audience] = [];
-            }
-            audienceGroups[audience].push(doc);
-        });
-
-        const consumerDocs = documents;
-        const consumerLinks = createLinks(consumerDocs);
-        const consumerViz = createVisualization('consumer-network', consumerDocs, consumerLinks);
+        const consumerLinks = createLinks(documents);
+        let consumerViz = createVisualization('consumer-network', documents, consumerLinks);
 
         // Helper functions
         function dragstarted(event) {
@@ -445,6 +595,43 @@
             return colors[type] || '#90EE90';
         }
 
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Update active tab
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+
+                // Update active zone
+                document.querySelectorAll('.zone').forEach(zone => zone.classList.remove('active'));
+                document.getElementById(`${this.dataset.tab}-zone`).classList.add('active');
+
+                // Refresh visualizations when tab is switched
+                if (this.dataset.tab === 'knowledge') {
+                    knowledgeViz = createKnowledgeVisualization('knowledge-network', documents);
+                } else if (this.dataset.tab === 'product') {
+                    const activeProduct = document.querySelector('.product-toggle button.active').dataset.product;
+                    updateProductZone(activeProduct);
+                } else if (this.dataset.tab === 'consumer') {
+                    consumerViz = createVisualization('consumer-network', documents, consumerLinks);
+                }
+            });
+        });
+
+        // Product toggle
+        document.querySelectorAll('.product-toggle button').forEach(button => {
+            button.addEventListener('click', function() {
+                // Update active state
+                document.querySelectorAll('.product-toggle button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // Update visualization
+                updateProductZone(this.dataset.product);
+            });
+        });
+
         // Filter functionality
         function updateVisualization() {
             const selectedTypes = Array.from(document.querySelectorAll('.filter-section:first-child input:checked'))
@@ -453,45 +640,25 @@
             const selectedMetadata = Array.from(document.querySelectorAll('.filter-section:last-child input:checked'))
                 .map(cb => cb.value);
 
-            // Update all zones
-            [knowledgeViz, consumerViz].forEach(viz => {
-                // Filter nodes
-                viz.node.style('display', d => 
-                    selectedTypes.includes(d.type) ? 'block' : 'none'
-                );
-
-                // Filter links
-                viz.link.style('display', d => {
-                    const sourceVisible = selectedTypes.includes(d.source.type);
-                    const targetVisible = selectedTypes.includes(d.target.type);
-                    const hasSelectedMetadata = d.shared.some(m => selectedMetadata.includes(m));
-                    return sourceVisible && targetVisible && hasSelectedMetadata ? 'block' : 'none';
-                });
-            });
-
-            // Update product zone with current selection
-            const activeProductButton = document.querySelector('.zone-toggle button.active');
-            if (activeProductButton) {
-                updateProductZone(activeProductButton.dataset.product);
+            // Update visualizations based on active tab
+            const activeTab = document.querySelector('.tab.active').dataset.tab;
+            
+            if (activeTab === 'knowledge') {
+                knowledgeViz = createKnowledgeVisualization('knowledge-network', 
+                    documents.filter(d => selectedTypes.includes(d.type)));
+            } else if (activeTab === 'product') {
+                const activeProduct = document.querySelector('.product-toggle button.active').dataset.product;
+                updateProductZone(activeProduct);
+            } else if (activeTab === 'consumer') {
+                const filteredDocs = documents.filter(d => selectedTypes.includes(d.type));
+                const filteredLinks = createLinks(filteredDocs);
+                consumerViz = createVisualization('consumer-network', filteredDocs, filteredLinks);
             }
         }
 
         // Add event listeners
         document.querySelectorAll('.filter-option input').forEach(checkbox => {
             checkbox.addEventListener('change', updateVisualization);
-        });
-
-        document.querySelectorAll('.zone-toggle button').forEach(button => {
-            button.addEventListener('click', function() {
-                // Update active state
-                document.querySelectorAll('.zone-toggle button').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                this.classList.add('active');
-                
-                // Update visualization
-                updateProductZone(this.dataset.product);
-            });
         });
 
         // Initial product zone setup
