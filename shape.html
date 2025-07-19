@@ -90,6 +90,7 @@
         .visualization {
             padding: 20px;
             height: calc(100vh - 140px);
+            position: relative;
         }
 
         .node {
@@ -100,15 +101,16 @@
             fill: #90EE90;
             stroke: #fff;
             stroke-width: 2px;
+            transition: r 0.2s;
         }
 
-        .node text {
-            font-size: 12px;
+        .node:hover circle {
+            r: 15;
         }
 
         .link {
             stroke: #999;
-            stroke-opacity: 0.6;
+            stroke-opacity: 0.3;
             stroke-width: 1px;
         }
 
@@ -121,6 +123,7 @@
             pointer-events: none;
             display: none;
             z-index: 1000;
+            max-width: 300px;
         }
 
         .home-button {
@@ -175,34 +178,6 @@
                 </label>
             </div>
         </div>
-
-        <div class="filter-section">
-            <h3>Metadata Fields</h3>
-            <div class="filter-option">
-                <label>
-                    <input type="checkbox" checked value="date">
-                    Date
-                </label>
-            </div>
-            <div class="filter-option">
-                <label>
-                    <input type="checkbox" checked value="product">
-                    Product Surface
-                </label>
-            </div>
-            <div class="filter-option">
-                <label>
-                    <input type="checkbox" checked value="audience">
-                    Target Audience
-                </label>
-            </div>
-            <div class="filter-option">
-                <label>
-                    <input type="checkbox" checked value="outcome">
-                    Outcomes
-                </label>
-            </div>
-        </div>
     </div>
 
     <div class="content-area">
@@ -219,17 +194,30 @@
     <button class="home-button" onclick="window.location.href='index.html'">Home</button>
 
     <script>
-        // Sample data structure
+        // Knowledge base data structure
         const documents = [
             {
                 id: "card-hab",
                 title: "Card Habituation Q2 Experiment",
                 type: "experiments",
                 metadata: {
+                    status: "Planned",
                     date: "June-July 2025",
                     product: "Cash App Card",
-                    audience: "508.5K users",
+                    audience: ["112.5K 1x Monthly Users", "396K 2-4x Monthly Users"],
                     outcome: "Pending"
+                }
+            },
+            {
+                id: "green-promo",
+                title: "Afterpay Goes Green Promo",
+                type: "experiments",
+                metadata: {
+                    status: "Planned",
+                    date: "February-March 2025",
+                    product: "Afterpay",
+                    audience: "5M eligible users",
+                    outcome: "Planning"
                 }
             },
             {
@@ -237,7 +225,8 @@
                 title: "A$AP Giveaway",
                 type: "experiments",
                 metadata: {
-                    date: "June 6th, 2025",
+                    status: "Completed",
+                    date: "June 2025",
                     product: "Cash App Afterpay",
                     audience: "400K users",
                     outcome: "Increased engagement"
@@ -248,6 +237,7 @@
                 title: "Holiday Campaign",
                 type: "campaigns",
                 metadata: {
+                    status: "Planning",
                     date: "Q4 2024",
                     product: "Afterpay",
                     audience: "All users",
@@ -255,20 +245,33 @@
                 }
             },
             {
-                id: "banking-tracker",
-                title: "Banking Product Tracker Q1",
-                type: "insights",
+                id: "caap-gtm",
+                title: "CAAP GTM Campaign",
+                type: "campaigns",
                 metadata: {
-                    date: "Dec 2024 - Jan 2025",
-                    product: "Cash App",
-                    audience: "6,001 respondents",
-                    outcome: "Research findings"
+                    status: "Implementation",
+                    date: "July 2025",
+                    product: "Cash App Afterpay",
+                    audience: ["2M active users", "350K churned users", "15.3M active users", "1.1M churned users"],
+                    outcome: "In progress"
+                }
+            },
+            {
+                id: "opt-out",
+                title: "Campaign Opt-Out Audit",
+                type: "campaigns",
+                metadata: {
+                    status: "Completed",
+                    date: "January-February 2025",
+                    product: "Multiple",
+                    audience: "All users",
+                    outcome: "Issues identified"
                 }
             }
         ];
 
-        // Create network visualization with metadata nodes
-        function createKnowledgeVisualization(containerId, documents) {
+        // Create network visualization
+        function createVisualization(containerId, documents) {
             const container = document.getElementById(containerId);
             const width = container.offsetWidth;
             const height = container.offsetHeight;
@@ -281,44 +284,52 @@
                 .attr('width', width)
                 .attr('height', height);
 
-            // Create metadata nodes
-            const metadataNodes = [];
+            // Create links between documents that share any metadata
             const links = [];
-            
-            // Collect all unique metadata values
-            const metadataValues = new Set();
-            documents.forEach(doc => {
-                Object.values(doc.metadata).forEach(value => {
-                    metadataValues.add(value);
-                });
-            });
+            for (let i = 0; i < documents.length; i++) {
+                for (let j = i + 1; j < documents.length; j++) {
+                    const doc1 = documents[i];
+                    const doc2 = documents[j];
+                    let hasSharedMetadata = false;
 
-            // Create metadata nodes
-            metadataValues.forEach(value => {
-                metadataNodes.push({
-                    id: `metadata-${value}`,
-                    title: value,
-                    isMetadata: true
-                });
-            });
-
-            // Create links between documents and their metadata values
-            documents.forEach(doc => {
-                Object.values(doc.metadata).forEach(value => {
-                    links.push({
-                        source: doc.id,
-                        target: `metadata-${value}`
+                    // Check each metadata field
+                    Object.keys(doc1.metadata).forEach(key => {
+                        const val1 = doc1.metadata[key];
+                        const val2 = doc2.metadata[key];
+                        
+                        // Handle both single values and arrays
+                        if (Array.isArray(val1) && Array.isArray(val2)) {
+                            // Check for any shared values between arrays
+                            if (val1.some(v => val2.includes(v))) {
+                                hasSharedMetadata = true;
+                            }
+                        } else if (Array.isArray(val1)) {
+                            if (val1.includes(val2)) {
+                                hasSharedMetadata = true;
+                            }
+                        } else if (Array.isArray(val2)) {
+                            if (val2.includes(val1)) {
+                                hasSharedMetadata = true;
+                            }
+                        } else if (val1 === val2) {
+                            hasSharedMetadata = true;
+                        }
                     });
-                });
-            });
 
-            // Combine document and metadata nodes
-            const allNodes = [...documents, ...metadataNodes];
+                    if (hasSharedMetadata) {
+                        links.push({
+                            source: doc1.id,
+                            target: doc2.id
+                        });
+                    }
+                }
+            }
 
-            const simulation = d3.forceSimulation(allNodes)
+            const simulation = d3.forceSimulation(documents)
                 .force('link', d3.forceLink(links).id(d => d.id))
-                .force('charge', d3.forceManyBody().strength(-200))
-                .force('center', d3.forceCenter(width / 2, height / 2));
+                .force('charge', d3.forceManyBody().strength(-400))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(30));
 
             // Draw links
             const link = svg.append('g')
@@ -330,9 +341,9 @@
             // Create node groups
             const node = svg.append('g')
                 .selectAll('g')
-                .data(allNodes)
+                .data(documents)
                 .enter().append('g')
-                .attr('class', d => d.isMetadata ? 'node metadata-node' : 'node')
+                .attr('class', 'node')
                 .call(d3.drag()
                     .on('start', dragstarted)
                     .on('drag', dragged)
@@ -340,30 +351,32 @@
 
             // Add circles to nodes
             node.append('circle')
-                .attr('r', d => d.isMetadata ? 5 : 8)
-                .attr('fill', d => d.isMetadata ? '#FFB6C1' : getColorByType(d.type));
-
-            // Add labels to nodes
-            node.append('text')
-                .attr('dx', d => d.isMetadata ? 8 : 12)
-                .attr('dy', '.35em')
-                .text(d => d.title);
+                .attr('r', 10)
+                .attr('fill', d => getColorByType(d.type));
 
             // Tooltip functionality
             node.on('mouseover', function(event, d) {
-                if (!d.isMetadata) {
-                    tooltip.style('display', 'block')
-                        .html(`
-                            <strong>${d.title}</strong><br>
-                            Type: ${d.type}<br>
-                            Date: ${d.metadata.date}<br>
-                            Product: ${d.metadata.product}<br>
-                            Audience: ${d.metadata.audience}<br>
-                            Outcome: ${d.metadata.outcome}
-                        `)
-                        .style('left', (event.pageX + 10) + 'px')
-                        .style('top', (event.pageY + 10) + 'px');
-                }
+                const sharedWith = links
+                    .filter(l => l.source.id === d.id || l.target.id === d.id)
+                    .map(l => {
+                        const connectedDoc = l.source.id === d.id ? l.target : l.source;
+                        return connectedDoc.title;
+                    });
+
+                tooltip.style('display', 'block')
+                    .html(`
+                        <strong>${d.title}</strong><br>
+                        <br>
+                        <strong>Type:</strong> ${d.type}<br>
+                        <strong>Status:</strong> ${d.metadata.status}<br>
+                        <strong>Date:</strong> ${d.metadata.date}<br>
+                        <strong>Product:</strong> ${d.metadata.product}<br>
+                        <strong>Audience:</strong> ${Array.isArray(d.metadata.audience) ? d.metadata.audience.join(', ') : d.metadata.audience}<br>
+                        <strong>Outcome:</strong> ${d.metadata.outcome}<br>
+                        ${sharedWith.length > 0 ? `<br><strong>Connected to:</strong><br>• ${sharedWith.join('<br>• ')}` : ''}
+                    `)
+                    .style('left', (event.pageX + 10) + 'px')
+                    .style('top', (event.pageY + 10) + 'px');
             })
             .on('mouseout', function() {
                 tooltip.style('display', 'none');
@@ -415,14 +428,14 @@
 
         // Initialize visualization
         const tooltip = d3.select('.tooltip');
-        let knowledgeViz = createKnowledgeVisualization('knowledge-network', documents);
+        let knowledgeViz = createVisualization('knowledge-network', documents);
 
         // Filter functionality
         function updateVisualization() {
-            const selectedTypes = Array.from(document.querySelectorAll('.filter-section:first-child input:checked'))
+            const selectedTypes = Array.from(document.querySelectorAll('.filter-section input:checked'))
                 .map(cb => cb.value);
             
-            knowledgeViz = createKnowledgeVisualization('knowledge-network', 
+            knowledgeViz = createVisualization('knowledge-network', 
                 documents.filter(d => selectedTypes.includes(d.type)));
         }
 
@@ -433,7 +446,7 @@
 
         // Handle window resize
         window.addEventListener('resize', () => {
-            knowledgeViz = createKnowledgeVisualization('knowledge-network', documents);
+            knowledgeViz = createVisualization('knowledge-network', documents);
         });
     </script>
 </body>
