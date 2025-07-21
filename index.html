@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TK - The Knowledge Repository</title>
+    <title>TK</title>
     <style>
         :root {
             --primary-green: #90EE90;
@@ -12,6 +12,7 @@
             --sidebar-color: rgba(255, 255, 255, 0.9);
             --text-color: #2C3E50;
             --shadow-color: rgba(144, 238, 144, 0.2);
+            --modal-overlay: rgba(44, 62, 80, 0.6);
         }
 
         * {
@@ -35,6 +36,9 @@
             max-width: 1200px;
             width: 100%;
             margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .header {
@@ -44,26 +48,18 @@
         }
 
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 20px;
+            font-size: 3em;
+            margin: 0;
             color: var(--text-color);
             font-weight: 600;
         }
 
-        .header p {
-            font-size: 1.2em;
-            line-height: 1.6;
-            color: var(--text-color);
-            opacity: 0.9;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
         .navigation {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 30px;
             width: 100%;
+            max-width: 900px;
             padding: 20px;
         }
 
@@ -78,14 +74,18 @@
             border: 1px solid rgba(144, 238, 144, 0.1);
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
             animation: fadeIn 0.5s ease;
             animation-fill-mode: both;
+            cursor: pointer;
+            min-height: 200px;
         }
 
         .nav-card:nth-child(1) { animation-delay: 0.1s; }
         .nav-card:nth-child(2) { animation-delay: 0.2s; }
         .nav-card:nth-child(3) { animation-delay: 0.3s; }
-        .nav-card:nth-child(4) { animation-delay: 0.4s; }
 
         .nav-card:hover {
             transform: translateY(-5px);
@@ -94,23 +94,10 @@
         }
 
         .nav-card h2 {
-            margin: 0 0 15px 0;
-            font-size: 1.5em;
+            margin: 0;
+            font-size: 2em;
             color: var(--text-color);
             font-weight: 600;
-        }
-
-        .nav-card p {
-            margin: 0;
-            line-height: 1.6;
-            opacity: 0.9;
-            flex-grow: 1;
-        }
-
-        .nav-card .icon {
-            font-size: 2em;
-            margin-bottom: 20px;
-            color: var(--primary-green);
         }
 
         .feedback-button {
@@ -142,6 +129,107 @@
         .feedback-button span {
             font-size: 1.2em;
             line-height: 1;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--modal-overlay);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--sidebar-color);
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            margin: auto;
+            position: relative;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px var(--shadow-color);
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
+            padding: 5px;
+            line-height: 1;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: var(--text-color);
+        }
+
+        .modal-content p {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .modal-button {
+            padding: 12px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            text-decoration: none;
+            flex: 1;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .primary-button {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+        }
+
+        .primary-button:hover {
+            background: var(--primary-green-hover);
+            transform: translateY(-2px);
+        }
+
+        .secondary-button {
+            background: white;
+            color: var(--text-color);
+            border: 2px solid var(--primary-green);
+        }
+
+        .secondary-button:hover {
+            background: var(--shadow-color);
+            transform: translateY(-2px);
         }
 
         @keyframes fadeIn {
@@ -183,14 +271,6 @@
                 margin-bottom: 40px;
             }
 
-            .header h1 {
-                font-size: 2em;
-            }
-
-            .header p {
-                font-size: 1.1em;
-            }
-
             .navigation {
                 grid-template-columns: 1fr;
                 padding: 10px;
@@ -206,40 +286,56 @@
 <body>
     <div class="container">
         <header class="header">
-            <h1>TK - The Knowledge Repository</h1>
-            <p>Explore our collective knowledge and insights about Cash App's products, consumers, and experiments. Navigate through different views to discover connections and patterns in our learning.</p>
+            <h1>TK</h1>
         </header>
 
         <nav class="navigation">
-            <a href="search.html" class="nav-card">
-                <div class="icon">🔍</div>
-                <h2>Search</h2>
-                <p>Find specific documents, experiments, or insights using our powerful search functionality. Filter by type, date, product, or other metadata.</p>
-            </a>
+            <div class="nav-card" onclick="showModal()">
+                <h2>share</h2>
+            </div>
 
             <a href="shape.html" class="nav-card">
-                <div class="icon">🔮</div>
-                <h2>Shape</h2>
-                <p>Visualize connections between different pieces of knowledge. See how experiments, campaigns, and insights relate to each other.</p>
+                <h2>shape</h2>
             </a>
 
-            <a href="browse.html" class="nav-card">
-                <div class="icon">📚</div>
-                <h2>Browse</h2>
-                <p>Navigate through our knowledge repository by category, product surface, or time period. Perfect for exploration and discovery.</p>
-            </a>
-
-            <a href="create.html" class="nav-card">
-                <div class="icon">✨</div>
-                <h2>Create</h2>
-                <p>Add new knowledge to our repository. Document experiments, campaigns, insights, or ideas using our structured templates.</p>
+            <a href="shift.html" class="nav-card">
+                <h2>shift</h2>
             </a>
         </nav>
     </div>
 
-    <a href="https://forms.gle/example" class="feedback-button" target="_blank">
+    <div class="modal" id="shareModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="hideModal()">×</button>
+            <h2>Share Your Knowledge</h2>
+            <p>Choose how you'd like to contribute to TK:</p>
+            <div class="modal-buttons">
+                <a href="https://docs.google.com/document/d/1QG8d8wtWe7ZfmG93sW-1h2WXDJDUkOi-9hDnvJLmWrc/edit" class="modal-button primary-button" target="_blank">Add a Document</a>
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLSdJ2_o6nb3PgLKIWPGRFI3-pmzqfg1e9YL71v-cBmeCGnyddg/viewform" class="modal-button secondary-button" target="_blank">Quick Share</a>
+            </div>
+        </div>
+    </div>
+
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdJ2_o6nb3PgLKIWPGRFI3-pmzqfg1e9YL71v-cBmeCGnyddg/viewform" class="feedback-button" target="_blank">
         <span>💡</span>
         Share Feedback
     </a>
+
+    <script>
+        function showModal() {
+            document.getElementById('shareModal').classList.add('active');
+        }
+
+        function hideModal() {
+            document.getElementById('shareModal').classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('shareModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideModal();
+            }
+        });
+    </script>
 </body>
 </html>
