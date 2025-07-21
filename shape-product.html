@@ -160,7 +160,7 @@
         }
 
         .product-toggle {
-            margin: 0 25px 20px;
+            margin: 60px 25px 20px;
             display: flex;
             gap: 10px;
         }
@@ -349,8 +349,129 @@
     <button class="home-button" onclick="window.location.href='index.html'">Home</button>
 
     <script>
-        // [Previous JavaScript code remains the same]
-        // Note: The functionality stays the same, but the visual styling has been updated
+        // Initialize D3.js visualization
+        const width = document.getElementById('product-network').clientWidth;
+        const height = document.getElementById('product-network').clientHeight;
+
+        // Sample data structure
+        const data = {
+            nodes: [
+                { id: "afterpay", group: 1, label: "Afterpay" },
+                { id: "merchants", group: 2, label: "Merchants" },
+                { id: "consumers", group: 2, label: "Consumers" },
+                { id: "payments", group: 3, label: "Payments" },
+                { id: "marketing", group: 3, label: "Marketing" },
+                { id: "risk", group: 3, label: "Risk" }
+            ],
+            links: [
+                { source: "afterpay", target: "merchants", value: 1 },
+                { source: "afterpay", target: "consumers", value: 1 },
+                { source: "merchants", target: "payments", value: 1 },
+                { source: "merchants", target: "marketing", value: 1 },
+                { source: "consumers", target: "risk", value: 1 },
+                { source: "consumers", target: "marketing", value: 1 }
+            ]
+        };
+
+        // Create SVG container
+        const svg = d3.select('#product-network')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Create force simulation
+        const simulation = d3.forceSimulation(data.nodes)
+            .force('link', d3.forceLink(data.links).id(d => d.id))
+            .force('charge', d3.forceManyBody().strength(-400))
+            .force('center', d3.forceCenter(width / 2, height / 2));
+
+        // Create links
+        const link = svg.append('g')
+            .selectAll('line')
+            .data(data.links)
+            .enter()
+            .append('line')
+            .attr('class', 'link');
+
+        // Create nodes
+        const node = svg.append('g')
+            .selectAll('.node')
+            .data(data.nodes)
+            .enter()
+            .append('g')
+            .attr('class', 'node')
+            .call(d3.drag()
+                .on('start', dragstarted)
+                .on('drag', dragged)
+                .on('end', dragended));
+
+        // Add circles to nodes
+        node.append('circle')
+            .attr('r', d => d.group === 1 ? 20 : 15);
+
+        // Add labels to nodes
+        node.append('text')
+            .attr('dy', 30)
+            .attr('text-anchor', 'middle')
+            .text(d => d.label)
+            .style('fill', var(--text-color))
+            .style('font-size', '12px');
+
+        // Update positions on each tick
+        simulation.on('tick', () => {
+            link
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+
+            node
+                .attr('transform', d => `translate(${d.x},${d.y})`);
+        });
+
+        // Drag functions
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        // Product toggle functionality
+        document.querySelectorAll('.product-toggle button').forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons
+                document.querySelectorAll('.product-toggle button').forEach(b => 
+                    b.classList.remove('active'));
+                
+                // Add active class to clicked button
+                button.classList.add('active');
+                
+                // Update visualization based on selected product
+                // This would typically involve updating the data and re-rendering
+                const product = button.dataset.product;
+                // updateVisualization(product);
+            });
+        });
+
+        // Filter functionality
+        document.querySelectorAll('.filter-option input').forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                const checkedFilters = Array.from(document.querySelectorAll('.filter-option input:checked'))
+                    .map(input => input.value);
+                // updateFilters(checkedFilters);
+            });
+        });
     </script>
 </body>
 </html>
