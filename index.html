@@ -1,514 +1,495 @@
-1: <!DOCTYPE html>
-2: <html lang="en">
-3: <head>
-4:     <meta charset="UTF-8">
-5:     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-6:     <title>TK</title>
-7:     <style>
-8:         :root {
-9:             --primary-green: #90EE90;
-10:             --primary-green-hover: #7CCD7C;
-11:             --background-color: #f8fdf8;
-12:             --sidebar-color: rgba(255, 255, 255, 0.9);
-13:             --text-color: #2C3E50;
-14:             --shadow-color: rgba(144, 238, 144, 0.2);
-15:             --modal-overlay: rgba(44, 62, 80, 0.6);
-16:             --error-color: #ff6b6b;
-17:         }
-18: 
-19:         * {
-20:             box-sizing: border-box;
-21:             transition: all 0.3s ease;
-22:         }
-23: 
-24:         body {
-25:             margin: 0;
-26:             padding: 20px;
-27:             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-28:             min-height: 100vh;
-29:             background: var(--background-color);
-30:             color: var(--text-color);
-31:             display: flex;
-32:             flex-direction: column;
-33:             align-items: center;
-34:             justify-content: center;
-35:         }
-36: 
-37:         .container {
-38:             max-width: 800px;
-39:             width: 100%;
-40:             margin: 0 auto;
-41:             display: flex;
-42:             flex-direction: column;
-43:             align-items: center;
-44:         }
-45: 
-46:         .header {
-47:             text-align: center;
-48:             margin-bottom: 30px;
-49:             animation: fadeIn 0.8s ease;
-50:         }
-51: 
-52:         .header h1 {
-53:             font-size: 6em;
-54:             margin: 0;
-55:             color: var(--text-color);
-56:             font-weight: 600;
-57:         }
-58: 
-59:         .navigation {
-60:             display: grid;
-61:             grid-template-columns: repeat(3, 1fr);
-62:             gap: 30px;
-63:             width: 100%;
-64:             max-width: 900px;
-65:             padding: 0 20px;
-66:             margin-top: 20px;
-67:         }
-68: 
-69:         .nav-card {
-70:             background: var(--sidebar-color);
-71:             border-radius: 25px;
-72:             padding: 40px;
-73:             text-decoration: none;
-74:             color: var(--text-color);
-75:             box-shadow: 0 4px 20px var(--shadow-color);
-76:             backdrop-filter: blur(10px);
-77:             border: 1px solid rgba(144, 238, 144, 0.1);
-78:             display: flex;
-79:             flex-direction: column;
-80:             align-items: center;
-81:             justify-content: center;
-82:             text-align: center;
-83:             animation: fadeIn 0.5s ease;
-84:             animation-fill-mode: both;
-85:             cursor: pointer;
-86:             min-height: 180px;
-87:         }
-88: 
-89:         .nav-card.disabled {
-90:             opacity: 0.5;
-91:             cursor: not-allowed;
-92:             pointer-events: none;
-93:         }
-94: 
-95:         .nav-card:nth-child(1) { animation-delay: 0.1s; }
-96:         .nav-card:nth-child(2) { animation-delay: 0.2s; }
-97:         .nav-card:nth-child(3) { animation-delay: 0.3s; }
-98: 
-99:         .nav-card:not(.disabled):hover {
-100:             transform: translateY(-5px);
-101:             box-shadow: 0 8px 30px var(--shadow-color);
-102:             border-color: var(--primary-green);
-103:         }
-104: 
-105:         .nav-card h2 {
-106:             margin: 0;
-107:             font-size: 3.5em;
-108:             color: var(--text-color);
-109:             font-weight: 600;
-110:         }
-111: 
-112:         .feedback-button {
-113:             position: fixed;
-114:             bottom: 20px;
-115:             right: 20px;
-116:             padding: 12px 24px;
-117:             background: var(--primary-green);
-118:             border: none;
-119:             border-radius: 30px;
-120:             cursor: pointer;
-121:             font-size: 16px;
-122:             font-weight: 500;
-123:             color: white;
-124:             box-shadow: 0 4px 15px var(--shadow-color);
-125:             text-decoration: none;
-126:             display: flex;
-127:             align-items: center;
-128:             gap: 8px;
-129:             animation: fadeIn 0.5s ease 0.5s both;
-130:         }
-131: 
-132:         .feedback-button:hover {
-133:             background: var(--primary-green-hover);
-134:             transform: translateY(-2px);
-135:             box-shadow: 0 6px 20px var(--shadow-color);
-136:         }
-137: 
-138:         /* Modal styles */
-139:         .modal {
-140:             display: none;
-141:             position: fixed;
-142:             top: 0;
-143:             left: 0;
-144:             width: 100%;
-145:             height: 100%;
-146:             background: var(--modal-overlay);
-147:             backdrop-filter: blur(5px);
-148:             z-index: 1000;
-149:             opacity: 0;
-150:             transition: opacity 0.3s ease;
-151:         }
-152: 
-153:         .modal.active {
-154:             display: flex;
-155:             opacity: 1;
-156:         }
-157: 
-158:         .modal-content {
-159:             background: var(--sidebar-color);
-160:             padding: 30px;
-161:             border-radius: 20px;
-162:             max-width: 500px;
-163:             width: 90%;
-164:             margin: auto;
-165:             position: relative;
-166:             transform: translateY(20px);
-167:             opacity: 0;
-168:             transition: all 0.3s ease;
-169:             box-shadow: 0 4px 20px var(--shadow-color);
-170:         }
-171: 
-172:         .modal.active .modal-content {
-173:             transform: translateY(0);
-174:             opacity: 1;
-175:         }
-176: 
-177:         .close-modal {
-178:             position: absolute;
-179:             top: 15px;
-180:             right: 15px;
-181:             background: none;
-182:             border: none;
-183:             font-size: 24px;
-184:             cursor: pointer;
-185:             color: var(--text-color);
-186:             padding: 5px;
-187:             line-height: 1;
-188:         }
-189: 
-190:         .modal-content h2 {
-191:             margin-top: 0;
-192:             margin-bottom: 20px;
-193:             color: var(--text-color);
-194:             font-size: 1.5em;
-195:         }
-196: 
-197:         .form-group {
-198:             margin-bottom: 20px;
-199:         }
-200: 
-201:         .form-group label {
-202:             display: block;
-203:             margin-bottom: 8px;
-204:             font-weight: 500;
-205:             color: var(--text-color);
-206:         }
-207: 
-208:         .form-group input,
-209:         .form-group select {
-210:             width: 100%;
-211:             padding: 10px;
-212:             border: 2px solid rgba(144, 238, 144, 0.3);
-213:             border-radius: 10px;
-214:             font-size: 14px;
-215:             transition: all 0.3s ease;
-216:         }
-217: 
-218:         .form-group input:focus,
-219:         .form-group select:focus {
-220:             outline: none;
-221:             border-color: var(--primary-green);
-222:             box-shadow: 0 0 0 3px var(--shadow-color);
-223:         }
-224: 
-225:         .share-button {
-226:             width: 100%;
-227:             padding: 12px;
-228:             background: var(--primary-green);
-229:             color: white;
-230:             border: none;
-231:             border-radius: 10px;
-232:             font-size: 16px;
-233:             font-weight: 500;
-234:             cursor: pointer;
-235:             transition: all 0.3s ease;
-236:         }
-237: 
-238:         .share-button:hover {
-239:             background: var(--primary-green-hover);
-240:             transform: translateY(-2px);
-241:         }
-242: 
-243:         .share-button:disabled {
-244:             background: #ccc;
-245:             cursor: not-allowed;
-246:             transform: none;
-247:         }
-248: 
-249:         .error-message {
-250:             color: var(--error-color);
-251:             font-size: 14px;
-252:             margin-top: 5px;
-253:             display: none;
-254:         }
-255: 
-256:         @keyframes fadeIn {
-257:             from { 
-258:                 opacity: 0; 
-259:                 transform: translateY(10px); 
-260:             }
-261:             to { 
-262:                 opacity: 1; 
-263:                 transform: translateY(0); 
-264:             }
-265:         }
-266: 
-267:         @keyframes fadeOut {
-268:             from { 
-269:                 opacity: 1; 
-270:                 transform: translateY(0); 
-271:             }
-272:             to { 
-273:                 opacity: 0; 
-274:                 transform: translateY(10px); 
-275:             }
-276:         }
-277: 
-278:         @media (max-width: 600px) {
-279:             .navigation {
-280:                 grid-template-columns: 1fr;
-281:                 max-width: 300px;
-282:             }
-283: 
-284:             .nav-card {
-285:                 min-height: 100px;
-286:             }
-287:         }
-288:     </style>
-289: </head>
-290: <body>
-291:     <div class="container">
-292:         <header class="header">
-293:             <h1>TK</h1>
-294:         </header>
-295: 
-296:         <nav class="navigation">
-297:             <div class="nav-card" onclick="showModal()">
-298:                 <h2>share</h2>
-299:             </div>
-300: 
-301:             <a href="shape.html" class="nav-card">
-302:                 <h2>shape</h2>
-303:             </a>
-304: 
-305:             <div class="nav-card disabled">
-306:                 <h2>shift</h2>
-307:             </div>
-308:         </nav>
-309:     </div>
-310: 
-311:     <div class="modal" id="shareModal">
-312:         <div class="modal-content">
-313:             <button class="close-modal" onclick="hideModal()">×</button>
-314:             <h2>Share a File</h2>
-315:             <form id="shareForm" onsubmit="handleShare(event)">
-316:                 <div class="form-group">
-317:                     <label for="fileUrl">File URL</label>
-318:                     <input type="url" id="fileUrl" required placeholder="Paste the Google Drive URL here">
-319:                     <div class="error-message" id="urlError">Please enter a valid Google Drive URL</div>
-320:                 </div>
-321:                 <div class="form-group">
-322:                     <label for="fileType">File Type</label>
-323:                     <select id="fileType" required>
-324:                         <option value="">Select a file type...</option>
-325:                         <option value="01_ExperimentsAndOffers">Experiments and Offers</option>
-326:                         <option value="02_Campaigns">Campaigns</option>
-327:                         <option value="03_GrabBag">Grab Bag</option>
-328:                         <option value="04_ConsumerInsightsResearch">Consumer Insights Research</option>
-329:                         <option value="05_IdeaBoard">Idea Board</option>
-330:                     </select>
-331:                 </div>
-332:                 <button type="submit" class="share-button" id="shareButton">Share File</button>
-333:             </form>
-334:         </div>
-335:     </div>
-336: 
-337:     <a href="https://docs.google.com/forms/d/e/1FAIpQLSdJ2_o6nb3PgLKIWPGRFI3-pmzqfg1e9YL71v-cBmeCGnyddg/viewform" class="feedback-button" target="_blank">
-338:         <span>💡</span>
-339:         Share Feedback
-340:     </a>
-341: 
-342:     <script>
-343:         function showModal() {
-344:             document.getElementById('shareModal').classList.add('active');
-345:         }
-346: 
-347:         function hideModal() {
-348:             document.getElementById('shareModal').classList.remove('active');
-349:             // Reset form
-350:             document.getElementById('shareForm').reset();
-351:             document.getElementById('urlError').style.display = 'none';
-352:             document.getElementById('shareButton').disabled = false;
-353:         }
-354: 
-355:         // Close modal when clicking outside
-356:         document.getElementById('shareModal').addEventListener('click', function(e) {
-357:             if (e.target === this) {
-358:                 hideModal();
-359:             }
-360:         });
-361: 
-362:         function showError(message) {
-363:             const urlError = document.getElementById('urlError');
-364:             urlError.textContent = message;
-365:             urlError.style.display = 'block';
-366:         }
-367: 
-368:         function handleShare(event) {
-369:             event.preventDefault();
-370:             const fileUrl = document.getElementById('fileUrl').value;
-371:             const fileType = document.getElementById('fileType').value;
-372:             const shareButton = document.getElementById('shareButton');
-373:             const urlError = document.getElementById('urlError');
-374: 
-375:             // Reset error state
-376:             urlError.style.display = 'none';
-377: 
-378:             // Validate Google Drive URL
-379:             if (!fileUrl.includes('drive.google.com') && !fileUrl.includes('docs.google.com')) {
-380:                 showError('Please enter a valid Google Drive URL');
-381:                 return;
-382:             }
-383: 
-384:             // Disable button and show loading state
-385:             shareButton.disabled = true;
-386:             shareButton.textContent = 'Creating shortcut...';
-387: 
-388:             // Create shortcut in the selected folder
-389:             createShortcut(fileUrl, fileType)
-390:                 .then(() => {
-391:                     hideModal();
-392:                     // Show success notification
-393:                     const notification = document.createElement('div');
-394:                     notification.style.cssText = `
-395:                         position: fixed;
-396:                         bottom: 20px;
-397:                         left: 50%;
-398:                         transform: translateX(-50%);
-399:                         background: var(--primary-green);
-400:                         color: white;
-401:                         padding: 12px 24px;
-402:                         border-radius: 30px;
-403:                         box-shadow: 0 4px 15px var(--shadow-color);
-404:                         animation: fadeIn 0.3s ease;
-405:                         z-index: 1000;
-406:                     `;
-407:                     notification.textContent = 'File shared successfully!';
-408:                     document.body.appendChild(notification);
-409:                     setTimeout(() => {
-410:                         notification.style.animation = 'fadeOut 0.3s ease';
-411:                         setTimeout(() => notification.remove(), 300);
-412:                     }, 3000);
-413:                 })
-414:                 .catch(error => {
-415:                     console.error('Error creating shortcut:', error);
-416:                     shareButton.disabled = false;
-417:                     shareButton.textContent = 'Share File';
-418:                     showError(error.message || 'Failed to create shortcut. Please try again.');
-419:                 });
-420:         }
-421: 
-422:         async function extractFileId(url) {
-423:             // Handle different Google Drive URL formats
-424:             let fileId = '';
-425:             
-426:             try {
-427:                 const urlObj = new URL(url);
-428:                 
-429:                 if (url.includes('/file/d/')) {
-430:                     // Format: https://drive.google.com/file/d/FILE_ID/view
-431:                     fileId = url.split('/file/d/')[1].split('/')[0];
-432:                 } else if (url.includes('/folders/')) {
-433:                     // Format: https://drive.google.com/drive/folders/FILE_ID
-434:                     fileId = url.split('/folders/')[1].split('/')[0];
-435:                 } else if (url.includes('/document/d/')) {
-436:                     // Format: https://docs.google.com/document/d/FILE_ID/edit
-437:                     fileId = url.split('/document/d/')[1].split('/')[0];
-438:                 } else if (url.includes('/spreadsheets/d/')) {
-439:                     // Format: https://docs.google.com/spreadsheets/d/FILE_ID/edit
-440:                     fileId = url.split('/spreadsheets/d/')[1].split('/')[0];
-441:                 } else if (url.includes('/presentation/d/')) {
-442:                     // Format: https://docs.google.com/presentation/d/FILE_ID/edit
-443:                     fileId = url.split('/presentation/d/')[1].split('/')[0];
-444:                 }
-445:                 
-446:                 if (!fileId) {
-447:                     throw new Error('Could not extract file ID from URL');
-448:                 }
-449:                 
-450:                 return fileId;
-451:             } catch (error) {
-452:                 throw new Error('Invalid Google Drive URL format');
-453:             }
-454:         }
-455: 
-456:         async function createShortcut(fileUrl, targetFolder) {
-457:             try {
-458:                 // Extract file ID from URL
-459:                 const fileId = await extractFileId(fileUrl);
-460:                 
-461:                 // Get parent folder ID
-462:                 const parentFolderId = '1oTaspU_UHqbZ5u8TeRwULixRX-7r-uxw';
-463:                 
-464:                 // Get target subfolder ID
-465:                 const response = await fetch('/googledrive/search', {
-466:                     method: 'POST',
-467:                     headers: {
-468:                         'Content-Type': 'application/json',
-469:                     },
-470:                     body: JSON.stringify({
-471:                         driveType: 'file',
-472:                         parent: parentFolderId,
-473:                         name: targetFolder
-474:                     })
-475:                 });
-476:                 
-477:                 if (!response.ok) {
-478:                     throw new Error('Failed to find target folder');
-479:                 }
-480:                 
-481:                 const folders = await response.json();
-482:                 const targetFolderId = folders.find(f => f.name === targetFolder)?.uri;
-483:                 
-484:                 if (!targetFolderId) {
-485:                     throw new Error('Target folder not found');
-486:                 }
-487:                 
-488:                 // Create the shortcut
-489:                 const createResponse = await fetch('/googledrive/create_file', {
-490:                     method: 'POST',
-491:                     headers: {
-492:                         'Content-Type': 'application/json',
-493:                     },
-494:                     body: JSON.stringify({
-495:                         name: 'Shortcut',
-496:                         mimeType: 'application/vnd.google-apps.shortcut',
-497:                         parentId: targetFolderId,
-498:                         targetId: fileId
-499:                     })
-500:                 });
-501:                 
-502:                 if (!createResponse.ok) {
-503:                     throw new Error('Failed to create shortcut');
-504:                 }
-505:                 
-506:                 return true;
-507:             } catch (error) {
-508:                 console.error('Error in createShortcut:', error);
-509:                 throw error;
-510:             }
-511:         }
-512:     </script>
-513: </body>
-514: </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TK</title>
+    <style>
+        :root {
+            --primary-green: #90EE90;
+            --primary-green-hover: #7CCD7C;
+            --background-color: #f8fdf8;
+            --sidebar-color: rgba(255, 255, 255, 0.9);
+            --text-color: #2C3E50;
+            --shadow-color: rgba(144, 238, 144, 0.2);
+            --modal-overlay: rgba(44, 62, 80, 0.6);
+            --error-color: #ff6b6b;
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            min-height: 100vh;
+            background: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .header h1 {
+            font-size: 6em;
+            margin: 0;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+
+        .navigation {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            width: 100%;
+            max-width: 900px;
+            padding: 0 20px;
+            margin-top: 20px;
+        }
+
+        .nav-card {
+            background: var(--sidebar-color);
+            border-radius: 25px;
+            padding: 40px;
+            text-decoration: none;
+            color: var(--text-color);
+            box-shadow: 0 4px 20px var(--shadow-color);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(144, 238, 144, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+            animation-fill-mode: both;
+            cursor: pointer;
+            min-height: 180px;
+        }
+
+        .nav-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .nav-card:nth-child(1) { animation-delay: 0.1s; }
+        .nav-card:nth-child(2) { animation-delay: 0.2s; }
+        .nav-card:nth-child(3) { animation-delay: 0.3s; }
+
+        .nav-card:not(.disabled):hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px var(--shadow-color);
+            border-color: var(--primary-green);
+        }
+
+        .nav-card h2 {
+            margin: 0;
+            font-size: 3.5em;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+
+        .feedback-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: var(--primary-green);
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: white;
+            box-shadow: 0 4px 15px var(--shadow-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: fadeIn 0.5s ease 0.5s both;
+        }
+
+        .feedback-button:hover {
+            background: var(--primary-green-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--shadow-color);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--modal-overlay);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--sidebar-color);
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            margin: auto;
+            position: relative;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px var(--shadow-color);
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
+            padding: 5px;
+            line-height: 1;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: var(--text-color);
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid rgba(144, 238, 144, 0.3);
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px var(--shadow-color);
+        }
+
+        .share-button {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .share-button:hover {
+            background: var(--primary-green-hover);
+            transform: translateY(-2px);
+        }
+
+        .share-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(10px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        @keyframes fadeOut {
+            from { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+            to { 
+                opacity: 0; 
+                transform: translateY(10px); 
+            }
+        }
+
+        @media (max-width: 600px) {
+            .navigation {
+                grid-template-columns: 1fr;
+                max-width: 300px;
+            }
+
+            .nav-card {
+                min-height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>TK</h1>
+        </header>
+
+        <nav class="navigation">
+            <div class="nav-card" onclick="showModal()">
+                <h2>share</h2>
+            </div>
+
+            <a href="shape.html" class="nav-card">
+                <h2>shape</h2>
+            </a>
+
+            <div class="nav-card disabled">
+                <h2>shift</h2>
+            </div>
+        </nav>
+    </div>
+
+    <div class="modal" id="shareModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="hideModal()">×</button>
+            <h2>Share a File</h2>
+            <form id="shareForm" onsubmit="handleShare(event)">
+                <div class="form-group">
+                    <label for="fileUrl">File URL</label>
+                    <input type="url" id="fileUrl" required placeholder="Paste the Google Drive URL here">
+                    <div class="error-message" id="urlError">Please enter a valid Google Drive URL</div>
+                </div>
+                <div class="form-group">
+                    <label for="fileType">File Type</label>
+                    <select id="fileType" required>
+                        <option value="">Select a file type...</option>
+                        <option value="01_ExperimentsAndOffers">Experiments and Offers</option>
+                        <option value="02_Campaigns">Campaigns</option>
+                        <option value="03_GrabBag">Grab Bag</option>
+                        <option value="04_ConsumerInsightsResearch">Consumer Insights Research</option>
+                        <option value="05_IdeaBoard">Idea Board</option>
+                    </select>
+                </div>
+                <button type="submit" class="share-button" id="shareButton">Share File</button>
+            </form>
+        </div>
+    </div>
+
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdJ2_o6nb3PgLKIWPGRFI3-pmzqfg1e9YL71v-cBmeCGnyddg/viewform" class="feedback-button" target="_blank">
+        <span>💡</span>
+        Share Feedback
+    </a>
+
+    <script>
+        function showModal() {
+            document.getElementById('shareModal').classList.add('active');
+        }
+
+        function hideModal() {
+            document.getElementById('shareModal').classList.remove('active');
+            document.getElementById('shareForm').reset();
+            document.getElementById('urlError').style.display = 'none';
+            document.getElementById('shareButton').disabled = false;
+        }
+
+        document.getElementById('shareModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideModal();
+            }
+        });
+
+        function showError(message) {
+            const urlError = document.getElementById('urlError');
+            urlError.textContent = message;
+            urlError.style.display = 'block';
+        }
+
+        function handleShare(event) {
+            event.preventDefault();
+            const fileUrl = document.getElementById('fileUrl').value;
+            const fileType = document.getElementById('fileType').value;
+            const shareButton = document.getElementById('shareButton');
+            const urlError = document.getElementById('urlError');
+
+            urlError.style.display = 'none';
+
+            if (!fileUrl.includes('drive.google.com') && !fileUrl.includes('docs.google.com')) {
+                showError('Please enter a valid Google Drive URL');
+                return;
+            }
+
+            shareButton.disabled = true;
+            shareButton.textContent = 'Creating shortcut...';
+
+            createShortcut(fileUrl, fileType)
+                .then(() => {
+                    hideModal();
+                    const notification = document.createElement('div');
+                    notification.style.cssText = `
+                        position: fixed;
+                        bottom: 20px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        background: var(--primary-green);
+                        color: white;
+                        padding: 12px 24px;
+                        border-radius: 30px;
+                        box-shadow: 0 4px 15px var(--shadow-color);
+                        animation: fadeIn 0.3s ease;
+                        z-index: 1000;
+                    `;
+                    notification.textContent = 'File shared successfully!';
+                    document.body.appendChild(notification);
+                    setTimeout(() => {
+                        notification.style.animation = 'fadeOut 0.3s ease';
+                        setTimeout(() => notification.remove(), 300);
+                    }, 3000);
+                })
+                .catch(error => {
+                    console.error('Error creating shortcut:', error);
+                    shareButton.disabled = false;
+                    shareButton.textContent = 'Share File';
+                    showError(error.message || 'Failed to create shortcut. Please try again.');
+                });
+        }
+
+        async function extractFileId(url) {
+            let fileId = '';
+            
+            try {
+                const urlObj = new URL(url);
+                
+                if (url.includes('/file/d/')) {
+                    fileId = url.split('/file/d/')[1].split('/')[0];
+                } else if (url.includes('/folders/')) {
+                    fileId = url.split('/folders/')[1].split('/')[0];
+                } else if (url.includes('/document/d/')) {
+                    fileId = url.split('/document/d/')[1].split('/')[0];
+                } else if (url.includes('/spreadsheets/d/')) {
+                    fileId = url.split('/spreadsheets/d/')[1].split('/')[0];
+                } else if (url.includes('/presentation/d/')) {
+                    fileId = url.split('/presentation/d/')[1].split('/')[0];
+                }
+                
+                if (!fileId) {
+                    throw new Error('Could not extract file ID from URL');
+                }
+                
+                return fileId;
+            } catch (error) {
+                throw new Error('Invalid Google Drive URL format');
+            }
+        }
+
+        async function createShortcut(fileUrl, targetFolder) {
+            try {
+                const fileId = await extractFileId(fileUrl);
+                const parentFolderId = '1oTaspU_UHqbZ5u8TeRwULixRX-7r-uxw';
+                
+                const response = await fetch('/googledrive/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        driveType: 'file',
+                        parent: parentFolderId,
+                        name: targetFolder
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to find target folder');
+                }
+                
+                const folders = await response.json();
+                const targetFolderId = folders.find(f => f.name === targetFolder)?.uri;
+                
+                if (!targetFolderId) {
+                    throw new Error('Target folder not found');
+                }
+                
+                const createResponse = await fetch('/googledrive/create_file', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: 'Shortcut',
+                        mimeType: 'application/vnd.google-apps.shortcut',
+                        parentId: targetFolderId,
+                        targetId: fileId
+                    })
+                });
+                
+                if (!createResponse.ok) {
+                    throw new Error('Failed to create shortcut');
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Error in createShortcut:', error);
+                throw error;
+            }
+        }
+    </script>
+</body>
+</html>
