@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TK</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-green: #90EE90;
@@ -47,13 +50,28 @@
             text-align: center;
             margin-bottom: 30px;
             animation: fadeIn 0.8s ease;
+            position: relative;
         }
 
         .header h1 {
-            font-size: 6em;
+            font-size: 25em;
             margin: 0;
             color: var(--text-color);
-            font-weight: 600;
+            font-weight: 700;
+            font-family: 'Dancing Script', cursive;
+            line-height: 1;
+            letter-spacing: -0.02em;
+            animation: float 6s ease-in-out infinite;
+            text-shadow: 0 15px 40px var(--shadow-color);
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
         }
 
         .navigation {
@@ -135,6 +153,7 @@
             box-shadow: 0 6px 20px var(--shadow-color);
         }
 
+        /* Modal styles */
         .modal {
             display: none;
             position: fixed;
@@ -321,11 +340,11 @@
                     <label for="fileType">File Type</label>
                     <select id="fileType" required>
                         <option value="">Select a file type...</option>
-                        <option value="02_Campaigns">Campaigns</option>
-                        <option value="04_ConsumerInsightsResearch">Consumer Insights Research</option>
                         <option value="01_ExperimentsAndOffers">Experiments and Offers</option>
+                        <option value="02_Campaigns">Campaigns</option>
+                        <option value="03_GrabBag">Grab Bag</option>
+                        <option value="04_ConsumerInsightsResearch">Consumer Insights Research</option>
                         <option value="05_IdeaBoard">Idea Board</option>
-                        <option value="03_GrabBag">Other</option>
                     </select>
                 </div>
                 <button type="submit" class="share-button" id="shareButton">Share File</button>
@@ -345,11 +364,13 @@
 
         function hideModal() {
             document.getElementById('shareModal').classList.remove('active');
+            // Reset form
             document.getElementById('shareForm').reset();
             document.getElementById('urlError').style.display = 'none';
             document.getElementById('shareButton').disabled = false;
         }
 
+        // Close modal when clicking outside
         document.getElementById('shareModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 hideModal();
@@ -369,19 +390,24 @@
             const shareButton = document.getElementById('shareButton');
             const urlError = document.getElementById('urlError');
 
+            // Reset error state
             urlError.style.display = 'none';
 
+            // Validate Google Drive URL
             if (!fileUrl.includes('drive.google.com') && !fileUrl.includes('docs.google.com')) {
                 showError('Please enter a valid Google Drive URL');
                 return;
             }
 
+            // Disable button and show loading state
             shareButton.disabled = true;
             shareButton.textContent = 'Creating shortcut...';
 
+            // Create shortcut in the selected folder
             createShortcut(fileUrl, fileType)
                 .then(() => {
                     hideModal();
+                    // Show success notification
                     const notification = document.createElement('div');
                     notification.style.cssText = `
                         position: fixed;
@@ -412,20 +438,26 @@
         }
 
         async function extractFileId(url) {
+            // Handle different Google Drive URL formats
             let fileId = '';
             
             try {
                 const urlObj = new URL(url);
                 
                 if (url.includes('/file/d/')) {
+                    // Format: https://drive.google.com/file/d/FILE_ID/view
                     fileId = url.split('/file/d/')[1].split('/')[0];
                 } else if (url.includes('/folders/')) {
+                    // Format: https://drive.google.com/drive/folders/FILE_ID
                     fileId = url.split('/folders/')[1].split('/')[0];
                 } else if (url.includes('/document/d/')) {
+                    // Format: https://docs.google.com/document/d/FILE_ID/edit
                     fileId = url.split('/document/d/')[1].split('/')[0];
                 } else if (url.includes('/spreadsheets/d/')) {
+                    // Format: https://docs.google.com/spreadsheets/d/FILE_ID/edit
                     fileId = url.split('/spreadsheets/d/')[1].split('/')[0];
                 } else if (url.includes('/presentation/d/')) {
+                    // Format: https://docs.google.com/presentation/d/FILE_ID/edit
                     fileId = url.split('/presentation/d/')[1].split('/')[0];
                 }
                 
@@ -441,9 +473,13 @@
 
         async function createShortcut(fileUrl, targetFolder) {
             try {
+                // Extract file ID from URL
                 const fileId = await extractFileId(fileUrl);
+                
+                // Get parent folder ID
                 const parentFolderId = '1oTaspU_UHqbZ5u8TeRwULixRX-7r-uxw';
                 
+                // Get target subfolder ID
                 const response = await fetch('/googledrive/search', {
                     method: 'POST',
                     headers: {
@@ -467,6 +503,7 @@
                     throw new Error('Target folder not found');
                 }
                 
+                // Create the shortcut
                 const createResponse = await fetch('/googledrive/create_file', {
                     method: 'POST',
                     headers: {
