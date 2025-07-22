@@ -27,11 +27,76 @@
             color: var(--text-color);
             line-height: 1.6;
             padding: 20px;
+            display: flex;
+            min-height: 100vh;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+        .sidebar {
+            width: 280px;
+            padding: 25px;
+            background: var(--sidebar-color);
+            border-radius: 20px;
+            margin-right: 25px;
+            height: fit-content;
+            box-shadow: 0 4px 20px var(--shadow-color);
+            backdrop-filter: blur(10px);
+        }
+
+        .filter-section {
+            margin-bottom: 35px;
+        }
+
+        .filter-section h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 1.1em;
+        }
+
+        .filter-option {
+            margin-bottom: 12px;
+        }
+
+        .filter-option label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .filter-option label:hover {
+            background: var(--shadow-color);
+        }
+
+        .filter-option input[type="checkbox"] {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+            border-radius: 6px;
+            border: 2px solid var(--primary-green);
+            appearance: none;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .filter-option input[type="checkbox"]:checked {
+            background: var(--primary-green);
+        }
+
+        .filter-option input[type="checkbox"]:checked::after {
+            content: "✓";
+            position: absolute;
+            color: white;
+            font-size: 12px;
+            left: 3px;
+            top: -1px;
+        }
+
+        .main-content {
+            flex-grow: 1;
         }
 
         .section {
@@ -91,11 +156,12 @@
 
         #graph {
             width: 100%;
-            height: 600px;
+            height: 400px;
             background: white;
             border-radius: 10px;
             margin-bottom: 30px;
             position: relative;
+            overflow: hidden;
         }
 
         .file-list {
@@ -147,13 +213,11 @@
 
         .node {
             cursor: pointer;
-            transition: all 0.3s ease;
         }
 
         .node:hover {
             stroke: var(--primary-green);
-            stroke-width: 2px;
-            transform: scale(1.1);
+            stroke-width: 3px;
         }
 
         .tooltip {
@@ -217,7 +281,105 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="sidebar">
+        <div class="filter-section">
+            <h3>Status</h3>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="Planned">
+                    Planned
+                </label>
+            </div>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="In Progress">
+                    In Progress
+                </label>
+            </div>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="Completed">
+                    Completed
+                </label>
+            </div>
+        </div>
+
+        <div class="filter-section">
+            <h3>Document Type</h3>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="Experiment">
+                    Experiment
+                </label>
+            </div>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="Promotion">
+                    Promotion
+                </label>
+            </div>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="Research">
+                    Research
+                </label>
+            </div>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="Analysis">
+                    Analysis
+                </label>
+            </div>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="Tech Doc">
+                    Tech Doc
+                </label>
+            </div>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="Campaign">
+                    Campaign
+                </label>
+            </div>
+        </div>
+
+        <div class="filter-section">
+            <h3>Time Period</h3>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="Q3 2024">
+                    Q3 2024
+                </label>
+            </div>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="Q4 2024">
+                    Q4 2024
+                </label>
+            </div>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="Q1 2025">
+                    Q1 2025
+                </label>
+            </div>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="Q2 2025">
+                    Q2 2025
+                </label>
+            </div>
+            <div class="filter-option">
+                <label>
+                    <input type="checkbox" checked value="Q3 2025">
+                    Q3 2025
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
         <div class="section">
             <div class="tabs">
                 <a href="shape.html" class="tab active">Knowledge Zone</a>
@@ -322,7 +484,7 @@
 
         // Create the graph visualization
         const width = document.getElementById('graph').clientWidth;
-        const height = 600;
+        const height = 400;
 
         const svg = d3.select('#graph')
             .append('svg')
@@ -335,16 +497,16 @@
             ...file
         }));
 
-        // Create links between documents that share metadata
+        // Create links between documents that share metadata (excluding productSurface)
         const links = [];
         for (let i = 0; i < files.length; i++) {
             for (let j = i + 1; j < files.length; j++) {
                 const file1 = files[i];
                 const file2 = files[j];
                 
-                // Check each metadata attribute
+                // Check each metadata attribute except productSurface
                 Object.entries(file1.metadata).forEach(([key, value]) => {
-                    if (file2.metadata[key] === value) {
+                    if (key !== 'productSurface' && file2.metadata[key] === value) {
                         links.push({
                             source: i,
                             target: j,
@@ -359,9 +521,9 @@
         // Create force simulation
         const simulation = d3.forceSimulation(nodes)
             .force('link', d3.forceLink(links).id(d => d.id))
-            .force('charge', d3.forceManyBody().strength(-300))
+            .force('charge', d3.forceManyBody().strength(-800))
             .force('center', d3.forceCenter(width / 2, height / 2))
-            .force('collision', d3.forceCollide().radius(30));
+            .force('collision', d3.forceCollide().radius(40));
 
         // Create links
         const link = svg.append('g')
@@ -403,7 +565,7 @@
             .data(nodes)
             .join('circle')
             .attr('class', 'node')
-            .attr('r', 12)
+            .attr('r', 15)
             .attr('fill', d => {
                 // Color based on product surface
                 if (d.metadata.productSurface === 'Cash App Card') return '#ff7675';
@@ -441,12 +603,6 @@
             window.open(d.url, '_blank');
         });
 
-        // Add drag behavior
-        node.call(d3.drag()
-            .on('start', dragstarted)
-            .on('drag', dragged)
-            .on('end', dragended));
-
         // Update positions
         simulation.on('tick', () => {
             link
@@ -456,27 +612,50 @@
                 .attr('y2', d => d.target.y);
 
             node
-                .attr('cx', d => d.x)
-                .attr('cy', d => d.y);
+                .attr('cx', d => Math.max(15, Math.min(width - 15, d.x)))
+                .attr('cy', d => Math.max(15, Math.min(height - 15, d.y)));
         });
 
-        // Drag functions
-        function dragstarted(event, d) {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
-            d.fx = d.x;
-            d.fy = d.y;
+        // Filter functionality
+        function updateVisualization() {
+            const statusFilters = Array.from(document.querySelectorAll('.filter-section:nth-child(1) input:checked')).map(cb => cb.value);
+            const typeFilters = Array.from(document.querySelectorAll('.filter-section:nth-child(2) input:checked')).map(cb => cb.value);
+            const timeFilters = Array.from(document.querySelectorAll('.filter-section:nth-child(3) input:checked')).map(cb => cb.value);
+
+            // Update nodes
+            node.style('display', d => {
+                const matchesStatus = statusFilters.includes(d.metadata.status);
+                const matchesType = typeFilters.includes(d.metadata.documentType);
+                const matchesTime = timeFilters.includes(d.metadata.timePeriod);
+                return matchesStatus && matchesType && matchesTime ? null : 'none';
+            });
+
+            // Update links
+            link.style('display', d => {
+                const sourceVisible = statusFilters.includes(d.source.metadata.status) &&
+                                   typeFilters.includes(d.source.metadata.documentType) &&
+                                   timeFilters.includes(d.source.metadata.timePeriod);
+                const targetVisible = statusFilters.includes(d.target.metadata.status) &&
+                                   typeFilters.includes(d.target.metadata.documentType) &&
+                                   timeFilters.includes(d.target.metadata.timePeriod);
+                return sourceVisible && targetVisible ? null : 'none';
+            });
+
+            // Update file list
+            const fileItems = document.querySelectorAll('.file-item');
+            fileItems.forEach((item, index) => {
+                const file = files[index];
+                const matchesStatus = statusFilters.includes(file.metadata.status);
+                const matchesType = typeFilters.includes(file.metadata.documentType);
+                const matchesTime = timeFilters.includes(file.metadata.timePeriod);
+                item.style.display = matchesStatus && matchesType && matchesTime ? null : 'none';
+            });
         }
 
-        function dragged(event, d) {
-            d.fx = event.x;
-            d.fy = event.y;
-        }
-
-        function dragended(event, d) {
-            if (!event.active) simulation.alphaTarget(0);
-            d.fx = null;
-            d.fy = null;
-        }
+        // Add filter event listeners
+        document.querySelectorAll('.filter-option input').forEach(checkbox => {
+            checkbox.addEventListener('change', updateVisualization);
+        });
 
         // Populate file list
         const fileList = document.getElementById('fileList');
