@@ -338,15 +338,16 @@
                 </div>
                 <div class="form-group">
                     <label for="fileType">File Type</label>
-                    <select id="fileType" required>
+                    <select id="fileType" required onchange="updateMetadataFields()">
                         <option value="">Select a file type...</option>
-                        <option value="02_Campaigns">Campaigns</option>
-                        <option value="04_ConsumerInsightsResearch">Consumer Insights Research</option>
                         <option value="01_ExperimentsAndOffers">Experiments and Offers</option>
+                        <option value="02_Campaigns">Campaigns</option>
+                        <option value="03_GrabBag">Grab Bag</option>
+                        <option value="04_ConsumerInsightsResearch">Consumer Insights Research</option>
                         <option value="05_IdeaBoard">Idea Board</option>
-                         <option value="03_GrabBag">Other</option>
                     </select>
                 </div>
+                <div id="metadataFields"></div>
                 <button type="submit" class="share-button" id="shareButton">Share File</button>
             </form>
         </div>
@@ -368,6 +369,8 @@
             document.getElementById('shareForm').reset();
             document.getElementById('urlError').style.display = 'none';
             document.getElementById('shareButton').disabled = false;
+            // Clear metadata fields
+            document.getElementById('metadataFields').innerHTML = '';
         }
 
         // Close modal when clicking outside
@@ -502,6 +505,19 @@
                 if (!targetFolderId) {
                     throw new Error('Target folder not found');
                 }
+
+                // Get document views and mentions
+                const [viewsData, commentsData] = await Promise.all([
+                    getDocumentViews(fileId),
+                    getDocumentComments(fileId)
+                ]);
+
+                // Collect metadata from form and add views/mentions
+                const metadata = {
+                    ...collectMetadata(targetFolder),
+                    views: viewsData,
+                    comments: commentsData
+                };
                 
                 // Create the shortcut
                 const createResponse = await fetch('/googledrive/create_file', {
@@ -513,7 +529,8 @@
                         name: 'Shortcut',
                         mimeType: 'application/vnd.google-apps.shortcut',
                         parentId: targetFolderId,
-                        targetId: fileId
+                        targetId: fileId,
+                        metadata: metadata
                     })
                 });
                 
@@ -526,6 +543,170 @@
                 console.error('Error in createShortcut:', error);
                 throw error;
             }
+        }
+
+        async function getDocumentViews(fileId) {
+            try {
+                // Get file metadata including viewedByMe info
+                const response = await fetch('/googledrive/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        driveType: 'file',
+                        name: fileId
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to get file metadata');
+                }
+
+                const data = await response.json();
+                const file = data[0];
+
+                return {
+                    lastViewed: file.viewedByMeTime,
+                    viewCount: file.viewedByMeCount || 0
+                };
+            } catch (error) {
+                console.error('Error getting document views:', error);
+                return {
+                    lastViewed: null,
+                    viewCount: 0
+                };
+            }
+        }
+
+        async function getDocumentComments(fileId) {
+            try {
+                const response = await fetch('/googledrive/get_comments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        fileId: fileId
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to get comments');
+                }
+
+                const comments = await response.json();
+                
+                // Process comments to extract mentions and structure
+                const processedComments = comments.map(comment => ({
+                    author: comment.author.displayName,
+                    content: comment.content,
+                    createdTime: comment.createdTime,
+                    mentions: extractMentions(comment.content)
+                }));
+
+                return {
+                    totalComments: comments.length,
+                    lastCommentDate: comments.length > 0 ? comments[0].createdTime : null,
+                    mentions: processedComments.reduce((acc, comment) => acc.concat(comment.mentions), []),
+                    commentDetails: processedComments
+                };
+            } catch (error) {
+                console.error('Error getting document comments:', error);
+                return {
+                    totalComments: 0,
+                    lastCommentDate: null,
+                    mentions: [],
+                    commentDetails: []
+                };
+            }
+        }
+
+        function extractMentions(content) {
+            // Extract mentions from comment content (e.g., +user@example.com or @username)
+            const mentionRegex = /(?:\+|@)([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|\w+)/g;
+            const matches = content.match(mentionRegex) || [];
+            return matches.map(match => match.substring(1)); // Remove + or @ prefix
+        }
+
+        function updateMetadataFields() {
+            const fileType = document.getElementById('fileType').value;
+            const metadataFields = document.getElementById('metadataFields');
+            
+            // Clear existing fields
+            metadataFields.innerHTML = '';
+            
+            if (!fileType) return;
+
+            const fields = getMetadataFields(fileType);
+            
+            fields.forEach(field => {
+                const div = document.createElement('div');
+                div.className = 'form-group';
+                
+                const label = document.createElement('label');
+                label.htmlFor = `metadata_${field.id}`;
+                label.textContent = field.label;
+                
+                const input = document.createElement('input');
+                input.type = field.type || 'text';
+                input.id = `metadata_${field.id}`;
+                input.name = `metadata_${field.id}`;
+                input.required = true;
+                input.placeholder = field.placeholder || '';
+                
+                div.appendChild(label);
+                div.appendChild(input);
+                metadataFields.appendChild(div);
+            });
+        }
+
+        function getMetadataFields(fileType) {
+            const fieldSets = {
+                '01_ExperimentsAndOffers': [
+                    { id: 'date', label: 'When did the experiment take place?', type: 'date' },
+                    { id: 'product_surface', label: 'Relevant product surface' },
+                    { id: 'audience', label: 'Target audience' },
+                    { id: 'measurement', label: 'Measurement / outcome' },
+                    { id: 'learnings', label: 'Process learnings' }
+                ],
+                '02_Campaigns': [
+                    { id: 'date', label: 'When was the campaign run?', type: 'date' },
+                    { id: 'product_surface', label: 'Relevant product surface' },
+                    { id: 'measurement', label: 'Measurement / outcome' }
+                ],
+                '03_GrabBag': [
+                    { id: 'date', label: 'When was the analysis run?', type: 'date' },
+                    { id: 'product_surface', label: 'Relevant product surface' },
+                    { id: 'recommendation', label: 'Recommendation' }
+                ],
+                '04_ConsumerInsightsResearch': [
+                    { id: 'date', label: 'When did the survey/interviews take place?', type: 'date' },
+                    { id: 'product_surface', label: 'Relevant product surface' },
+                    { id: 'audience', label: 'Target audience' },
+                    { id: 'measurement', label: 'Measurement / outcome' }
+                ],
+                '05_IdeaBoard': [
+                    { id: 'trigger', label: 'Which experiment/campaign/analysis triggered this idea?' },
+                    { id: 'type', label: 'Type of idea' },
+                    { id: 'optimistic', label: 'Optimistic scenario' },
+                    { id: 'pessimistic', label: 'Pessimistic scenario / operational concerns' }
+                ]
+            };
+            
+            return fieldSets[fileType] || [];
+        }
+
+        function collectMetadata(fileType) {
+            const fields = getMetadataFields(fileType);
+            const metadata = {};
+            
+            fields.forEach(field => {
+                const value = document.getElementById(`metadata_${field.id}`).value;
+                metadata[field.id] = value;
+            });
+            
+            return metadata;
         }
     </script>
 </body>
