@@ -46,6 +46,7 @@
 
         .filter-section {
             margin-bottom: 35px;
+            position: relative;
         }
 
         .filter-section:last-child {
@@ -60,24 +61,81 @@
             font-size: 1.1em;
         }
 
-        .filter-section select {
+        .filter-dropdown {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 2px solid rgba(144, 238, 144, 0.3);
             border-radius: 10px;
             font-size: 14px;
-            transition: all 0.3s ease;
             background: white;
+            cursor: pointer;
+            position: relative;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
         }
 
-        .filter-section select:focus {
-            outline: none;
+        .filter-dropdown:hover {
             border-color: var(--primary-green);
-            box-shadow: 0 0 0 3px var(--shadow-color);
         }
 
-        .filter-section select option {
-            padding: 8px;
+        .filter-dropdown:after {
+            content: "▼";
+            font-size: 12px;
+            color: var(--text-color);
+        }
+
+        .filter-dropdown.active {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .filter-dropdown.active:after {
+            content: "▲";
+        }
+
+        .filter-options {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid var(--primary-green);
+            border-top: none;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .filter-option {
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .filter-option:hover {
+            background: var(--background-color);
+        }
+
+        .filter-option input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--primary-green);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .filter-option label {
+            cursor: pointer;
+            flex: 1;
         }
 
         .main-content {
@@ -285,24 +343,56 @@
     <div class="sidebar">
         <div class="filter-section">
             <h3>Time Period</h3>
-            <select id="timePeriodFilter" multiple size="5">
-                <option value="Q3 2024" selected>Q3 2024</option>
-                <option value="Q4 2024" selected>Q4 2024</option>
-                <option value="Q1 2025" selected>Q1 2025</option>
-                <option value="Q2 2025" selected>Q2 2025</option>
-                <option value="Q3 2025" selected>Q3 2025</option>
-            </select>
+            <button class="filter-dropdown" id="timePeriodDropdown">All Time Periods</button>
+            <div class="filter-options" id="timePeriodOptions">
+                <div class="filter-option">
+                    <input type="checkbox" id="time_q3_2024" value="Q3 2024" checked>
+                    <label for="time_q3_2024">Q3 2024</label>
+                </div>
+                <div class="filter-option">
+                    <input type="checkbox" id="time_q4_2024" value="Q4 2024" checked>
+                    <label for="time_q4_2024">Q4 2024</label>
+                </div>
+                <div class="filter-option">
+                    <input type="checkbox" id="time_q1_2025" value="Q1 2025" checked>
+                    <label for="time_q1_2025">Q1 2025</label>
+                </div>
+                <div class="filter-option">
+                    <input type="checkbox" id="time_q2_2025" value="Q2 2025" checked>
+                    <label for="time_q2_2025">Q2 2025</label>
+                </div>
+                <div class="filter-option">
+                    <input type="checkbox" id="time_q3_2025" value="Q3 2025" checked>
+                    <label for="time_q3_2025">Q3 2025</label>
+                </div>
+            </div>
         </div>
 
         <div class="filter-section">
             <h3>Document Type</h3>
-            <select id="typeFilter" multiple size="5">
-                <option value="Campaigns" selected>Campaigns</option>
-                <option value="ConsumerInsightsResearch" selected>Consumer Insights Research</option>
-                <option value="ExperimentsAndOffers" selected>Experiments and Offers</option>
-                <option value="IdeaBoard" selected>Idea Board</option>
-                <option value="Other" selected>Other</option>
-            </select>
+            <button class="filter-dropdown" id="typeDropdown">All Document Types</button>
+            <div class="filter-options" id="typeOptions">
+                <div class="filter-option">
+                    <input type="checkbox" id="type_campaigns" value="Campaigns" checked>
+                    <label for="type_campaigns">Campaigns</label>
+                </div>
+                <div class="filter-option">
+                    <input type="checkbox" id="type_research" value="ConsumerInsightsResearch" checked>
+                    <label for="type_research">Consumer Insights Research</label>
+                </div>
+                <div class="filter-option">
+                    <input type="checkbox" id="type_experiments" value="ExperimentsAndOffers" checked>
+                    <label for="type_experiments">Experiments and Offers</label>
+                </div>
+                <div class="filter-option">
+                    <input type="checkbox" id="type_ideaboard" value="IdeaBoard" checked>
+                    <label for="type_ideaboard">Idea Board</label>
+                </div>
+                <div class="filter-option">
+                    <input type="checkbox" id="type_other" value="Other" checked>
+                    <label for="type_other">Other</label>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -545,8 +635,19 @@
 
         // Filter functionality
         function updateVisualization() {
-            const timeFilters = Array.from(document.getElementById('timePeriodFilter').selectedOptions).map(opt => opt.value);
-            const typeFilters = Array.from(document.getElementById('typeFilter').selectedOptions).map(opt => opt.value);
+            const timeFilters = Array.from(document.querySelectorAll('#timePeriodOptions input:checked')).map(cb => cb.value);
+            const typeFilters = Array.from(document.querySelectorAll('#typeOptions input:checked')).map(cb => cb.value);
+
+            // Update dropdown text
+            document.getElementById('timePeriodDropdown').textContent = 
+                timeFilters.length === 5 ? 'All Time Periods' :
+                timeFilters.length === 0 ? 'No Time Periods' :
+                `${timeFilters.length} Selected`;
+
+            document.getElementById('typeDropdown').textContent = 
+                typeFilters.length === 5 ? 'All Document Types' :
+                typeFilters.length === 0 ? 'No Document Types' :
+                `${typeFilters.length} Selected`;
 
             // Update nodes
             node.style('display', d => {
@@ -588,8 +689,8 @@
         }
 
         function updateFileList() {
-            const timeFilters = Array.from(document.getElementById('timePeriodFilter').selectedOptions).map(opt => opt.value);
-            const typeFilters = Array.from(document.getElementById('typeFilter').selectedOptions).map(opt => opt.value);
+            const timeFilters = Array.from(document.querySelectorAll('#timePeriodOptions input:checked')).map(cb => cb.value);
+            const typeFilters = Array.from(document.querySelectorAll('#typeOptions input:checked')).map(cb => cb.value);
 
             const fileList = document.getElementById('fileList');
             fileList.innerHTML = '';
@@ -616,8 +717,37 @@
         }
 
         // Add event listeners
-        document.getElementById('timePeriodFilter').addEventListener('change', updateVisualization);
-        document.getElementById('typeFilter').addEventListener('change', updateVisualization);
+        document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
+            dropdown.addEventListener('click', (e) => {
+                // Close other dropdowns
+                document.querySelectorAll('.filter-dropdown').forEach(d => {
+                    if (d !== e.target) {
+                        d.classList.remove('active');
+                        d.nextElementSibling.style.display = 'none';
+                    }
+                });
+
+                // Toggle current dropdown
+                dropdown.classList.toggle('active');
+                const options = dropdown.nextElementSibling;
+                options.style.display = options.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.filter-section')) {
+                document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('active');
+                    dropdown.nextElementSibling.style.display = 'none';
+                });
+            }
+        });
+
+        document.querySelectorAll('.filter-option input').forEach(checkbox => {
+            checkbox.addEventListener('change', updateVisualization);
+        });
+
         document.querySelectorAll('.sort-button').forEach(button => {
             button.addEventListener('click', () => updateSort(button.dataset.sort));
         });
