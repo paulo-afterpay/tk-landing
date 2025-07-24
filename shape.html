@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -467,206 +468,206 @@
 
     <script>
         // File data with metadata
-const files = [
-    // Root folder
-    {
-        name: "README - TK Repository Guide",
-        url: "https://docs.google.com/document/d/19lcjKHG_cZ5faAuCXiqDO6F0Fd68G6vy5xdSN7p6H64",
-        metadata: {
-            productSurface: "All",
-            documentType: "Other",
-            timePeriod: "Q3 2024"
-        }
-    },
-    
-    // Consumer Insights Research (04)
-    {
-        name: "TK - CI Research Metadata Summary",
-        url: "https://docs.google.com/document/d/1jZcLZo10LQBpoABc9X0Qq1uVeNu6Qly-mU76MS8wHDI",
-        metadata: {
-            productSurface: "All",
-            documentType: "ConsumerInsightsResearch",
-            timePeriod: "Q3 2024"
-        }
-    },
-    {
-        name: "Banking Product Tracker Results - Q3 2024",
-        url: "https://docs.google.com/document/d/1WPeVlMCdxgqdza8Q9HdQJHnab0JontRe",
-        metadata: {
-            productSurface: "Cash App Card",
-            documentType: "ConsumerInsightsResearch",
-            timePeriod: "Q3 2024"
-        }
-    },
-    {
-        name: "Preliminary: Banking Product Tracker - Q1 2025",
-        url: "https://docs.google.com/document/d/1ofSslOVQtY7kZNB6gJphIrvssxtmvIW9",
-        metadata: {
-            productSurface: "Cash App Card",
-            documentType: "ConsumerInsightsResearch",
-            timePeriod: "Q1 2025"
-        }
-    },
-    {
-        name: "CI Research Document",
-        url: "https://docs.google.com/document/d/1Y3kMmbmvDJRmN6AhTY3VvrvScLc6WpYo",
-        metadata: {
-            productSurface: "All",
-            documentType: "ConsumerInsightsResearch",
-            timePeriod: "Q3 2024"
-        }
-    },
+        const files = [
+            // Root folder
+            {
+                name: "README - TK Repository Guide",
+                url: "https://docs.google.com/document/d/19lcjKHG_cZ5faAuCXiqDO6F0Fd68G6vy5xdSN7p6H64",
+                metadata: {
+                    productSurface: "All",
+                    documentType: "Other",
+                    timePeriod: "Q3 2024"
+                }
+            },
+            
+            // Consumer Insights Research (04)
+            {
+                name: "TK - CI Research Metadata Summary",
+                url: "https://docs.google.com/document/d/1jZcLZo10LQBpoABc9X0Qq1uVeNu6Qly-mU76MS8wHDI",
+                metadata: {
+                    productSurface: "All",
+                    documentType: "ConsumerInsightsResearch",
+                    timePeriod: "Q3 2024"
+                }
+            },
+            {
+                name: "Banking Product Tracker Results - Q3 2024",
+                url: "https://docs.google.com/document/d/1WPeVlMCdxgqdza8Q9HdQJHnab0JontRe",
+                metadata: {
+                    productSurface: "Cash App Card",
+                    documentType: "ConsumerInsightsResearch",
+                    timePeriod: "Q3 2024"
+                }
+            },
+            {
+                name: "Preliminary: Banking Product Tracker - Q1 2025",
+                url: "https://docs.google.com/document/d/1ofSslOVQtY7kZNB6gJphIrvssxtmvIW9",
+                metadata: {
+                    productSurface: "Cash App Card",
+                    documentType: "ConsumerInsightsResearch",
+                    timePeriod: "Q1 2025"
+                }
+            },
+            {
+                name: "CI Research Document",
+                url: "https://docs.google.com/document/d/1Y3kMmbmvDJRmN6AhTY3VvrvScLc6WpYo",
+                metadata: {
+                    productSurface: "All",
+                    documentType: "ConsumerInsightsResearch",
+                    timePeriod: "Q3 2024"
+                }
+            },
 
-    // Grab Bag (03)
-    {
-        name: "Assessment: Afterpay Gift Card Gateways",
-        url: "https://docs.google.com/document/d/1BEjV8AqAj_rGUtfgCtbGBfWnoy9VoETcWZ236WRysk0",
-        metadata: {
-            productSurface: "Afterpay",
-            documentType: "Other",
-            timePeriod: "Q1 2025"
-        }
-    },
-    {
-        name: "Consolidated Narrative: Cash App Card User Journeys",
-        url: "https://docs.google.com/document/d/17_KCUwQaGmxPwZli0VMEhQLP-kOlPhKwIewX-KDekbQ",
-        metadata: {
-            productSurface: "Cash App Card",
-            documentType: "Other",
-            timePeriod: "Q1 2025"
-        }
-    },
-    {
-        name: "TK - Other Analyses Metadata Summary",
-        url: "https://docs.google.com/document/d/1pm8f3nbzo5-0Bxt50KnNXJNQJNZ04JbS_iEjKMfwcRc",
-        metadata: {
-            productSurface: "All",
-            documentType: "Other",
-            timePeriod: "Q3 2024"
-        }
-    },
-    {
-        name: "Assessment: Gaps in Merchant <> Vertical Mappings",
-        url: "https://docs.google.com/document/d/1_UUNbU0x7rkE0IOLngtGN1rvyf6c-jtdLPMewm3dUlk",
-        metadata: {
-            productSurface: "Afterpay",
-            documentType: "Other",
-            timePeriod: "Q1 2025"
-        }
-    },
-    {
-        name: "Assessment: Spurring App Actives Growth",
-        url: "https://docs.google.com/document/d/1miTYuZe-thr3Md9J9ItYI_cMLNu_RsNpvxhNNBQj4Uc",
-        metadata: {
-            productSurface: "Cash App Afterpay",
-            documentType: "Other",
-            timePeriod: "Q2 2025"
-        }
-    },
-    {
-        name: "Tableau Inventory Audit: Commerce Marketing DS Reporting",
-        url: "https://docs.google.com/spreadsheets/d/1H4r90i676D-HfEOwvIv3KS0MnYAOsxjd4QHdlCnmu84",
-        metadata: {
-            productSurface: "All",
-            documentType: "Other",
-            timePeriod: "Q1 2025"
-        }
-    },
-    {
-        name: "Summary: Subset of Ads Volume tied to CRM",
-        url: "https://docs.google.com/document/d/1Q48M5b1bc6iHpkmdhnlmCahPGGpDszzUOxuU1_1iVSE",
-        metadata: {
-            productSurface: "All",
-            documentType: "Other",
-            timePeriod: "Q1 2025"
-        }
-    },
-    {
-        name: "Assessment: CRM Fatigue",
-        url: "https://docs.google.com/document/d/156RTLRYUnc5jiPYvBJN3h4R-fox35VfniRTmYErDyhU",
-        metadata: {
-            productSurface: "All",
-            documentType: "Other",
-            timePeriod: "Q1 2025"
-        }
-    },
+            // Grab Bag (03)
+            {
+                name: "Assessment: Afterpay Gift Card Gateways",
+                url: "https://docs.google.com/document/d/1BEjV8AqAj_rGUtfgCtbGBfWnoy9VoETcWZ236WRysk0",
+                metadata: {
+                    productSurface: "Afterpay",
+                    documentType: "Other",
+                    timePeriod: "Q1 2025"
+                }
+            },
+            {
+                name: "Consolidated Narrative: Cash App Card User Journeys",
+                url: "https://docs.google.com/document/d/17_KCUwQaGmxPwZli0VMEhQLP-kOlPhKwIewX-KDekbQ",
+                metadata: {
+                    productSurface: "Cash App Card",
+                    documentType: "Other",
+                    timePeriod: "Q1 2025"
+                }
+            },
+            {
+                name: "TK - Other Analyses Metadata Summary",
+                url: "https://docs.google.com/document/d/1pm8f3nbzo5-0Bxt50KnNXJNQJNZ04JbS_iEjKMfwcRc",
+                metadata: {
+                    productSurface: "All",
+                    documentType: "Other",
+                    timePeriod: "Q3 2024"
+                }
+            },
+            {
+                name: "Assessment: Gaps in Merchant <> Vertical Mappings",
+                url: "https://docs.google.com/document/d/1_UUNbU0x7rkE0IOLngtGN1rvyf6c-jtdLPMewm3dUlk",
+                metadata: {
+                    productSurface: "Afterpay",
+                    documentType: "Other",
+                    timePeriod: "Q1 2025"
+                }
+            },
+            {
+                name: "Assessment: Spurring App Actives Growth",
+                url: "https://docs.google.com/document/d/1miTYuZe-thr3Md9J9ItYI_cMLNu_RsNpvxhNNBQj4Uc",
+                metadata: {
+                    productSurface: "Cash App Afterpay",
+                    documentType: "Other",
+                    timePeriod: "Q2 2025"
+                }
+            },
+            {
+                name: "Tableau Inventory Audit: Commerce Marketing DS Reporting",
+                url: "https://docs.google.com/spreadsheets/d/1H4r90i676D-HfEOwvIv3KS0MnYAOsxjd4QHdlCnmu84",
+                metadata: {
+                    productSurface: "All",
+                    documentType: "Other",
+                    timePeriod: "Q1 2025"
+                }
+            },
+            {
+                name: "Summary: Subset of Ads Volume tied to CRM",
+                url: "https://docs.google.com/document/d/1Q48M5b1bc6iHpkmdhnlmCahPGGpDszzUOxuU1_1iVSE",
+                metadata: {
+                    productSurface: "All",
+                    documentType: "Other",
+                    timePeriod: "Q1 2025"
+                }
+            },
+            {
+                name: "Assessment: CRM Fatigue",
+                url: "https://docs.google.com/document/d/156RTLRYUnc5jiPYvBJN3h4R-fox35VfniRTmYErDyhU",
+                metadata: {
+                    productSurface: "All",
+                    documentType: "Other",
+                    timePeriod: "Q1 2025"
+                }
+            },
 
-    // Experiments and Offers (01)
-    {
-        name: "Research: A$AP Giveaway",
-        url: "https://docs.google.com/document/d/13CXbT7FSl4WXbiPadbEsGkTSo3Fb63DHnoL8k3SE90o",
-        metadata: {
-            productSurface: "Cash App Afterpay",
-            documentType: "ExperimentsAndOffers",
-            timePeriod: "Q2 2025"
-        }
-    },
-    {
-        name: "TK - Experiments & Offers Metadata Summary",
-        url: "https://docs.google.com/document/d/1K9-4APo3zaaUi4V6ZjcKDr8Se3mWC6tmg976M7_NgRU",
-        metadata: {
-            productSurface: "All",
-            documentType: "ExperimentsAndOffers",
-            timePeriod: "Q3 2024"
-        }
-    },
-    {
-        name: "Assumptions: Afterpay Goes Green Promo Sizing",
-        url: "https://docs.google.com/document/d/1TotqPZLTm5kQfByXNuDWNhdwi4_qNWU8J0aQcZAWtsc",
-        metadata: {
-            productSurface: "Afterpay",
-            documentType: "ExperimentsAndOffers",
-            timePeriod: "Q1 2025"
-        }
-    },
-    {
-        name: "Sizing Assumptions: Card Habituation Q2 Experiment",
-        url: "https://docs.google.com/document/d/1r1ON3AmiWx59cAm7J5-ub93D_6DoBfG1DnqGjeUE06I",
-        metadata: {
-            productSurface: "Cash App Card",
-            documentType: "ExperimentsAndOffers",
-            timePeriod: "Q2 2025"
-        }
-    },
+            // Experiments and Offers (01)
+            {
+                name: "Research: A$AP Giveaway",
+                url: "https://docs.google.com/document/d/13CXbT7FSl4WXbiPadbEsGkTSo3Fb63DHnoL8k3SE90o",
+                metadata: {
+                    productSurface: "Cash App Afterpay",
+                    documentType: "ExperimentsAndOffers",
+                    timePeriod: "Q2 2025"
+                }
+            },
+            {
+                name: "TK - Experiments & Offers Metadata Summary",
+                url: "https://docs.google.com/document/d/1K9-4APo3zaaUi4V6ZjcKDr8Se3mWC6tmg976M7_NgRU",
+                metadata: {
+                    productSurface: "All",
+                    documentType: "ExperimentsAndOffers",
+                    timePeriod: "Q3 2024"
+                }
+            },
+            {
+                name: "Assumptions: Afterpay Goes Green Promo Sizing",
+                url: "https://docs.google.com/document/d/1TotqPZLTm5kQfByXNuDWNhdwi4_qNWU8J0aQcZAWtsc",
+                metadata: {
+                    productSurface: "Afterpay",
+                    documentType: "ExperimentsAndOffers",
+                    timePeriod: "Q1 2025"
+                }
+            },
+            {
+                name: "Sizing Assumptions: Card Habituation Q2 Experiment",
+                url: "https://docs.google.com/document/d/1r1ON3AmiWx59cAm7J5-ub93D_6DoBfG1DnqGjeUE06I",
+                metadata: {
+                    productSurface: "Cash App Card",
+                    documentType: "ExperimentsAndOffers",
+                    timePeriod: "Q2 2025"
+                }
+            },
 
-    // Campaigns (02)
-    {
-        name: "Tech Doc: Logic for CAAP GTM Campaign",
-        url: "https://docs.google.com/document/d/1ryKXJ4VU2FLxWZM5_KguoH2P5RZZny7mY574L6pJbsU",
-        metadata: {
-            productSurface: "Cash App Afterpay",
-            documentType: "Campaigns",
-            timePeriod: "Q3 2025"
-        }
-    },
-    {
-        name: "Audit: Campaigns with missing opt-out logic",
-        url: "https://docs.google.com/spreadsheets/d/12UGcHvivKyYipGbsTPRM9siy-TNeOIjLop8-9sUU95U",
-        metadata: {
-            productSurface: "All",
-            documentType: "Campaigns",
-            timePeriod: "Q2 2025"
-        }
-    },
-    {
-        name: "TK - Campaigns Metadata Summary",
-        url: "https://docs.google.com/document/d/1Mv8GUFtuzOrMMmo_6iuirrQTRKrqktJ4BQYMOF-3KZw",
-        metadata: {
-            productSurface: "All",
-            documentType: "Campaigns",
-            timePeriod: "Q3 2024"
-        }
-    },
-    {
-        name: "Project Plan: Holiday Campaign Preparation",
-        url: "https://docs.google.com/document/d/17z18uLeY6U3j6vE6vXxrtLTJe1WTWK1LFlBI6ppSnE8",
-        metadata: {
-            productSurface: "Afterpay",
-            documentType: "Campaigns",
-            timePeriod: "Q4 2024"
-        }
-    }
-];
+            // Campaigns (02)
+            {
+                name: "Tech Doc: Logic for CAAP GTM Campaign",
+                url: "https://docs.google.com/document/d/1ryKXJ4VU2FLxWZM5_KguoH2P5RZZny7mY574L6pJbsU",
+                metadata: {
+                    productSurface: "Cash App Afterpay",
+                    documentType: "Campaigns",
+                    timePeriod: "Q3 2025"
+                }
+            },
+            {
+                name: "Audit: Campaigns with missing opt-out logic",
+                url: "https://docs.google.com/spreadsheets/d/12UGcHvivKyYipGbsTPRM9siy-TNeOIjLop8-9sUU95U",
+                metadata: {
+                    productSurface: "All",
+                    documentType: "Campaigns",
+                    timePeriod: "Q2 2025"
+                }
+            },
+            {
+                name: "TK - Campaigns Metadata Summary",
+                url: "https://docs.google.com/document/d/1Mv8GUFtuzOrMMmo_6iuirrQTRKrqktJ4BQYMOF-3KZw",
+                metadata: {
+                    productSurface: "All",
+                    documentType: "Campaigns",
+                    timePeriod: "Q3 2024"
+                }
+            },
+            {
+                name: "Project Plan: Holiday Campaign Preparation",
+                url: "https://docs.google.com/document/d/17z18uLeY6U3j6vE6vXxrtLTJe1WTWK1LFlBI6ppSnE8",
+                metadata: {
+                    productSurface: "Afterpay",
+                    documentType: "Campaigns",
+                    timePeriod: "Q4 2024"
+                }
+            }
+        ];
 
         // Sort files alphabetically by default
         let sortedFiles = [...files].sort((a, b) => a.name.localeCompare(b.name));
@@ -695,24 +696,27 @@ const files = [
                 
                 // Check metadata attributes
                 if (file1.metadata.documentType === file2.metadata.documentType ||
-                    file1.metadata.timePeriod === file2.metadata.timePeriod) {
+                    file1.metadata.timePeriod === file2.metadata.timePeriod ||
+                    file1.metadata.productSurface === file2.metadata.productSurface) {
                     links.push({
                         source: i,
                         target: j,
-                        type: file1.metadata.documentType === file2.metadata.documentType ? 'type' : 'time',
-                        value: file1.metadata.documentType === file2.metadata.documentType ? 
-                               file1.metadata.documentType : file1.metadata.timePeriod
+                        type: file1.metadata.documentType === file2.metadata.documentType ? 'type' : 
+                              file1.metadata.timePeriod === file2.metadata.timePeriod ? 'time' : 'product',
+                        value: file1.metadata.documentType === file2.metadata.documentType ? file1.metadata.documentType :
+                              file1.metadata.timePeriod === file2.metadata.timePeriod ? file1.metadata.timePeriod :
+                              file1.metadata.productSurface
                     });
                 }
             }
         }
 
-        // Modified force simulation with stronger collision detection
+        // Modified force simulation
         const simulation = d3.forceSimulation(nodes)
             .force('link', d3.forceLink(links).id(d => d.id))
-            .force('charge', d3.forceManyBody().strength(-500))
+            .force('charge', d3.forceManyBody().strength(-200))
             .force('center', d3.forceCenter(width / 2, height / 2))
-            .force('collision', d3.forceCollide().radius(40).strength(1)) // Increased radius and strength
+            .force('collision', d3.forceCollide().radius(15))
             .force('x', d3.forceX(width / 2).strength(0.1))
             .force('y', d3.forceY(height / 2).strength(0.1));
 
@@ -724,41 +728,7 @@ const files = [
             .attr('class', 'link')
             .attr('stroke', '#999')
             .attr('stroke-opacity', 0.3)
-            .attr('stroke-width', 1)
-            .on('mouseover', (event, d) => {
-                d3.select(event.target)
-                    .attr('stroke-opacity', 0.8)
-                    .attr('stroke-width', 2);
-                
-                tooltip.transition()
-                    .duration(200)
-                    .style('opacity', 1);
-                
-                tooltip.html(`
-                    <div class="tooltip-title">Shared Attribute</div>
-                    <div class="tooltip-metadata">
-                        <div class="tooltip-row">
-                            <span class="tooltip-label">Type:</span>
-                            <span class="tooltip-value">${d.type}</span>
-                        </div>
-                        <div class="tooltip-row">
-                            <span class="tooltip-label">Value:</span>
-                            <span class="tooltip-value">${d.value}</span>
-                        </div>
-                    </div>
-                `)
-                    .style('left', (event.pageX + 10) + 'px')
-                    .style('top', (event.pageY - 10) + 'px');
-            })
-            .on('mouseout', (event) => {
-                d3.select(event.target)
-                    .attr('stroke-opacity', 0.3)
-                    .attr('stroke-width', 1);
-                
-                tooltip.transition()
-                    .duration(500)
-                    .style('opacity', 0);
-            });
+            .attr('stroke-width', 1);
 
         // Create nodes with improved interaction
         const nodeGroup = svg.append('g')
@@ -773,14 +743,19 @@ const files = [
 
         const node = nodeGroup.append('circle')
             .attr('class', 'node')
-            .attr('r', 12)
+            .attr('r', 8)
             .attr('fill', d => {
-                if (d.metadata.productSurface === 'Cash App Card') return '#ff7675';
-                if (d.metadata.productSurface === 'Afterpay') return '#74b9ff';
-                return '#55efc4';
-            });
+                switch(d.metadata.productSurface) {
+                    case 'Cash App Card': return '#ff7675';
+                    case 'Afterpay': return '#74b9ff';
+                    case 'Cash App Afterpay': return '#55efc4';
+                    default: return '#95a5a6';
+                }
+            })
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 2);
 
-        // Add tooltips with improved layout
+        // Add tooltips
         const tooltip = d3.select('body').append('div')
             .attr('class', 'tooltip')
             .style('opacity', 0);
@@ -790,36 +765,25 @@ const files = [
                 .duration(200)
                 .style('opacity', 1);
             
-            const metadataHtml = Object.entries(d.metadata)
-                .map(([key, value]) => `
-                    <div class="tooltip-row">
-                        <span class="tooltip-label">${formatLabel(key)}:</span>
-                        <span class="tooltip-value">${value}</span>
-                    </div>
-                `)
-                .join('');
-            
             tooltip.html(`
                 <div class="tooltip-title">${d.name}</div>
                 <div class="tooltip-metadata">
-                    ${metadataHtml}
+                    <div class="tooltip-row">
+                        <span class="tooltip-label">Product:</span>
+                        <span class="tooltip-value">${d.metadata.productSurface}</span>
+                    </div>
+                    <div class="tooltip-row">
+                        <span class="tooltip-label">Type:</span>
+                        <span class="tooltip-value">${d.metadata.documentType}</span>
+                    </div>
+                    <div class="tooltip-row">
+                        <span class="tooltip-label">Period:</span>
+                        <span class="tooltip-value">${d.metadata.timePeriod}</span>
+                    </div>
                 </div>
             `)
-                .style('left', (event.pageX + 15) + 'px')
-                .style('top', (event.pageY - 15) + 'px');
-
-            // Ensure tooltip stays within viewport
-            const tooltipNode = tooltip.node();
-            const tooltipRect = tooltipNode.getBoundingClientRect();
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-
-            if (tooltipRect.right > viewportWidth) {
-                tooltip.style('left', (viewportWidth - tooltipRect.width - 10) + 'px');
-            }
-            if (tooltipRect.bottom > viewportHeight) {
-                tooltip.style('top', (viewportHeight - tooltipRect.height - 10) + 'px');
-            }
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 10) + 'px');
         })
         .on('mouseout', () => {
             tooltip.transition()
@@ -827,17 +791,8 @@ const files = [
                 .style('opacity', 0);
         })
         .on('click', (event, d) => {
-            event.preventDefault();
             window.open(d.url, '_blank');
         });
-
-        // Helper function to format metadata labels
-        function formatLabel(key) {
-            return key
-                .replace(/([A-Z])/g, ' $1') // Add space before capital letters
-                .replace(/^./, str => str.toUpperCase()) // Capitalize first letter
-                .trim();
-        }
 
         // Drag functions
         function dragstarted(event) {
@@ -859,7 +814,7 @@ const files = [
 
         // Update positions with boundary checking
         simulation.on('tick', () => {
-            link
+                        link
                 .attr('x1', d => d.source.x)
                 .attr('y1', d => d.source.y)
                 .attr('x2', d => d.target.x)
@@ -867,9 +822,9 @@ const files = [
 
             nodeGroup
                 .attr('transform', d => `translate(${
-                    Math.max(12, Math.min(width - 12, d.x))
+                    Math.max(8, Math.min(width - 8, d.x))
                 },${
-                    Math.max(12, Math.min(height - 12, d.y))
+                    Math.max(8, Math.min(height - 8, d.y))
                 })`);
         });
 
@@ -965,7 +920,7 @@ const files = [
             });
         }
 
-        // Add event listeners
+        // Add event listeners for dropdowns
         document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
             dropdown.addEventListener('click', (e) => {
                 // Close other dropdowns
@@ -978,4 +933,36 @@ const files = [
 
                 // Toggle current dropdown
                 dropdown.classList.toggle('active');
-                const
+                const options = dropdown.nextElementSibling;
+                options.style.display = options.style.display === 'none' ? 'block' : 'none';
+            });
+        });
+
+        // Add event listeners for checkboxes
+        document.querySelectorAll('.filter-option input').forEach(checkbox => {
+            checkbox.addEventListener('change', updateVisualization);
+        });
+
+        // Add event listeners for sort buttons
+        document.querySelectorAll('.sort-button').forEach(button => {
+            button.addEventListener('click', () => {
+                updateSort(button.dataset.sort);
+            });
+        });
+
+        // Initial update
+        updateVisualization();
+        updateFileList();
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.filter-section')) {
+                document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('active');
+                    dropdown.nextElementSibling.style.display = 'none';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
