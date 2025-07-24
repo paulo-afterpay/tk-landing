@@ -467,80 +467,206 @@
 
     <script>
         // File data with metadata
-        const files = [
-            {
-                name: "Card Habituation Q2 Experiment",
-                url: "https://docs.google.com/document/d/1r1ON3AmiWx59cAm7J5-ub93D_6DoBfG1DnqGjeUE06I",
-                metadata: {
-                    productSurface: "Cash App Card",
-                    documentType: "ExperimentsAndOffers",
-                    timePeriod: "Q2 2025"
-                }
-            },
-            {
-                name: "Afterpay Goes Green Promo",
-                url: "https://docs.google.com/document/d/1TotqPZLTm5kQfByXNuDWNhdwi4_qNWU8J0aQcZAWtsc",
-                metadata: {
-                    productSurface: "Afterpay",
-                    documentType: "ExperimentsAndOffers",
-                    timePeriod: "Q1 2025"
-                }
-            },
-            {
-                name: "A$AP Giveaway Research",
-                url: "https://docs.google.com/document/d/13CXbT7FSl4WXbiPadbEsGkTSo3Fb63DHnoL8k3SE90o",
-                metadata: {
-                    productSurface: "Cash App Afterpay",
-                    documentType: "ConsumerInsightsResearch",
-                    timePeriod: "Q2 2025"
-                }
-            },
-            {
-                name: "CAAP GTM Campaign Tech Doc",
-                url: "https://docs.google.com/document/d/1ryKXJ4VU2FLxWZM5_KguoH2P5RZZny7mY574L6pJbsU",
-                metadata: {
-                    productSurface: "Cash App Afterpay",
-                    documentType: "Campaigns",
-                    timePeriod: "Q3 2025"
-                }
-            },
-            {
-                name: "Banking Product Tracker Results - Q3 2024",
-                url: "https://docs.google.com/document/d/1WPeVlMCdxgqdza8Q9HdQJHnab0JontRe",
-                metadata: {
-                    productSurface: "Cash App Card",
-                    documentType: "ConsumerInsightsResearch",
-                    timePeriod: "Q3 2024"
-                }
-            },
-            {
-                name: "Holiday Campaign Preparation",
-                url: "https://docs.google.com/document/d/17z18uLeY6U3j6vE6vXxrtLTJe1WTWK1LFlBI6ppSnE8",
-                metadata: {
-                    productSurface: "Afterpay",
-                    documentType: "Campaigns",
-                    timePeriod: "Q4 2024"
-                }
-            },
-            {
-                name: "Assessment: Gaps in Merchant Vertical Mappings",
-                url: "https://docs.google.com/document/d/1_UUNbU0x7rkE0IOLngtGN1rvyf6c-jtdLPMewm3dUlk",
-                metadata: {
-                    productSurface: "Afterpay",
-                    documentType: "Other",
-                    timePeriod: "Q1 2025"
-                }
-            },
-            {
-                name: "Assessment: Afterpay Gift Card Gateways",
-                url: "https://docs.google.com/document/d/1BEjV8AqAj_rGUtfgCtbGBfWnoy9VoETcWZ236WRysk0",
-                metadata: {
-                    productSurface: "Afterpay",
-                    documentType: "Other",
-                    timePeriod: "Q1 2025"
-                }
-            }
-        ];
+const files = [
+    // Root folder
+    {
+        name: "README - TK Repository Guide",
+        url: "https://docs.google.com/document/d/19lcjKHG_cZ5faAuCXiqDO6F0Fd68G6vy5xdSN7p6H64",
+        metadata: {
+            productSurface: "All",
+            documentType: "Other",
+            timePeriod: "Q3 2024"
+        }
+    },
+    
+    // Consumer Insights Research (04)
+    {
+        name: "TK - CI Research Metadata Summary",
+        url: "https://docs.google.com/document/d/1jZcLZo10LQBpoABc9X0Qq1uVeNu6Qly-mU76MS8wHDI",
+        metadata: {
+            productSurface: "All",
+            documentType: "ConsumerInsightsResearch",
+            timePeriod: "Q3 2024"
+        }
+    },
+    {
+        name: "Banking Product Tracker Results - Q3 2024",
+        url: "https://docs.google.com/document/d/1WPeVlMCdxgqdza8Q9HdQJHnab0JontRe",
+        metadata: {
+            productSurface: "Cash App Card",
+            documentType: "ConsumerInsightsResearch",
+            timePeriod: "Q3 2024"
+        }
+    },
+    {
+        name: "Preliminary: Banking Product Tracker - Q1 2025",
+        url: "https://docs.google.com/document/d/1ofSslOVQtY7kZNB6gJphIrvssxtmvIW9",
+        metadata: {
+            productSurface: "Cash App Card",
+            documentType: "ConsumerInsightsResearch",
+            timePeriod: "Q1 2025"
+        }
+    },
+    {
+        name: "CI Research Document",
+        url: "https://docs.google.com/document/d/1Y3kMmbmvDJRmN6AhTY3VvrvScLc6WpYo",
+        metadata: {
+            productSurface: "All",
+            documentType: "ConsumerInsightsResearch",
+            timePeriod: "Q3 2024"
+        }
+    },
+
+    // Grab Bag (03)
+    {
+        name: "Assessment: Afterpay Gift Card Gateways",
+        url: "https://docs.google.com/document/d/1BEjV8AqAj_rGUtfgCtbGBfWnoy9VoETcWZ236WRysk0",
+        metadata: {
+            productSurface: "Afterpay",
+            documentType: "Other",
+            timePeriod: "Q1 2025"
+        }
+    },
+    {
+        name: "Consolidated Narrative: Cash App Card User Journeys",
+        url: "https://docs.google.com/document/d/17_KCUwQaGmxPwZli0VMEhQLP-kOlPhKwIewX-KDekbQ",
+        metadata: {
+            productSurface: "Cash App Card",
+            documentType: "Other",
+            timePeriod: "Q1 2025"
+        }
+    },
+    {
+        name: "TK - Other Analyses Metadata Summary",
+        url: "https://docs.google.com/document/d/1pm8f3nbzo5-0Bxt50KnNXJNQJNZ04JbS_iEjKMfwcRc",
+        metadata: {
+            productSurface: "All",
+            documentType: "Other",
+            timePeriod: "Q3 2024"
+        }
+    },
+    {
+        name: "Assessment: Gaps in Merchant <> Vertical Mappings",
+        url: "https://docs.google.com/document/d/1_UUNbU0x7rkE0IOLngtGN1rvyf6c-jtdLPMewm3dUlk",
+        metadata: {
+            productSurface: "Afterpay",
+            documentType: "Other",
+            timePeriod: "Q1 2025"
+        }
+    },
+    {
+        name: "Assessment: Spurring App Actives Growth",
+        url: "https://docs.google.com/document/d/1miTYuZe-thr3Md9J9ItYI_cMLNu_RsNpvxhNNBQj4Uc",
+        metadata: {
+            productSurface: "Cash App Afterpay",
+            documentType: "Other",
+            timePeriod: "Q2 2025"
+        }
+    },
+    {
+        name: "Tableau Inventory Audit: Commerce Marketing DS Reporting",
+        url: "https://docs.google.com/spreadsheets/d/1H4r90i676D-HfEOwvIv3KS0MnYAOsxjd4QHdlCnmu84",
+        metadata: {
+            productSurface: "All",
+            documentType: "Other",
+            timePeriod: "Q1 2025"
+        }
+    },
+    {
+        name: "Summary: Subset of Ads Volume tied to CRM",
+        url: "https://docs.google.com/document/d/1Q48M5b1bc6iHpkmdhnlmCahPGGpDszzUOxuU1_1iVSE",
+        metadata: {
+            productSurface: "All",
+            documentType: "Other",
+            timePeriod: "Q1 2025"
+        }
+    },
+    {
+        name: "Assessment: CRM Fatigue",
+        url: "https://docs.google.com/document/d/156RTLRYUnc5jiPYvBJN3h4R-fox35VfniRTmYErDyhU",
+        metadata: {
+            productSurface: "All",
+            documentType: "Other",
+            timePeriod: "Q1 2025"
+        }
+    },
+
+    // Experiments and Offers (01)
+    {
+        name: "Research: A$AP Giveaway",
+        url: "https://docs.google.com/document/d/13CXbT7FSl4WXbiPadbEsGkTSo3Fb63DHnoL8k3SE90o",
+        metadata: {
+            productSurface: "Cash App Afterpay",
+            documentType: "ExperimentsAndOffers",
+            timePeriod: "Q2 2025"
+        }
+    },
+    {
+        name: "TK - Experiments & Offers Metadata Summary",
+        url: "https://docs.google.com/document/d/1K9-4APo3zaaUi4V6ZjcKDr8Se3mWC6tmg976M7_NgRU",
+        metadata: {
+            productSurface: "All",
+            documentType: "ExperimentsAndOffers",
+            timePeriod: "Q3 2024"
+        }
+    },
+    {
+        name: "Assumptions: Afterpay Goes Green Promo Sizing",
+        url: "https://docs.google.com/document/d/1TotqPZLTm5kQfByXNuDWNhdwi4_qNWU8J0aQcZAWtsc",
+        metadata: {
+            productSurface: "Afterpay",
+            documentType: "ExperimentsAndOffers",
+            timePeriod: "Q1 2025"
+        }
+    },
+    {
+        name: "Sizing Assumptions: Card Habituation Q2 Experiment",
+        url: "https://docs.google.com/document/d/1r1ON3AmiWx59cAm7J5-ub93D_6DoBfG1DnqGjeUE06I",
+        metadata: {
+            productSurface: "Cash App Card",
+            documentType: "ExperimentsAndOffers",
+            timePeriod: "Q2 2025"
+        }
+    },
+
+    // Campaigns (02)
+    {
+        name: "Tech Doc: Logic for CAAP GTM Campaign",
+        url: "https://docs.google.com/document/d/1ryKXJ4VU2FLxWZM5_KguoH2P5RZZny7mY574L6pJbsU",
+        metadata: {
+            productSurface: "Cash App Afterpay",
+            documentType: "Campaigns",
+            timePeriod: "Q3 2025"
+        }
+    },
+    {
+        name: "Audit: Campaigns with missing opt-out logic",
+        url: "https://docs.google.com/spreadsheets/d/12UGcHvivKyYipGbsTPRM9siy-TNeOIjLop8-9sUU95U",
+        metadata: {
+            productSurface: "All",
+            documentType: "Campaigns",
+            timePeriod: "Q2 2025"
+        }
+    },
+    {
+        name: "TK - Campaigns Metadata Summary",
+        url: "https://docs.google.com/document/d/1Mv8GUFtuzOrMMmo_6iuirrQTRKrqktJ4BQYMOF-3KZw",
+        metadata: {
+            productSurface: "All",
+            documentType: "Campaigns",
+            timePeriod: "Q3 2024"
+        }
+    },
+    {
+        name: "Project Plan: Holiday Campaign Preparation",
+        url: "https://docs.google.com/document/d/17z18uLeY6U3j6vE6vXxrtLTJe1WTWK1LFlBI6ppSnE8",
+        metadata: {
+            productSurface: "Afterpay",
+            documentType: "Campaigns",
+            timePeriod: "Q4 2024"
+        }
+    }
+];
 
         // Sort files alphabetically by default
         let sortedFiles = [...files].sort((a, b) => a.name.localeCompare(b.name));
