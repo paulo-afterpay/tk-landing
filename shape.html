@@ -287,29 +287,74 @@
             color: var(--text-color);
         }
 
+        .tooltip {
+            position: absolute;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            pointer-events: none;
+            font-size: 14px;
+            z-index: 100;
+            max-width: 300px;
+            border: 1px solid var(--primary-green);
+        }
+
+        .tooltip-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-color);
+            border-bottom: 1px solid var(--primary-green);
+            padding-bottom: 5px;
+        }
+
+        .tooltip-metadata {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .tooltip-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+        }
+
+        .tooltip-label {
+            font-weight: 500;
+            color: #666;
+            margin-right: 10px;
+        }
+
+        .tooltip-value {
+            color: var(--text-color);
+        }
+
         .node {
             cursor: pointer;
+            transition: all 0.3s ease;
         }
 
         .node:hover {
             stroke: var(--primary-green);
             stroke-width: 3px;
+            filter: brightness(1.1);
+        }
+
+        .node-label {
+            font-size: 12px;
+            pointer-events: none;
         }
 
         .link {
             stroke: #999;
             stroke-opacity: 0.6;
+            transition: all 0.3s ease;
         }
 
-        .tooltip {
-            position: absolute;
-            padding: 10px;
-            background: white;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            pointer-events: none;
-            font-size: 14px;
-            z-index: 100;
+        .link:hover {
+            stroke-opacity: 1;
+            stroke-width: 2px;
         }
 
         .home-button {
@@ -536,14 +581,16 @@
             }
         }
 
-        // Create force simulation
+        // Modified force simulation with stronger collision detection
         const simulation = d3.forceSimulation(nodes)
             .force('link', d3.forceLink(links).id(d => d.id))
-            .force('charge', d3.forceManyBody().strength(-400))
+            .force('charge', d3.forceManyBody().strength(-500))
             .force('center', d3.forceCenter(width / 2, height / 2))
-            .force('collision', d3.forceCollide().radius(30));
+            .force('collision', d3.forceCollide().radius(40).strength(1)) // Increased radius and strength
+            .force('x', d3.forceX(width / 2).strength(0.1))
+            .force('y', d3.forceY(height / 2).strength(0.1));
 
-        // Create links
+        // Create links with improved styling
         const link = svg.append('g')
             .selectAll('line')
             .data(links)
@@ -562,7 +609,17 @@
                     .style('opacity', 1);
                 
                 tooltip.html(`
-                    <div class="tooltip-title">Shared: ${d.value}</div>
+                    <div class="tooltip-title">Shared Attribute</div>
+                    <div class="tooltip-metadata">
+                        <div class="tooltip-row">
+                            <span class="tooltip-label">Type:</span>
+                            <span class="tooltip-value">${d.type}</span>
+                        </div>
+                        <div class="tooltip-row">
+                            <span class="tooltip-label">Value:</span>
+                            <span class="tooltip-value">${d.value}</span>
+                        </div>
+                    </div>
                 `)
                     .style('left', (event.pageX + 10) + 'px')
                     .style('top', (event.pageY - 10) + 'px');
@@ -577,11 +634,18 @@
                     .style('opacity', 0);
             });
 
-        // Create nodes
-        const node = svg.append('g')
-            .selectAll('circle')
+        // Create nodes with improved interaction
+        const nodeGroup = svg.append('g')
+            .selectAll('g')
             .data(nodes)
-            .join('circle')
+            .join('g')
+            .attr('class', 'node-group')
+            .call(d3.drag()
+                .on('start', dragstarted)
+                .on('drag', dragged)
+                .on('end', dragended));
+
+        const node = nodeGroup.append('circle')
             .attr('class', 'node')
             .attr('r', 12)
             .attr('fill', d => {
@@ -590,7 +654,7 @@
                 return '#55efc4';
             });
 
-        // Add tooltips
+        // Add tooltips with improved layout
         const tooltip = d3.select('body').append('div')
             .attr('class', 'tooltip')
             .style('opacity', 0);
@@ -601,15 +665,35 @@
                 .style('opacity', 1);
             
             const metadataHtml = Object.entries(d.metadata)
-                .map(([key, value]) => `<span class="tooltip-tag">${value}</span>`)
+                .map(([key, value]) => `
+                    <div class="tooltip-row">
+                        <span class="tooltip-label">${formatLabel(key)}:</span>
+                        <span class="tooltip-value">${value}</span>
+                    </div>
+                `)
                 .join('');
             
             tooltip.html(`
                 <div class="tooltip-title">${d.name}</div>
-                <div class="tooltip-metadata">${metadataHtml}</div>
+                <div class="tooltip-metadata">
+                    ${metadataHtml}
+                </div>
             `)
-                .style('left', (event.pageX + 10) + 'px')
-                .style('top', (event.pageY - 10) + 'px');
+                .style('left', (event.pageX + 15) + 'px')
+                .style('top', (event.pageY - 15) + 'px');
+
+            // Ensure tooltip stays within viewport
+            const tooltipNode = tooltip.node();
+            const tooltipRect = tooltipNode.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            if (tooltipRect.right > viewportWidth) {
+                tooltip.style('left', (viewportWidth - tooltipRect.width - 10) + 'px');
+            }
+            if (tooltipRect.bottom > viewportHeight) {
+                tooltip.style('top', (viewportHeight - tooltipRect.height - 10) + 'px');
+            }
         })
         .on('mouseout', () => {
             tooltip.transition()
@@ -617,10 +701,37 @@
                 .style('opacity', 0);
         })
         .on('click', (event, d) => {
+            event.preventDefault();
             window.open(d.url, '_blank');
         });
 
-        // Update positions
+        // Helper function to format metadata labels
+        function formatLabel(key) {
+            return key
+                .replace(/([A-Z])/g, ' $1') // Add space before capital letters
+                .replace(/^./, str => str.toUpperCase()) // Capitalize first letter
+                .trim();
+        }
+
+        // Drag functions
+        function dragstarted(event) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+        }
+
+        function dragged(event) {
+            event.subject.fx = event.x;
+            event.subject.fy = event.y;
+        }
+
+        function dragended(event) {
+            if (!event.active) simulation.alphaTarget(0);
+            event.subject.fx = null;
+            event.subject.fy = null;
+        }
+
+        // Update positions with boundary checking
         simulation.on('tick', () => {
             link
                 .attr('x1', d => d.source.x)
@@ -628,10 +739,22 @@
                 .attr('x2', d => d.target.x)
                 .attr('y2', d => d.target.y);
 
-            node
-                .attr('cx', d => Math.max(12, Math.min(width - 12, d.x)))
-                .attr('cy', d => Math.max(12, Math.min(height - 12, d.y)));
+            nodeGroup
+                .attr('transform', d => `translate(${
+                    Math.max(12, Math.min(width - 12, d.x))
+                },${
+                    Math.max(12, Math.min(height - 12, d.y))
+                })`);
         });
+
+        // Add zoom behavior
+        const zoom = d3.zoom()
+            .scaleExtent([0.5, 2])
+            .on('zoom', (event) => {
+                svg.selectAll('g').attr('transform', event.transform);
+            });
+
+        svg.call(zoom);
 
         // Filter functionality
         function updateVisualization() {
@@ -729,31 +852,4 @@
 
                 // Toggle current dropdown
                 dropdown.classList.toggle('active');
-                const options = dropdown.nextElementSibling;
-                options.style.display = options.style.display === 'block' ? 'none' : 'block';
-            });
-        });
-
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.filter-section')) {
-                document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
-                    dropdown.classList.remove('active');
-                    dropdown.nextElementSibling.style.display = 'none';
-                });
-            }
-        });
-
-        document.querySelectorAll('.filter-option input').forEach(checkbox => {
-            checkbox.addEventListener('change', updateVisualization);
-        });
-
-        document.querySelectorAll('.sort-button').forEach(button => {
-            button.addEventListener('click', () => updateSort(button.dataset.sort));
-        });
-
-        // Initial render
-        updateFileList();
-    </script>
-</body>
-</html>
+                const
