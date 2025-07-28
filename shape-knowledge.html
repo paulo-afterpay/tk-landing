@@ -1020,7 +1020,7 @@
             const timeFilters = Array.from(document.querySelectorAll('#timePeriodOptions input:checked')).map(cb => cb.value);
             const typeFilters = Array.from(document.querySelectorAll('#typeOptions input:checked')).map(cb => cb.value);
             const productFilters = Array.from(document.querySelectorAll('#productSurfaceOptions input:checked')).map(cb => cb.value);
-
+        
             // Update dropdown text
             document.getElementById('timePeriodDropdown').textContent = 
                 timeFilters.length === 5 ? 'All Time Periods' :
@@ -1036,7 +1036,7 @@
                 productFilters.length === 4 ? 'All Product Surfaces' :
                 productFilters.length === 0 ? 'No Product Surfaces' :
                 `${productFilters.length} Selected`;
-
+        
             // Update nodes
             node.style('display', d => {
                 const matchesTime = timeFilters.includes(d.metadata.timePeriod);
@@ -1044,16 +1044,18 @@
                 const matchesProduct = productFilters.includes(d.metadata.productSurface);
                 return matchesTime && matchesType && matchesProduct ? null : 'none';
             });
-
+        
             // Update links
             link.style('display', d => {
                 const sourceVisible = timeFilters.includes(d.source.metadata.timePeriod) &&
-                                   typeFilters.includes(d.source.metadata.documentType);
+                                   typeFilters.includes(d.source.metadata.documentType) &&
+                                   productFilters.includes(d.source.metadata.productSurface);
                 const targetVisible = timeFilters.includes(d.target.metadata.timePeriod) &&
-                                   typeFilters.includes(d.target.metadata.documentType);
+                                   typeFilters.includes(d.target.metadata.documentType) &&
+                                   productFilters.includes(d.target.metadata.productSurface);
                 return sourceVisible && targetVisible ? null : 'none';
             });
-
+        
             // Update file list
             updateFileList();
         }
@@ -1077,7 +1079,7 @@
             updateFileList();
         }
 
-        function updateFileList() {
+     function updateFileList() {
             const timeFilters = Array.from(document.querySelectorAll('#timePeriodOptions input:checked')).map(cb => cb.value);
             const typeFilters = Array.from(document.querySelectorAll('#typeOptions input:checked')).map(cb => cb.value);
             const productFilters = Array.from(document.querySelectorAll('#productSurfaceOptions input:checked')).map(cb => cb.value);
@@ -1086,9 +1088,11 @@
             fileList.innerHTML = '';
         
             sortedFiles.forEach(file => {
-                if (timeFilters.includes(file.metadata.timePeriod) &&
-                    typeFilters.includes(file.metadata.documentType) &&
-                    productFilters.includes(file.metadata.productSurface)) {
+                const matchesTime = timeFilters.includes(file.metadata.timePeriod);
+                const matchesType = typeFilters.includes(file.metadata.documentType);
+                const matchesProduct = productFilters.includes(file.metadata.productSurface);
+        
+                if (matchesTime && matchesType && matchesProduct) {
                     const li = document.createElement('li');
                     li.className = 'file-item';
                     
