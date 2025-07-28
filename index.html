@@ -122,15 +122,15 @@
         .nav-card.disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            /*pointer-events: none;*/
+            pointer-events: none;
         }
-
-        /* Add this new rule specifically for the shift card */
+        
+        /* Add this new rule to allow hover on shift card for tooltip */
         .nav-card.disabled.has-tooltip {
-            pointer-events: auto; /* Allow hover events for tooltip */
-            cursor: default; /* Change cursor back to default */
+            pointer-events: auto;
+            cursor: default;
         }
-
+        
         .nav-card:nth-child(1) { animation-delay: 0.1s; }
         .nav-card:nth-child(2) { animation-delay: 0.2s; }
         .nav-card:nth-child(3) { animation-delay: 0.3s; }
@@ -790,26 +790,59 @@
             return metadata;
         }
 
-        // Debug what's blocking the hover
+        // Tooltip functionality for shift card
         document.addEventListener('DOMContentLoaded', function() {
             const shiftCard = document.getElementById('shiftCard');
             
             if (shiftCard) {
-                console.log('Shift card found!');
+                let tooltip = null;
                 
-                // Remove any pointer-events blocking
-                shiftCard.style.pointerEvents = 'auto';
-                
-                // Try click event instead of hover
-                shiftCard.addEventListener('click', function() {
-                    console.log('Shift card clicked!');
-                    alert('Click detected!');
+                shiftCard.addEventListener('mouseenter', function() {
+                    // Create tooltip element
+                    tooltip = document.createElement('div');
+                    tooltip.textContent = "We're aiming to introduce functionality that allows users to export TK modules to integrate with our MarTech stack!";
+                    tooltip.style.cssText = `
+                        position: absolute;
+                        background: #2C3E50;
+                        color: white;
+                        padding: 12px 16px;
+                        border-radius: 8px;
+                        font-size: 14px;
+                        line-height: 1.4;
+                        max-width: 280px;
+                        z-index: 10000;
+                        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+                        top: -70px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                        pointer-events: none;
+                    `;
+                    
+                    // Add arrow
+                    const arrow = document.createElement('div');
+                    arrow.style.cssText = `
+                        position: absolute;
+                        top: 100%;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        width: 0;
+                        height: 0;
+                        border-left: 8px solid transparent;
+                        border-right: 8px solid transparent;
+                        border-top: 8px solid #2C3E50;
+                    `;
+                    tooltip.appendChild(arrow);
+                    
+                    // Add to shift card
+                    shiftCard.appendChild(tooltip);
                 });
                 
-                // Also try mouseover
-                shiftCard.addEventListener('mouseover', function() {
-                    console.log('Mouse over shift card');
-                    alert('Mouseover detected!');
+                shiftCard.addEventListener('mouseleave', function() {
+                    if (tooltip && tooltip.parentNode) {
+                        tooltip.parentNode.removeChild(tooltip);
+                        tooltip = null;
+                    }
                 });
             }
         });
