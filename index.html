@@ -57,21 +57,21 @@
         .header h1 {
             font-size: 25em;
             margin: 0;
-            color: var(--text-color);          /* White text */
+            color: var(--text-color);
             font-weight: 700;
             font-family: 'Dancing Script', cursive;
             line-height: 1;
             letter-spacing: -0.02em;
-            animation: float 6s ease-in-out infinite;
-            text-shadow: 0 15px 40px rgba(0, 0, 0, 0.3); /* Dark shadow for contrast */
+            animation: float 4s ease-in-out infinite, pulse 6s ease-in-out infinite;
+            text-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
         }
-
-        @keyframes float {
+        
+        @keyframes pulse {
             0%, 100% {
-                transform: translateY(0);
+                text-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
             }
             50% {
-                transform: translateY(-10px);
+                text-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 30px rgba(255, 255, 255, 0.3);
             }
         }
 
