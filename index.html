@@ -294,6 +294,51 @@
             margin-top: 5px;
             display: none;
         }
+        
+        /* Tooltip styles for shift card */
+        .tooltip {
+            position: absolute;
+            background: var(--text-color);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.4;
+            max-width: 280px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            top: -70px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid var(--text-color);
+        }
+
+        .tooltip.show {
+            opacity: 1;
+            visibility: visible;
+            display: block;
+        }
+
+        .nav-card.has-tooltip {
+            position: relative;
+        }
 
         @keyframes fadeIn {
             from { 
