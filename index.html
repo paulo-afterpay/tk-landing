@@ -122,7 +122,13 @@
         .nav-card.disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            pointer-events: none;
+            /*pointer-events: none;*/
+        }
+
+        /* Add this new rule specifically for the shift card */
+        .nav-card.disabled.has-tooltip {
+            pointer-events: auto; /* Allow hover events for tooltip */
+            cursor: default; /* Change cursor back to default */
         }
 
         .nav-card:nth-child(1) { animation-delay: 0.1s; }
