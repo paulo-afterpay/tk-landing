@@ -95,14 +95,14 @@
         }
 
         .nav-card {
-            background: rgba(255, 255, 255, 0.15);  /* Semi-transparent white */
+            background: #80f089;                    /* Mid-tone green between Cash App green and white */
             border-radius: 25px;
             padding: 40px;
             text-decoration: none;
-            color: var(--text-color);              /* White text */
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Dark shadow */
+            color: #000000;                        /* Black text for maximum contrast */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle white border */
+            border: 2px solid #66ec73;             /* Slightly darker green border */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -111,12 +111,12 @@
             transition: all 0.3s ease;
             min-height: 200px;
         }
-
+        
         .nav-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-            background: rgba(255, 255, 255, 0.25);    /* Slightly more opaque on hover */
-            border-color: rgba(255, 255, 255, 0.4);
+            background: #99f3a1;                   /* Slightly lighter on hover */
+            border-color: #80f089;
         }
 
         .nav-card.disabled {
@@ -139,14 +139,14 @@
             font-size: 1.8em;
             margin-bottom: 15px;
             font-weight: 600;
-            color: var(--text-color);  /* White text */
+            color: #000000;  /* Black text for sharp contrast */
         }
-
+        
         .nav-card p {
             font-size: 1.1em;
-            opacity: 0.9;
+            opacity: 0.8;
             line-height: 1.5;
-            color: var(--text-color);  /* White text */
+            color: #1a1a1a;  /* Very dark gray text */
         }
 
         .feedback-button {
