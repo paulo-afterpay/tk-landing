@@ -813,7 +813,9 @@
                         border-radius: 8px;
                         font-size: 14px;
                         line-height: 1.4;
-                        max-width: 280px;
+                        width: 560px !important;
+                        max-width: none !important;
+                        min-width: 560px !important;
                         z-index: 10000;
                         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
                         top: -70px;
@@ -821,6 +823,9 @@
                         transform: translateX(-50%);
                         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                         pointer-events: none;
+                        white-space: nowrap;
+                        overflow: visible;
+                        box-sizing: border-box;
                     `;
                     
                     // Add arrow
@@ -840,6 +845,9 @@
                     
                     // Add to shift card
                     shiftCard.appendChild(tooltip);
+                    
+                    // Debug: log the actual width
+                    console.log('Tooltip width:', tooltip.offsetWidth);
                 });
                 
                 shiftCard.addEventListener('mouseleave', function() {
