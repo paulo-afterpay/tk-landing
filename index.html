@@ -736,6 +736,22 @@
             
             return metadata;
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const shiftCard = document.getElementById('shiftCard');
+            const tooltip = document.getElementById('shiftTooltip');
+            
+            if (shiftCard && tooltip) {
+                shiftCard.addEventListener('mouseenter', function() {
+                    tooltip.classList.add('show');
+                });
+                
+                shiftCard.addEventListener('mouseleave', function() {
+                    tooltip.classList.remove('show');
+                });
+            }
+        });
+        
     </script>
 </body>
 </html>
