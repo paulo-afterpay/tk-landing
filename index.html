@@ -784,23 +784,27 @@
             return metadata;
         }
 
-        // Simple test for shift card hover
+        // Debug what's blocking the hover
         document.addEventListener('DOMContentLoaded', function() {
             const shiftCard = document.getElementById('shiftCard');
             
             if (shiftCard) {
                 console.log('Shift card found!');
                 
-                shiftCard.addEventListener('mouseenter', function() {
-                    console.log('Mouse entered shift card');
-                    alert('Hover detected!'); // This should show a popup
+                // Remove any pointer-events blocking
+                shiftCard.style.pointerEvents = 'auto';
+                
+                // Try click event instead of hover
+                shiftCard.addEventListener('click', function() {
+                    console.log('Shift card clicked!');
+                    alert('Click detected!');
                 });
                 
-                shiftCard.addEventListener('mouseleave', function() {
-                    console.log('Mouse left shift card');
+                // Also try mouseover
+                shiftCard.addEventListener('mouseover', function() {
+                    console.log('Mouse over shift card');
+                    alert('Mouseover detected!');
                 });
-            } else {
-                console.log('Shift card NOT found!');
             }
         });
                 
