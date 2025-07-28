@@ -497,10 +497,6 @@
                     <input type="checkbox" id="product_cash_app_card" value="Cash App Card" checked>
                     <label for="product_cash_app_card">Cash App Card</label>
                 </div>
-                <div class="filter-option">
-                    <input type="checkbox" id="product_all" value="All" checked>
-                    <label for="product_all">All</label>
-                </div>
             </div>
         </div>
 
@@ -1045,7 +1041,7 @@
                 `${typeFilters.length} Selected`;
         
             document.getElementById('productSurfaceDropdown').textContent = 
-                productFilters.length === 4 ? 'All Product Surfaces' :
+                productFilters.length === 3 ? 'All Product Surfaces' :  // Changed from 4 to 3
                 productFilters.length === 0 ? 'No Product Surfaces' :
                 `${productFilters.length} Selected`;
         
