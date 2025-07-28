@@ -482,6 +482,29 @@
         </div>
 
         <div class="filter-section">
+            <h3>Product Surface</h3>
+            <button class="filter-dropdown" id="productSurfaceDropdown">All Product Surfaces</button>
+            <div class="filter-options" id="productSurfaceOptions">
+                <div class="filter-option">
+                    <input type="checkbox" id="product_cash_app_afterpay" value="Cash App Afterpay" checked>
+                    <label for="product_cash_app_afterpay">Cash App Afterpay</label>
+                </div>
+                <div class="filter-option">
+                    <input type="checkbox" id="product_afterpay" value="Afterpay" checked>
+                    <label for="product_afterpay">Afterpay</label>
+                </div>
+                <div class="filter-option">
+                    <input type="checkbox" id="product_cash_app_card" value="Cash App Card" checked>
+                    <label for="product_cash_app_card">Cash App Card</label>
+                </div>
+                <div class="filter-option">
+                    <input type="checkbox" id="product_all" value="All" checked>
+                    <label for="product_all">All</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-section">
             <h3>Document Type</h3>
             <button class="filter-dropdown" id="typeDropdown">All Document Types</button>
             <div class="filter-options" id="typeOptions">
@@ -996,23 +1019,30 @@
         function updateVisualization() {
             const timeFilters = Array.from(document.querySelectorAll('#timePeriodOptions input:checked')).map(cb => cb.value);
             const typeFilters = Array.from(document.querySelectorAll('#typeOptions input:checked')).map(cb => cb.value);
+            const productFilters = Array.from(document.querySelectorAll('#productSurfaceOptions input:checked')).map(cb => cb.value);
 
             // Update dropdown text
             document.getElementById('timePeriodDropdown').textContent = 
                 timeFilters.length === 5 ? 'All Time Periods' :
                 timeFilters.length === 0 ? 'No Time Periods' :
                 `${timeFilters.length} Selected`;
-
+        
             document.getElementById('typeDropdown').textContent = 
                 typeFilters.length === 5 ? 'All Document Types' :
                 typeFilters.length === 0 ? 'No Document Types' :
                 `${typeFilters.length} Selected`;
+        
+            document.getElementById('productSurfaceDropdown').textContent = 
+                productFilters.length === 4 ? 'All Product Surfaces' :
+                productFilters.length === 0 ? 'No Product Surfaces' :
+                `${productFilters.length} Selected`;
 
             // Update nodes
             node.style('display', d => {
                 const matchesTime = timeFilters.includes(d.metadata.timePeriod);
                 const matchesType = typeFilters.includes(d.metadata.documentType);
-                return matchesTime && matchesType ? null : 'none';
+                const matchesProduct = productFilters.includes(d.metadata.productSurface);
+                return matchesTime && matchesType && matchesProduct ? null : 'none';
             });
 
             // Update links
@@ -1050,22 +1080,24 @@
         function updateFileList() {
             const timeFilters = Array.from(document.querySelectorAll('#timePeriodOptions input:checked')).map(cb => cb.value);
             const typeFilters = Array.from(document.querySelectorAll('#typeOptions input:checked')).map(cb => cb.value);
-
+            const productFilters = Array.from(document.querySelectorAll('#productSurfaceOptions input:checked')).map(cb => cb.value);
+        
             const fileList = document.getElementById('fileList');
             fileList.innerHTML = '';
-
+        
             sortedFiles.forEach(file => {
                 if (timeFilters.includes(file.metadata.timePeriod) &&
-                    typeFilters.includes(file.metadata.documentType)) {
+                    typeFilters.includes(file.metadata.documentType) &&
+                    productFilters.includes(file.metadata.productSurface)) {
                     const li = document.createElement('li');
                     li.className = 'file-item';
                     
                     const html = `
                         <h3><a href="${file.url}" target="_blank">${file.name}</a></h3>
                         <div class="metadata-tags">
-                            ${Object.entries(file.metadata).map(([key, value]) => 
-                                `<span class="tag">${value}</span>`
-                            ).join('')}
+                            <span class="tag">${file.metadata.productSurface}</span>
+                            <span class="tag">${formatDocumentType(file.metadata.documentType)}</span>
+                            <span class="tag">${file.metadata.timePeriod}</span>
                         </div>
                     `;
                     
