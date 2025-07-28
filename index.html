@@ -62,25 +62,40 @@
             font-family: 'Dancing Script', cursive;
             line-height: 1;
             letter-spacing: -0.02em;
-            animation: float 4s ease-in-out infinite, pulse 6s ease-in-out infinite;
+            animation: bounceSettle 3s ease-out forwards;  /* Single animation that runs once */
             text-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
         }
         
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0) scale(1);
+        @keyframes bounceSettle {
+            0% {
+                transform: translateY(-50px);
             }
-            25% {
-                transform: translateY(-20px) scale(1.02);  /* More movement and slight scale */
+            15% {
+                transform: translateY(0);
             }
-            50% {
-                transform: translateY(-30px) scale(1.05);  /* Peak movement with more scale */
+            30% {
+                transform: translateY(-25px);
+            }
+            45% {
+                transform: translateY(0);
+            }
+            60% {
+                transform: translateY(-12px);
             }
             75% {
-                transform: translateY(-20px) scale(1.02);  /* Back down with scale */
+                transform: translateY(0);
+            }
+            85% {
+                transform: translateY(-6px);
+            }
+            95% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(0);  /* Final settled position */
             }
         }
-
+        
         .navigation {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
