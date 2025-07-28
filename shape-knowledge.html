@@ -703,6 +703,18 @@
             }
         ];
 
+        // Helper function to format document type labels for display
+        function formatDocumentType(docType) {
+            switch(docType) {
+                case 'ConsumerInsightsResearch':
+                    return 'Consumer Insights Research';
+                case 'ExperimentsAndOffers':
+                    return 'Experiments and Offers';
+                default:
+                    return docType;
+            }
+        }
+
         // Sort files alphabetically by default
         let sortedFiles = [...files].sort((a, b) => a.name.localeCompare(b.name));
 
