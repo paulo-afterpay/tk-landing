@@ -6,6 +6,7 @@
     <title>TK - Consumer Zone</title>
     <!-- Add D3.js for network visualization -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
     <style>
         :root {
             --primary-green: #00e013;           /* Cash App's signature green */
@@ -23,303 +24,646 @@
             box-sizing: border-box;
             transition: all 0.3s ease;
         }
-
+    
         body {
-            margin: 0;
-            padding: 20px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            display: flex;
-            min-height: 100vh;
-            background: var(--background-color);
-            color: var(--text-color);
-        }
-
-        .sidebar {
-            width: 280px;
-            padding: 25px;
-            background: var(--sidebar-color);
-            border-radius: 20px;
-            margin-right: 25px;
-            height: fit-content;
-            box-shadow: 0 4px 20px var(--shadow-color);
-            backdrop-filter: blur(10px);
-        }
-
-        .filter-section {
-            margin-bottom: 35px;
-        }
-
-        .filter-section h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-weight: 600;
-            color: var(--text-color);
-            font-size: 1.1em;
-        }
-
-        .filter-option {
-            margin-bottom: 12px;
-        }
-
-        .filter-option label {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            padding: 8px 12px;
-            border-radius: 12px;
-            font-weight: 500;
-        }
-
-        .filter-option label:hover {
-            background: var(--shadow-color);
-        }
-
-        .filter-option input[type="checkbox"] {
-            margin-right: 12px;
-            width: 18px;
-            height: 18px;
-            border-radius: 6px;
-            border: 2px solid var(--primary-green);
-            appearance: none;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .filter-option input[type="checkbox"]:checked {
-            background: var(--primary-green);
-        }
-
-        .filter-option input[type="checkbox"]:checked::after {
-            content: "✓";
-            position: absolute;
-            color: white;
-            font-size: 12px;
-            left: 3px;
-            top: -1px;
-        }
-
-        .content-area {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            background: var(--sidebar-color);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px var(--shadow-color);
-            backdrop-filter: blur(10px);
-        }
-
-        .tabs {
-            display: flex;
-            background: rgba(248, 253, 248, 0.7);
-            padding: 15px 15px 0;
-            border-bottom: 2px solid var(--primary-green);
-        }
-
-        .tab {
-            padding: 12px 24px;
-            margin-right: 8px;
-            background: var(--sidebar-color);
-            border: none;
-            border-radius: 12px 12px 0 0;
-            cursor: pointer;
-            opacity: 0.7;
-            border: 2px solid transparent;
-            text-decoration: none;
-            color: var(--text-color);
-            font-weight: 500;
-            position: relative;
-        }
-
-        .tab:hover {
-            opacity: 0.9;
-        }
-
-        .tab.active {
-            opacity: 1;
-            border-bottom: 2px solid white;
-            margin-bottom: -2px;
-            border-top: 2px solid var(--primary-green);
-            border-left: 2px solid var(--primary-green);
-            border-right: 2px solid var(--primary-green);
-            pointer-events: none;
-        }
-
-        .tab.active::after {
-            content: "";
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: white;
-        }
-
-        .visualization {
-            padding: 25px;
-            height: calc(100vh - 140px);
-            position: relative;
-            background: white;
-        }
-
-        .node {
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        }
-
-        .node:hover {
-            transform: scale(1.05);
-        }
-
-        .node circle {
-            fill: var(--primary-green);
-            stroke: white;
-            stroke-width: 2px;
-            transition: all 0.3s ease;
-        }
-
-        .node:hover circle {
-            stroke: var(--primary-green-hover);
-            stroke-width: 3px;
-            filter: drop-shadow(0 0 8px var(--shadow-color));
-        }
-
-        .link {
-            stroke: var(--primary-green);
-            stroke-opacity: 0.2;
-            stroke-width: 1px;
-            transition: all 0.3s ease;
-        }
-
-        .link:hover {
-            stroke-opacity: 0.4;
-            stroke-width: 2px;
-        }
-
-        .tooltip {
-            position: absolute;
-            background: var(--sidebar-color);
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px var(--shadow-color);
-            pointer-events: none;
-            display: none;
-            z-index: 1000;
-            max-width: 300px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(144, 238, 144, 0.3);
-            font-size: 0.9em;
-            line-height: 1.5;
-        }
-
-        .tooltip strong {
-            color: var(--text-color);
-            font-weight: 600;
-        }
-
-        .home-button {
-            position: fixed;
-            top: 25px;
-            right: 25px;
-            padding: 12px 24px;
-            background: var(--primary-green);
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 500;
-            color: white;
-            box-shadow: 0 4px 15px var(--shadow-color);
-            transition: all 0.3s ease;
-        }
-
-        .home-button:hover {
-            background: var(--primary-green-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px var(--shadow-color);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .visualization > svg {
-            animation: fadeIn 0.5s ease;
-        }
-
-        /* Smooth scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary-green);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-green-hover);
-        }
-    </style>
-</head>
-<body>
-    <div class="sidebar">
-        <div class="filter-section">
-            <h3>Document Types</h3>
-            <div class="filter-option">
-                <label>
-                    <input type="checkbox" checked value="experiments">
-                    Experiments & Offers
-                </label>
+                margin: 0;
+                padding: 20px;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+                display: flex;
+                min-height: 100vh;
+                background: var(--background-color);
+                color: var(--text-color);
+            }
+    
+            .sidebar {
+                width: 280px;
+                padding: 25px;
+                background: var(--sidebar-color);
+                border-radius: 20px;
+                margin-right: 25px;
+                height: fit-content;
+                box-shadow: 0 4px 20px var(--shadow-color);
+                backdrop-filter: blur(10px);
+            }
+    
+            .filter-section {
+                margin-bottom: 35px;
+            }
+    
+            .filter-section h3 {
+                margin-top: 0;
+                margin-bottom: 15px;
+                font-weight: 600;
+                color: var(--text-color);
+                font-size: 1.1em;
+            }
+    
+            .filter-option {
+                margin-bottom: 12px;
+            }
+    
+            .filter-option label {
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+                padding: 8px 12px;
+                border-radius: 12px;
+                font-weight: 500;
+            }
+    
+            .filter-option label:hover {
+                background: var(--shadow-color);
+            }
+    
+            .filter-option input[type="checkbox"] {
+                margin-right: 12px;
+                width: 18px;
+                height: 18px;
+                border-radius: 6px;
+                border: 2px solid var(--primary-green);
+                appearance: none;
+                cursor: pointer;
+                position: relative;
+            }
+    
+            .filter-option input[type="checkbox"]:checked {
+                background: var(--primary-green);
+            }
+    
+            .filter-option input[type="checkbox"]:checked::after {
+                content: "✓";
+                position: absolute;
+                color: white;
+                font-size: 12px;
+                left: 3px;
+                top: -1px;
+            }
+    
+            .filter-option input[type="radio"] {
+                margin-right: 12px;
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                border: 2px solid var(--primary-green);
+                appearance: none;
+                cursor: pointer;
+                position: relative;
+            }
+    
+            .filter-option input[type="radio"]:checked {
+                background: var(--primary-green);
+            }
+    
+            .filter-option input[type="radio"]:checked::after {
+                content: "";
+                position: absolute;
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: white;
+                left: 3px;
+                top: 3px;
+            }
+    
+            .sankey-node {
+                fill: var(--primary-green);
+                stroke: white;
+                stroke-width: 2px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+    
+            .sankey-node:hover {
+                fill: var(--primary-green-hover);
+                stroke-width: 3px;
+            }
+    
+            .sankey-link {
+                fill: none;
+                stroke: var(--primary-green);
+                stroke-opacity: 0.3;
+                transition: all 0.3s ease;
+            }
+    
+            .sankey-link:hover {
+                stroke-opacity: 0.6;
+            }
+    
+            .sankey-label {
+                font-size: 12px;
+                font-weight: 500;
+                fill: var(--text-color);
+                text-anchor: middle;
+            }
+    
+            .loading {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100%;
+                font-size: 18px;
+                color: var(--text-color);
+            }
+    
+            .content-area {
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                background: var(--sidebar-color);
+                border-radius: 20px;
+                overflow: hidden;
+                box-shadow: 0 4px 20px var(--shadow-color);
+                backdrop-filter: blur(10px);
+            }
+    
+            .tabs {
+                display: flex;
+                background: rgba(248, 253, 248, 0.7);
+                padding: 15px 15px 0;
+                border-bottom: 2px solid var(--primary-green);
+            }
+    
+            .tab {
+                padding: 12px 24px;
+                margin-right: 8px;
+                background: var(--sidebar-color);
+                border: none;
+                border-radius: 12px 12px 0 0;
+                cursor: pointer;
+                opacity: 0.7;
+                border: 2px solid transparent;
+                text-decoration: none;
+                color: var(--text-color);
+                font-weight: 500;
+                position: relative;
+            }
+    
+            .tab:hover {
+                opacity: 0.9;
+            }
+    
+            .tab.active {
+                opacity: 1;
+                border-bottom: 2px solid white;
+                margin-bottom: -2px;
+                border-top: 2px solid var(--primary-green);
+                border-left: 2px solid var(--primary-green);
+                border-right: 2px solid var(--primary-green);
+                pointer-events: none;
+            }
+    
+            .tab.active::after {
+                content: "";
+                position: absolute;
+                bottom: -2px;
+                left: 0;
+                right: 0;
+                height: 2px;
+                background: white;
+            }
+    
+            .visualization {
+                padding: 25px;
+                height: calc(100vh - 140px);
+                position: relative;
+                background: white;
+            }
+    
+            .node {
+                cursor: pointer;
+                transition: transform 0.2s ease;
+            }
+    
+            .node:hover {
+                transform: scale(1.05);
+            }
+    
+            .node circle {
+                fill: var(--primary-green);
+                stroke: white;
+                stroke-width: 2px;
+                transition: all 0.3s ease;
+            }
+    
+            .node:hover circle {
+                stroke: var(--primary-green-hover);
+                stroke-width: 3px;
+                filter: drop-shadow(0 0 8px var(--shadow-color));
+            }
+    
+            .link {
+                stroke: var(--primary-green);
+                stroke-opacity: 0.2;
+                stroke-width: 1px;
+                transition: all 0.3s ease;
+            }
+    
+            .link:hover {
+                stroke-opacity: 0.4;
+                stroke-width: 2px;
+            }
+    
+            .tooltip {
+                position: absolute;
+                background: var(--sidebar-color);
+                padding: 15px;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px var(--shadow-color);
+                pointer-events: none;
+                display: none;
+                z-index: 1000;
+                max-width: 300px;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(144, 238, 144, 0.3);
+                font-size: 0.9em;
+                line-height: 1.5;
+            }
+    
+            .tooltip strong {
+                color: var(--text-color);
+                font-weight: 600;
+            }
+    
+            .home-button {
+                position: fixed;
+                top: 25px;
+                right: 25px;
+                padding: 12px 24px;
+                background: var(--primary-green);
+                border: none;
+                border-radius: 30px;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: 500;
+                color: white;
+                box-shadow: 0 4px 15px var(--shadow-color);
+                transition: all 0.3s ease;
+            }
+    
+            .home-button:hover {
+                background: var(--primary-green-hover);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px var(--shadow-color);
+            }
+    
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+    
+            .visualization > svg {
+                animation: fadeIn 0.5s ease;
+            }
+    
+            /* Smooth scrollbar */
+            ::-webkit-scrollbar {
+                width: 8px;
+                height: 8px;
+            }
+    
+            ::-webkit-scrollbar-track {
+                background: transparent;
+            }
+    
+            ::-webkit-scrollbar-thumb {
+                background: var(--primary-green);
+                border-radius: 4px;
+            }
+    
+            ::-webkit-scrollbar-thumb:hover {
+                background: var(--primary-green-hover);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="sidebar">
+            <div class="filter-section">
+                <h3>Analysis Mode</h3>
+                <div class="filter-option">
+                    <label>
+                        <input type="radio" name="mode" value="agnostic" checked>
+                        Direction Agnostic
+                    </label>
+                </div>
+                <div class="filter-option">
+                    <label>
+                        <input type="radio" name="mode" value="specific">
+                        Direction Specific
+                    </label>
+                </div>
             </div>
-            <div class="filter-option">
-                <label>
-                    <input type="checkbox" checked value="campaigns">
-                    Campaigns
-                </label>
+    
+            <div class="filter-section">
+                <h3>Product Attachments</h3>
+                <div class="filter-option">
+                    <label>
+                        <input type="checkbox" checked value="p2p">
+                        P2P
+                    </label>
+                </div>
+                <div class="filter-option">
+                    <label>
+                        <input type="checkbox" checked value="card">
+                        Cash App Card
+                    </label>
+                </div>
+                <div class="filter-option">
+                    <label>
+                        <input type="checkbox" checked value="credit">
+                        Credit
+                    </label>
+                </div>
+                <div class="filter-option">
+                    <label>
+                        <input type="checkbox" checked value="banking">
+                        Banking
+                    </label>
+                </div>
             </div>
-            <div class="filter-option">
-                <label>
-                    <input type="checkbox" checked value="analyses">
-                    Grab Bag
-                </label>
+    
+            <div class="filter-section">
+                <h3>Marketing Campaigns</h3>
+                <div class="filter-option">
+                    <label>
+                        <input type="checkbox" checked value="email">
+                        Email Campaigns
+                    </label>
+                </div>
+                <div class="filter-option">
+                    <label>
+                        <input type="checkbox" checked value="push">
+                        Push Notifications
+                    </label>
+                </div>
+                <div class="filter-option">
+                    <label>
+                        <input type="checkbox" checked value="in_app">
+                        In-App Messages
+                    </label>
+                </div>
+                <div class="filter-option">
+                    <label>
+                        <input type="checkbox" checked value="sms">
+                        SMS Campaigns
+                    </label>
+                </div>
             </div>
-            <div class="filter-option">
-                <label>
-                    <input type="checkbox" checked value="insights">
-                    Consumer Insights
-                </label>
+    
+            <div class="filter-section">
+                <h3>Time Period</h3>
+                <select id="timePeriod" style="width: 100%; padding: 8px; border-radius: 8px; border: 2px solid var(--primary-green);">
+                    <option value="30">Last 30 Days</option>
+                    <option value="90" selected>Last 90 Days</option>
+                    <option value="180">Last 180 Days</option>
+                    <option value="365">Last Year</option>
+                </select>
             </div>
-            <div class="filter-option">
-                <label>
-                    <input type="checkbox" checked value="ideas">
-                    Idea Board
-                </label>
+    
+            <div class="filter-section">
+                <button id="refreshData" style="width: 100%; padding: 12px; background: var(--primary-green); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                    Refresh Data
+                </button>
             </div>
         </div>
-    </div>
-
-    <div class="content-area">
-        <div class="tabs">
-            <a href="/tk-landing/shape-knowledge.html" class="tab">Knowledge Zone</a>
-            <a href="/tk-landing/shape-consumer.html" class="tab active">Consumer Zone</a>
+    
+        <div class="content-area">
+            <div class="tabs">
+                <a href="shape.html" class="tab">Knowledge Zone</a>
+                <a href="shape-product.html" class="tab">Product Zone</a>
+                <a href="shape-consumer.html" class="tab active">Consumer Zone</a>
+            </div>
+    
+            <div class="visualization" id="consumer-network"></div>
         </div>
+    
+        <div class="tooltip"></div>
+        <button class="home-button" onclick="window.location.href='index.html'">Home</button>
+    
+        <script>
+            // Global variables
+            let currentData = null;
+            let sankeyChart = null;
+    
+            // Sample data structure - replace with Snowflake API calls
+            const sampleData = {
+                agnostic: {
+                    nodes: [
+                        { id: 'p2p', name: 'P2P Users', value: 1000000 },
+                        { id: 'card', name: 'Cash App Card', value: 750000 },
+                        { id: 'credit', name: 'Credit Users', value: 300000 },
+                        { id: 'banking', name: 'Banking Users', value: 450000 }
+                    ],
+                    links: [
+                        { source: 'p2p', target: 'card', value: 600000 },
+                        { source: 'p2p', target: 'credit', value: 200000 },
+                        { source: 'p2p', target: 'banking', value: 300000 },
+                        { source: 'card', target: 'credit', value: 150000 },
+                        { source: 'card', target: 'banking', value: 250000 },
+                        { source: 'credit', target: 'banking', value: 100000 }
+                    ]
+                },
+                specific: {
+                    nodes: [
+                        { id: 'p2p_start', name: 'P2P (Start)', value: 1000000 },
+                        { id: 'card_from_p2p', name: 'Card (from P2P)', value: 400000 },
+                        { id: 'credit_from_card', name: 'Credit (from Card)', value: 150000 },
+                        { id: 'banking_from_credit', name: 'Banking (from Credit)', value: 75000 }
+                    ],
+                    links: [
+                        { source: 'p2p_start', target: 'card_from_p2p', value: 400000 },
+                        { source: 'card_from_p2p', target: 'credit_from_card', value: 150000 },
+                        { source: 'credit_from_card', target: 'banking_from_credit', value: 75000 }
+                    ]
+                }
+            };
+    
+            // Sankey diagram implementation
+            function createSankeyDiagram(data) {
+                const container = d3.select('#consumer-network');
+                container.selectAll('*').remove();
+    
+                const width = container.node().getBoundingClientRect().width - 50;
+                const height = container.node().getBoundingClientRect().height - 50;
+    
+                const svg = container.append('svg')
+                    .attr('width', width)
+                    .attr('height', height);
+    
+                // Create sankey generator
+                const sankey = d3.sankey()
+                    .nodeWidth(15)
+                    .nodePadding(10)
+                    .extent([[1, 1], [width - 1, height - 6]]);
+    
+                // Process data for D3 sankey
+                const graph = sankey({
+                    nodes: data.nodes.map(d => ({ ...d })),
+                    links: data.links.map(d => ({ ...d }))
+                });
+    
+                // Color scale
+                const color = d3.scaleOrdinal()
+                    .domain(['p2p', 'card', 'credit', 'banking'])
+                    .range(['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']);
+    
+                // Draw links
+                svg.append('g')
+                    .selectAll('path')
+                    .data(graph.links)
+                    .join('path')
+                    .attr('class', 'sankey-link')
+                    .attr('d', d3.sankeyLinkHorizontal())
+                    .attr('stroke-width', d => Math.max(1, d.width))
+                    .style('fill', 'none')
+                    .style('stroke', d => color(d.source.id.split('_')[0]))
+                    .style('stroke-opacity', 0.5)
+                    .on('mouseover', function(event, d) {
+                        showTooltip(event, `${d.source.name} → ${d.target.name}<br><strong>${d.value.toLocaleString()}</strong> users`);
+                        d3.select(this).style('stroke-opacity', 0.8);
+                    })
+                    .on('mouseout', function() {
+                        hideTooltip();
+                        d3.select(this).style('stroke-opacity', 0.5);
+                    });
+    
+                // Draw nodes
+                svg.append('g')
+                    .selectAll('rect')
+                    .data(graph.nodes)
+                    .join('rect')
+                    .attr('class', 'sankey-node')
+                    .attr('x', d => d.x0)
+                    .attr('y', d => d.y0)
+                    .attr('height', d => d.y1 - d.y0)
+                    .attr('width', d => d.x1 - d.x0)
+                    .attr('fill', d => color(d.id.split('_')[0]))
+                    .on('mouseover', function(event, d) {
+                        showTooltip(event, `<strong>${d.name}</strong><br>${d.value.toLocaleString()} users`);
+                    })
+                    .on('mouseout', hideTooltip);
+    
+                // Add labels
+                svg.append('g')
+                    .selectAll('text')
+                    .data(graph.nodes)
+                    .join('text')
+                    .attr('class', 'sankey-label')
+                    .attr('x', d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
+                    .attr('y', d => (d.y1 + d.y0) / 2)
+                    .attr('dy', '0.35em')
+                    .attr('text-anchor', d => d.x0 < width / 2 ? 'start' : 'end')
+                    .text(d => d.name)
+                    .style('font-size', '12px')
+                    .style('font-weight', '500');
+            }
+    
+            // Tooltip functions
+            function showTooltip(event, content) {
+                const tooltip = d3.select('.tooltip');
+                tooltip.style('display', 'block')
+                    .html(content)
+                    .style('left', (event.pageX + 10) + 'px')
+                    .style('top', (event.pageY - 10) + 'px');
+            }
+    
+            function hideTooltip() {
+                d3.select('.tooltip').style('display', 'none');
+            }
+    
+            // Data fetching functions
+            async function fetchSnowflakeData(mode, products, campaigns, timePeriod) {
+                // Build query parameters
+                const params = new URLSearchParams({
+                    mode: mode,
+                    products: products.join(','),
+                    campaigns: campaigns.join(','),
+                    days: timePeriod
+                });
+    
+                try {
+                    // Make API call to backend
+                    const response = await fetch(`http://localhost:5000/api/consumer-data?${params}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Transform data for D3 sankey format
+                    return {
+                        nodes: data.nodes,
+                        links: data.links
+                    };
+                    
+                } catch (error) {
+                    console.error('Error fetching data from API:', error);
+                    
+                    // Fallback to sample data for development
+                    console.log('Falling back to sample data...');
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    return sampleData[mode];
+                }
+            }
+    
+            async function updateVisualization() {
+                const container = d3.select('#consumer-network');
+                container.html('<div class="loading">Loading data...</div>');
+    
+                try {
+                    // Get current filter values
+                    const mode = document.querySelector('input[name="mode"]:checked').value;
+                    const products = Array.from(document.querySelectorAll('input[value="p2p"], input[value="card"], input[value="credit"], input[value="banking"]'))
+                        .filter(cb => cb.checked)
+                        .map(cb => cb.value);
+                    const campaigns = Array.from(document.querySelectorAll('input[value="email"], input[value="push"], input[value="in_app"], input[value="sms"]'))
+                        .filter(cb => cb.checked)
+                        .map(cb => cb.value);
+                    const timePeriod = document.getElementById('timePeriod').value;
+    
+                    // Fetch data from Snowflake
+                    const data = await fetchSnowflakeData(mode, products, campaigns, timePeriod);
+                    currentData = data;
+    
+                    // Create visualization
+                    createSankeyDiagram(data);
+    
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                    container.html('<div class="loading">Error loading data. Please try again.</div>');
+                }
+            }
+    
+            // Event listeners
+            document.addEventListener('DOMContentLoaded', function() {
+                // Mode change listeners
+                document.querySelectorAll('input[name="mode"]').forEach(radio => {
+                    radio.addEventListener('change', updateVisualization);
+                });
+    
+                // Filter change listeners
+                document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.addEventListener('change', updateVisualization);
+                });
+    
+                // Time period change listener
+                document.getElementById('timePeriod').addEventListener('change', updateVisualization);
+    
+                // Refresh button listener
+                document.getElementById('refreshData').addEventListener('click', updateVisualization);
+    
+                // Initial load
+                updateVisualization();
+            });
+    
+            // Resize handler
+            window.addEventListener('resize', function() {
+                if (currentData) {
+                    createSankeyDiagram(currentData);
+                }
+            });
+        </script>
+    </body>
+    </html>
 
-        <div class="visualization" id="consumer-network"></div>
-    </div>
-
-    <div class="tooltip"></div>
-    <button class="home-button" onclick="window.location.href='index.html'">Home</button>
-
-    <script>
-        // [Previous JavaScript code remains the same]
-        // Note: The functionality stays the same, but the visual styling has been updated
-    </script>
-</body>
 </html>
