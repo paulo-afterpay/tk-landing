@@ -729,14 +729,6 @@
             ...file
         }));
 
-        // Start simulation once to get initial layout
-        simulation.on('end', () => {
-            nodes.forEach(d => {
-                d.initialX = d.x;
-                d.initialY = d.y;
-            });
-        });
-
         // Create links between documents that share metadata
         const links = [];
         for (let i = 0; i < sortedFiles.length; i++) {
@@ -838,28 +830,36 @@
         
         // Function to reset the simulation
         function resetSimulation() {
-          // Reset zoom
-          svg.transition()
-            .duration(800)
-            .call(zoom.transform, initialZoomTransform);
+            svg.transition()
+                .duration(800)
+                .call(zoom.transform, initialZoomTransform);
         
-          // Animate nodes back to initial positions
-          d3.transition()
-            .duration(800)
-            .tween("nodeReset", () => {
-              const ix = nodes.map(d => d3.interpolateNumber(d.x, d.initialX));
-              const iy = nodes.map(d => d3.interpolateNumber(d.y, d.initialY));
-              return t => {
-                nodes.forEach((d, i) => {
-                  d.x = ix[i](t);
-                  d.y = iy[i](t);
-                });
-                updatePositions(); // keep links + nodes synced during animation
-              };
-            })
-            .on("end", () => {
-              simulation.alpha(0.8).restart();
+            nodes.forEach(d => {
+                d.fx = d.x;
+                d.fy = d.y;
             });
+        
+            d3.transition()
+              .duration(800)
+              .tween("reset", () => {
+                const ix = nodes.map(d => d3.interpolateNumber(d.x, width / 2 + (Math.random() - 0.5) * 100));
+                const iy = nodes.map(d => d3.interpolateNumber(d.y, height / 2 + (Math.random() - 0.5) * 100));
+                return t => {
+                  nodes.forEach((d, i) => {
+                    d.x = ix[i](t);
+                    d.y = iy[i](t);
+                  });
+                  updatePositions(); // 👈 Keep DOM in sync during transition
+                };
+              })
+              .on("end", () => {
+                nodes.forEach(d => {
+                    d.fx = null;
+                    d.fy = null;
+                });
+        
+                simulation.alpha(0.8).restart();
+              });
         }
             
         // Initialize sparkles after a short delay to ensure button is rendered
@@ -990,14 +990,6 @@
                 .attr('transform', d => `translate(${d.x},${d.y})`);
         });
 
-        // ✅ Add this right below the simulation.on('tick') block
-        setTimeout(() => {
-          nodes.forEach(d => {
-            d.initialX = d.x;
-            d.initialY = d.y;
-          });
-        }, 1000);
-
         // Modified drag functions with position constraints
         function dragstarted(event) {
             if (!event.active) simulation.alphaTarget(0.3).restart();
@@ -1027,7 +1019,7 @@
 
         svg.call(zoom);
 
-        // Zoom in initially by 1.4x centered on canvas
+        // Zoom in initially by 1.3x centered on canvas
         const initialZoomTransform = d3.zoomIdentity
             .translate(width / 2, height / 2)
             .scale(1.4)
