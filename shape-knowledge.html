@@ -916,29 +916,26 @@
                     // Function to reset the simulation
                    function resetSimulation() {
                       console.log("🚨 Reset triggered");
+                    
                       simulation.stop();
                     
-                      // Lock current node positions
                       nodes.forEach(d => {
                         d.fx = d.x;
                         d.fy = d.y;
                       });
                     
-                      // Shared transition for zoom and node movement
-                      const transition = d3.transition()
+                      const transition = svg.transition()
                         .duration(1000)
-                        .ease(d3.easeCubicInOut);
-
-                     // Log before zoom
-                      console.log("🔄 Starting zoom reset");
-                      console.log("➡️ Target zoom:", {
-                        x: width * -0.1,
-                        y: height * -0.1,
-                        k: 1.2
-                      });
+                        .ease(d3.easeCubicInOut)
+                        .call(
+                          zoom.transform,
+                          d3.zoomIdentity.translate(width * -0.1, height * -0.1).scale(1.2)
+                        );
                     
-                      // Animate node positions
+                      // Sync node movement within same transition
                       transition.tween("nodeReset", () => {
+                        console.log("🔁 Animating node reset");
+                    
                         const interpolators = nodes.map(d => {
                           const ix = d3.interpolateNumber(d.x, d.initialX);
                           const iy = d3.interpolateNumber(d.y, d.initialY);
@@ -950,21 +947,13 @@
                     
                         return t => {
                           interpolators.forEach(f => f(t));
-                          updatePositions(); // <== your function that positions nodes and links
+                          updatePositions();
                         };
                       });
                     
-                      // Reset zoom simultaneously
-                      svg.transition(transition)
-                        .call(
-                          zoom.transform,
-                          d3.zoomIdentity.translate(width * -0.1, height * -0.1).scale(1.2)
-                        );
-                    
-                      // After transition, relaunch simulation
                       transition.on("end", () => {
                         console.log("✅ Reset animation complete");
-                          
+                    
                         nodes.forEach(d => {
                           d.fx = d.initialX;
                           d.fy = d.initialY;
