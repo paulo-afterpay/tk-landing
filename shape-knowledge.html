@@ -486,8 +486,8 @@
             <button class="filter-dropdown" id="productSurfaceDropdown">All Product Surfaces</button>
             <div class="filter-options" id="productSurfaceOptions">
                 <div class="filter-option">
-                    <input type="checkbox" id="product_cash_app_afterpay" value="Cash App Afterpay" checked>
-                    <label for="product_cash_app_afterpay">Cash App Afterpay</label>
+                    <input type="checkbox" id="product_cash_app_afterpay" value="Afterpay in Cash App" checked>
+                    <label for="product_cash_app_afterpay">Afterpay in Cash App</label>
                 </div>
                 <div class="filter-option">
                     <input type="checkbox" id="product_afterpay" value="Afterpay" checked>
@@ -607,7 +607,7 @@
                 name: "Assessment: Spurring App Actives Growth",
                 url: "https://docs.google.com/document/d/1miTYuZe-thr3Md9J9ItYI_cMLNu_RsNpvxhNNBQj4Uc",
                 metadata: {
-                    productSurface: "Cash App Afterpay",
+                    productSurface: "Afterpay in Cash App",
                     documentType: "Other",
                     timePeriod: "Q2 2025"
                 }
@@ -645,7 +645,7 @@
                 name: "Research: A$AP Giveaway",
                 url: "https://docs.google.com/document/d/13CXbT7FSl4WXbiPadbEsGkTSo3Fb63DHnoL8k3SE90o",
                 metadata: {
-                    productSurface: "Cash App Afterpay",
+                    productSurface: "Afterpay in Cash App",
                     documentType: "ExperimentsAndOffers",
                     timePeriod: "Q2 2025"
                 }
@@ -674,7 +674,7 @@
                 name: "Tech Doc: Logic for CAAP GTM Campaign",
                 url: "https://docs.google.com/document/d/1ryKXJ4VU2FLxWZM5_KguoH2P5RZZny7mY574L6pJbsU",
                 metadata: {
-                    productSurface: "Cash App Afterpay",
+                    productSurface: "Afterpay in Cash App",
                     documentType: "Campaigns",
                     timePeriod: "Q3 2025"
                 }
@@ -889,7 +889,7 @@
                 switch(d.metadata.productSurface) {
                     case 'Cash App Card': return '#000000';
                     case 'Afterpay': return '#00bfa5';
-                    case 'Cash App Afterpay': return '#00e013';
+                    case 'Afterpay in Cash App': return '#00e013';
                     default: return '#95a5a6';
                 }
             })
@@ -1036,7 +1036,7 @@
                     switch (d.metadata.productSurface) {
                         case 'Afterpay': return '#00bfa5';         // Bondi Mint
                         case 'Cash App Card': return '#000000';    // Black
-                        case 'Cash App Afterpay': return '#00e013';// Cash App Green
+                        case 'Afterpay in Cash App': return '#00e013';// Cash App Green
                         default: return '#95a5a6';                 // fallback gray
                     }
                 });
