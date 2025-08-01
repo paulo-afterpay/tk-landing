@@ -1052,6 +1052,7 @@
             });
 
         svg.call(zoom);
+        svg.call(zoom.transform, initialZoomTransform);
 
         // Filter functionality
         function updateVisualization() {
