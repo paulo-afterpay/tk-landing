@@ -1005,31 +1005,24 @@
         let initialized = false;
         
         simulation.on('tick', () => {
-            const padding = 20;
+          const padding = 20;
         
-            nodes.forEach(node => {
-                node.x = Math.max(padding, Math.min(width - padding, node.x));
-                node.y = Math.max(padding, Math.min(height - padding, node.y));
+          nodes.forEach(node => {
+            node.x = Math.max(padding, Math.min(width - padding, node.x));
+            node.y = Math.max(padding, Math.min(height - padding, node.y));
         
-                // Save initial position once
-                if (!initialized) {
-                    node.initialX = node.x;
-                    node.initialY = node.y;
-                }
-            });
+            // ❗ Freeze initialX/Y only once
+            if (!initialized && node.initialX == null) {
+              node.initialX = node.x;
+              node.initialY = node.y;
+            }
+          });
         
-            initialized = true;
-        
-            link
-                .attr('x1', d => d.source.x)
-                .attr('y1', d => d.source.y)
-                .attr('x2', d => d.target.x)
-                .attr('y2', d => d.target.y);
-        
-            nodeGroup
-                .attr('transform', d => `translate(${d.x},${d.y})`);
+          initialized = true;
+          updatePositions();
         });
 
+        
         // Modified drag functions with position constraints
         function dragstarted(event) {
             if (!event.active) simulation.alphaTarget(0.3).restart();
