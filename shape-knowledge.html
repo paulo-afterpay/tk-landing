@@ -848,7 +848,9 @@
                     // Function to reset the simulation
                    function resetSimulation() {
                   // Instantly reset zoom (skip zoom.transition() delay)
-                  svg.call(zoom.transform, initialZoomTransform);
+                  svg.transition()
+                      .duration(500)
+                      .call(zoom.transform, initialZoomTransform);
                 
                   // Stop simulation during animation
                   simulation.stop();
