@@ -846,68 +846,71 @@
         setTimeout(createSparkleParticles, 1000);
             
                     // Function to reset the simulation
-                   function resetSimulation() {
-                  // Instantly reset zoom (skip zoom.transition() delay)
-                  svg.transition()
-                      .duration(500)
-                      .call(zoom.transform, initialZoomTransform);
-                
-                  // Stop simulation during animation
-                  simulation.stop();
-                
-                  // Lock nodes to prevent any physics interference
-                  nodes.forEach(d => {
-                    d.fx = d.x;
-                    d.fy = d.y;
-                  });
-                
-                  // Animate x/y back to initial positions
-                  d3.transition()
-                    .duration(800)
-                    .ease(d3.easeCubicInOut)
-                    .tween("reset", () => {
-                      const interpolators = nodes.map(d => {
-                        const ix = d3.interpolateNumber(d.x, d.initialX);
-                        const iy = d3.interpolateNumber(d.y, d.initialY);
-                        return t => {
-                          d.x = ix(t);
-                          d.y = iy(t);
-                        };
-                      });
-                
-                      return t => {
-                        interpolators.forEach(f => f(t));
-                        updatePositions();
-                      };
-                    })
-                    .on("end", () => {
-                      // Stabilize briefly
+                    function resetSimulation() {
+                      // Stop simulation during reset
+                      simulation.stop();
+                    
+                      // Lock current node positions to avoid drift
                       nodes.forEach(d => {
-                        d.fx = d.initialX;
-                        d.fy = d.initialY;
-                        d.vx = 0;
-                        d.vy = 0;
+                        d.fx = d.x;
+                        d.fy = d.y;
                       });
-                
-                      simulation.alpha(0.3).restart();
-                
-                      // Release after settle
-                      setTimeout(() => {
-                        nodes.forEach(d => {
-                          d.fx = null;
-                          d.fy = null;
+                    
+                      // First: animate zoom
+                      svg.transition()
+                        .duration(600)
+                        .ease(d3.easeCubicInOut)
+                        .call(zoom.transform, initialZoomTransform)
+                        .on("end", () => {
+                          // Then: animate nodes back to initial positions
+                          d3.transition()
+                            .duration(800)
+                            .ease(d3.easeCubicInOut)
+                            .tween("reset", () => {
+                              const interpolators = nodes.map(d => {
+                                const ix = d3.interpolateNumber(d.x, d.initialX);
+                                const iy = d3.interpolateNumber(d.y, d.initialY);
+                                return t => {
+                                  d.x = ix(t);
+                                  d.y = iy(t);
+                                };
+                              });
+                    
+                              return t => {
+                                interpolators.forEach(f => f(t));
+                                updatePositions();
+                              };
+                            })
+                            .on("end", () => {
+                              // Lock them briefly
+                              nodes.forEach(d => {
+                                d.fx = d.initialX;
+                                d.fy = d.initialY;
+                                d.vx = 0;
+                                d.vy = 0;
+                              });
+                    
+                              // Restart simulation only after all reset completes
+                              simulation.alpha(0.3).restart();
+                    
+                              // Release after settle
+                              setTimeout(() => {
+                                nodes.forEach(d => {
+                                  d.fx = null;
+                                  d.fy = null;
+                                });
+                              }, 1000);
+                    
+                              // Pulse feedback
+                              node.transition()
+                                .duration(200)
+                                .attr("r", 12)
+                                .transition()
+                                .duration(300)
+                                .attr("r", 8);
+                            });
                         });
-                      }, 1000);
-                
-                      // Pulse
-                      node.transition()
-                        .duration(200)
-                        .attr("r", 12)
-                        .transition()
-                        .duration(300)
-                        .attr("r", 8);
-                    });
-                }
+                    }
 
                     // Initialize sparkles after a short delay to ensure button is rendered
                     setTimeout(createSparkleParticles, 1000);
