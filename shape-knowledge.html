@@ -900,7 +900,6 @@
                         d.x = Math.max(padding, Math.min(width - padding, d.x));
                         d.y = Math.max(padding, Math.min(height - padding, d.y));
                       });
-                    
                       updatePositions();
                     });
 
@@ -915,12 +914,12 @@
                         d.fy = d.y;
                       });
                     
-                      // Create a shared transition
+                      // Shared transition for zoom and node movement
                       const transition = d3.transition()
                         .duration(1000)
                         .ease(d3.easeCubicInOut);
                     
-                      // Animate nodes back to initial positions
+                      // Animate node positions
                       transition.tween("nodeReset", () => {
                         const interpolators = nodes.map(d => {
                           const ix = d3.interpolateNumber(d.x, d.initialX);
@@ -933,18 +932,18 @@
                     
                         return t => {
                           interpolators.forEach(f => f(t));
-                          updatePositions();
+                          updatePositions(); // <== your function that positions nodes and links
                         };
                       });
                     
-                      // Animate zoom concurrently
+                      // Reset zoom simultaneously
                       svg.transition(transition)
                         .call(
                           zoom.transform,
                           d3.zoomIdentity.translate(width * -0.1, height * -0.1).scale(1.2)
                         );
                     
-                      // After both transitions, restart simulation
+                      // After transition, relaunch simulation
                       transition.on("end", () => {
                         nodes.forEach(d => {
                           d.fx = d.initialX;
@@ -955,18 +954,12 @@
                     
                         simulation.alpha(0.3).restart();
                     
-                        // Release nodes
                         setTimeout(() => {
                           nodes.forEach(d => {
                             d.fx = null;
                             d.fy = null;
                           });
                         }, 1000);
-                    
-                        // Pulse feedback
-                        node.transition()
-                          .duration(200).attr("r", 12)
-                          .transition().duration(300).attr("r", 8);
                       });
                     }
 
@@ -1059,9 +1052,6 @@
            // event.subject.fx = null;
            // event.subject.fy = null;
         }
-
-        svg.call(zoom);
-        svg.call(zoom.transform, initialZoomTransform);
 
         // Filter functionality
         function updateVisualization() {
