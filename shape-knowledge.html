@@ -776,17 +776,6 @@
             .force('x', d3.forceX(width / 2).strength(0.2))
             .force('y', d3.forceY(height / 2).strength(0.2))
 
-        function updatePositions() {
-          link
-            .attr("x1", d => d.source.x)
-            .attr("y1", d => d.source.y)
-            .attr("x2", d => d.target.x)
-            .attr("y2", d => d.target.y);
-        
-          nodeGroup
-            .attr("transform", d => `translate(${d.x},${d.y})`);
-        }
-
         // Add reset button
         const resetButton = d3.select('#graph')
             .append('button')
@@ -955,6 +944,17 @@
             })
             .attr('stroke', '#fff')
             .attr('stroke-width', 2);
+
+        function updatePositions() {
+          link
+            .attr("x1", d => d.source.x)
+            .attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x)
+            .attr("y2", d => d.target.y);
+        
+          nodeGroup
+            .attr("transform", d => `translate(${d.x},${d.y})`);
+        }
 
         // Add tooltips
         const tooltip = d3.select('body').append('div')
