@@ -147,12 +147,14 @@
         }
 
         .section {
-          background: var(--sidebar-color);
-          border-radius: 15px;
-          padding: 30px;
-          margin-bottom: 30px;
-          box-shadow: 0 4px 20px var(--shadow-color);
-          /* REMOVE the flex display and centering */
+            background: var(--sidebar-color);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px var(--shadow-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* <-- this will center the legend */
         }
 
         .tabs {
@@ -203,7 +205,9 @@
         }
 
         .graph-wrapper {
-          display: block;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
         }
 
         #graph {
@@ -1202,5 +1206,7 @@
             }
         });
     </script>
+</body>
+</html>
 </body>
 </html>
