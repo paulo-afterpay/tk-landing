@@ -846,7 +846,8 @@
                     function resetSimulation() {
                         // Reset zoom
                         svg.transition()
-                            .duration(750)
+                            .duration(1000)
+                            .ease(d3.easeSinInOut)
                             .call(zoom.transform, d3.zoomIdentity);
 
                         simulation.stop();
@@ -876,15 +877,20 @@
                               d.fy = d.initialY;
                             });
                         
-                            simulation.alpha(0.5).restart();
-                        
+                          // Add slight delay before resuming simulation
+                          setTimeout(() => {
+                            // Start simulation only after easing has fully completed
+                            simulation.alpha(0.3).restart();
+                    
+                            // Release nodes after another short delay so they don't jerk
                             setTimeout(() => {
                               nodes.forEach(d => {
                                 d.fx = null;
                                 d.fy = null;
                               });
-                            }, 1500);
-                          });
+                            }, 1200); // let it breathe
+                          }, 400); // short pause after animation ends
+                        });
                     }
 
                     // Initialize sparkles after a short delay to ensure button is rendered
