@@ -846,10 +846,8 @@
         
             // Reset node positions
             nodes.forEach(node => {
-                node.x = width / 2 + (Math.random() - 0.5) * 100;
-                node.y = height / 2 + (Math.random() - 0.5) * 100;
-                node.fx = null;
-                node.fy = null;
+                node.initialX = node.x;
+                node.initialY = node.y;
             });
 
             // Restart simulation
@@ -868,14 +866,12 @@
                     
                         // Reset node positions
                         nodes.forEach(node => {
-                            node.x = width / 2 + (Math.random() - 0.5) * 100;
-                            node.y = height / 2 + (Math.random() - 0.5) * 100;
-                            node.fx = null;
-                            node.fy = null;
+                            node.fx = node.initialX;
+                            node.fy = node.initialY;
                         });
                     
                         // Restart simulation
-                        simulation.alpha(1).restart();
+                        simulation.alpha(0.5).restart();
                     }
 
                     // Initialize sparkles after a short delay to ensure button is rendered
