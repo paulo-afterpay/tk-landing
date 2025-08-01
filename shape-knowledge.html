@@ -856,52 +856,50 @@
             
                     // Function to reset the simulation
                     function resetSimulation() {
-                        // Reset zoom
-                        svg.transition()
-                            .duration(1000)
-                            .ease(d3.easeSinInOut)
-                            .call(zoom.transform, initialZoomTransform);
-
-                        simulation.stop();
-                        
-                        // Animate nodes back to their original positions
-                        d3.transition()
-                          .duration(1400)
-                          .ease(d3.easeSinInOut)
-                          .tween("nodeMove", () => {
-                            const interpolators = nodes.map(d => {
-                              const ix = d3.interpolateNumber(d.x, d.initialX);
-                              const iy = d3.interpolateNumber(d.y, d.initialY);
-                              return t => {
-                                d.x = ix(t);
-                                d.y = iy(t);
-                              };
-                            });
-                        
-                            return t => {
-                              interpolators.forEach(f => f(t));
-                              updatePositions();
-                            };
-                          })
-                          .on("end", () => {
-                            nodes.forEach(d => {
-                              d.fx = d.initialX;
-                              d.fy = d.initialY;
-                            });
-                        
-                          // Add slight delay before resuming simulation
-                          setTimeout(() => {
-                            // Start simulation only after easing has fully completed
-                            simulation.alpha(0.3).restart();
+                      // Smooth zoom reset
+                      svg.transition()
+                        .duration(1000)
+                        .ease(d3.easeSinInOut)
+                        .call(zoom.transform, initialZoomTransform);
                     
-                            // Release nodes after another short delay so they don't jerk
-                            setTimeout(() => {
-                              nodes.forEach(d => {
-                                d.fx = null;
-                                d.fy = null;
-                              });
-                            }, 1200); // let it breathe
-                          }, 1000); // short pause after animation ends
+                      // Pause simulation to avoid force tugs
+                      simulation.stop();
+                    
+                      // Smoothly interpolate node positions back to initial
+                      d3.transition()
+                        .duration(1400)
+                        .ease(d3.easeSinInOut)
+                        .tween("nodeMove", () => {
+                          const interpolators = nodes.map(d => {
+                            const ix = d3.interpolateNumber(d.x, d.initialX);
+                            const iy = d3.interpolateNumber(d.y, d.initialY);
+                            return t => {
+                              d.x = ix(t);
+                              d.y = iy(t);
+                            };
+                          });
+                    
+                          return t => {
+                            interpolators.forEach(f => f(t));
+                            updatePositions(); // update links and node positions
+                          };
+                        })
+                        .on("end", () => {
+                          // Don't apply fx/fy — we go straight to release
+                          // Let forces reposition things naturally
+                    
+                          // Delay simulation restart to prevent snap-back
+                          setTimeout(() => {
+                            simulation.alpha(0.3).restart();
+                          }, 200); // Slight pause after animation
+                    
+                          // Optional: gently release nodes after physics start
+                          setTimeout(() => {
+                            nodes.forEach(d => {
+                              d.fx = null;
+                              d.fy = null;
+                            });
+                          }, 1000); // Let them float after stabilizing
                         });
                     }
 
