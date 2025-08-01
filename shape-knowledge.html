@@ -717,26 +717,30 @@
         // Create the graph visualization
         const width = document.getElementById('graph').clientWidth;
         const height = 400;
-        // Define the zoom transform used for initial view and resets
-        const initialZoomTransform = d3.zoomIdentity
-          .translate(width * -0.1, height * -0.1)
-          .scale(1.2);
 
+        // 1. Define SVG
         const svg = d3.select('#graph')
             .append('svg')
             .attr('width', width)
             .attr('height', height);
-
+        
+        // 2. Define the container group
         const container = svg.append('g');
-
-        // Add zoom behavior
+        
+        // 3. Define the zoom behavior
         const zoom = d3.zoom()
-            .scaleExtent([0.5, 2]) // Limit zoom out/in
-            .translateExtent([[0, 0], [width, height]]) // Limit pan
+            .scaleExtent([0.5, 2])
+            .translateExtent([[0, 0], [width, height]])
             .on('zoom', (event) => {
                 container.attr('transform', event.transform);
             });
-
+        
+        // 4. Define the initial zoom transform for use in reset
+        const initialZoomTransform = d3.zoomIdentity
+            .translate(width * -0.1, height * -0.1)
+            .scale(1.2);
+        
+        // 5. Apply zoom behavior ONCE and set initial view
         svg.call(zoom);
         svg.call(zoom.transform, initialZoomTransform);
 
