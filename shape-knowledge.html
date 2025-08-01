@@ -451,13 +451,13 @@
         }
 
         .graph-legend {
-          position: absolute;
-          bottom: 0;
+          position: absolute !important;
+          bottom: 10px !important; /* anchor to bottom of #graph */
           left: 50%;
           transform: translateX(-50%);
           display: flex;
           gap: 20px;
-          padding: 10px 15px;
+          padding: 8px 12px;
           background: white;
           border: 2px solid var(--primary-green);
           border-radius: 12px;
@@ -465,7 +465,7 @@
           font-size: 14px;
           flex-wrap: wrap;
           justify-content: center;
-          z-index: 5;
+          z-index: 10;
         }
         
         .legend-item {
