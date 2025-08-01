@@ -737,6 +737,9 @@
                 container.attr('transform', event.transform);
             });
 
+        svg.call(zoom);
+        svg.call(zoom.transform, initialZoomTransform);
+
         // Create nodes for files
         const nodes = sortedFiles.map((file, index) => ({
             id: index,
@@ -965,9 +968,6 @@
 
                     // Initialize sparkles after a short delay to ensure button is rendered
                     setTimeout(createSparkleParticles, 1000);
-
-        svg.call(zoom);  
-        svg.call(zoom.transform, initialZoomTransform);
 
         // Add tooltips
         const tooltip = d3.select('body').append('div')
