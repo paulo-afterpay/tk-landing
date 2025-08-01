@@ -857,65 +857,53 @@
         setTimeout(createSparkleParticles, 1000);
             
                     // Function to reset the simulation
-                   function resetSimulation() {
-                      // Instantly reset zoom
-                      svg.call(zoom.transform, initialZoomTransform);
+                    function resetSimulation() {
+                      // Reset zoom
+                      svg.transition()
+                        .duration(1000)
+                        .ease(d3.easeSinInOut)
+                        .call(zoom.transform, initialZoomTransform);
                     
-                      // Stop simulation before repositioning
+                      // Stop the simulation
                       simulation.stop();
                     
-                      // Set fx/fy to current position to freeze node
+                      // Lock nodes to their target positions for the animation
                       nodes.forEach(d => {
                         d.fx = d.x;
                         d.fy = d.y;
                       });
                     
-                      // Transition fx/fy toward initialX/Y
-                      const transition = d3.transition()
-                        .duration(800)
-                        .ease(d3.easeCubicInOut);
-                    
-                      transition.tween("reset", () => {
-                        const interpolators = nodes.map(d => {
-                          const fx = d3.interpolateNumber(d.fx, d.initialX);
-                          const fy = d3.interpolateNumber(d.fy, d.initialY);
-                          return t => {
-                            d.fx = fx(t);
-                            d.fy = fy(t);
-                          };
-                        });
-                    
-                        return t => {
-                          interpolators.forEach(f => f(t));
-                          updatePositions();
-                        };
-                      });
-                    
-                      // After reset finishes:
-                      transition.on("end", () => {
-                        // Pulse visual
-                        node.transition()
-                          .duration(200)
-                          .ease(d3.easeCubicOut)
-                          .attr("r", 12)
-                          .attr("stroke-width", 4)
-                          .transition()
-                          .duration(300)
-                          .ease(d3.easeCubicIn)
-                          .attr("r", 8)
-                          .attr("stroke-width", 2);
-                    
-                        // Restart simulation gently
-                        simulation.alpha(0.3).restart();
-                    
-                        // Let physics take over after 800ms
-                        setTimeout(() => {
-                          nodes.forEach(d => {
-                            d.fx = null;
-                            d.fy = null;
+                      // Animate node positions
+                      d3.transition()
+                        .duration(1400)
+                        .ease(d3.easeSinInOut)
+                        .tween("nodeMove", () => {
+                          const interpolators = nodes.map(d => {
+                            const ix = d3.interpolateNumber(d.x, d.initialX);
+                            const iy = d3.interpolateNumber(d.y, d.initialY);
+                            return t => {
+                              d.fx = ix(t); // animate locked position
+                              d.fy = iy(t);
+                            };
                           });
-                        }, 800);
-                      });
+                    
+                          return t => {
+                            interpolators.forEach(f => f(t));
+                            updatePositions();
+                          };
+                        })
+                        .on("end", () => {
+                          // Restart simulation while still locked (to settle layout)
+                          simulation.alpha(0.3).restart();
+                    
+                          // After settling, release the locks
+                          setTimeout(() => {
+                            nodes.forEach(d => {
+                              d.fx = null;
+                              d.fy = null;
+                            });
+                          }, 1000);
+                        });
                     }
 
                     // Initialize sparkles after a short delay to ensure button is rendered
@@ -1014,23 +1002,23 @@
         }
 
         // Update positions with boundary checking
-        let initialPositionsSet = false;
+        let initialized = false;
         
-        simulation.on("tick", () => {
+        simulation.on('tick', () => {
           const padding = 20;
         
           nodes.forEach(node => {
             node.x = Math.max(padding, Math.min(width - padding, node.x));
             node.y = Math.max(padding, Math.min(height - padding, node.y));
         
-            // Only set initial position once, ever
-            if (!initialPositionsSet && node.initialX == null) {
+            // ❗ Freeze initialX/Y only once
+            if (!initialized && node.initialX == null) {
               node.initialX = node.x;
               node.initialY = node.y;
             }
           });
         
-          initialPositionsSet = true;
+          initialized = true;
           updatePositions();
         });
 
