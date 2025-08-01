@@ -950,6 +950,9 @@
             .attr('stroke', '#fff')
             .attr('stroke-width', 2);
 
+        svg.call(zoom);  
+        svg.call(zoom.transform, initialZoomTransform);
+
         function updatePositions() {
           link
             .attr("x1", d => d.source.x)
