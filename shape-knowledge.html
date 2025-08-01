@@ -735,10 +735,6 @@
                 svg.selectAll('g').attr('transform', event.transform);
             });
 
-        // Now safe to apply zoom
-        svg.call(zoom);
-        svg.call(zoom.transform, initialZoomTransform);
-
         // Create nodes for files
         const nodes = sortedFiles.map((file, index) => ({
             id: index,
