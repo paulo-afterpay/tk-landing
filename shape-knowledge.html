@@ -906,20 +906,21 @@
 
         
                     // Function to reset the simulation
-                    function resetSimulation() {
+                   function resetSimulation() {
                       simulation.stop();
                     
-                      // Set each node’s force targets
+                      // Lock current node positions
                       nodes.forEach(d => {
                         d.fx = d.x;
                         d.fy = d.y;
                       });
                     
-                      // Setup interpolators for position reset
+                      // Create a shared transition
                       const transition = d3.transition()
-                        .duration(800)
+                        .duration(1000)
                         .ease(d3.easeCubicInOut);
                     
+                      // Animate nodes back to initial positions
                       transition.tween("nodeReset", () => {
                         const interpolators = nodes.map(d => {
                           const ix = d3.interpolateNumber(d.x, d.initialX);
@@ -936,14 +937,14 @@
                         };
                       });
                     
-                      // Animate zoom transform in parallel
+                      // Animate zoom concurrently
                       svg.transition(transition)
                         .call(
                           zoom.transform,
                           d3.zoomIdentity.translate(width * -0.1, height * -0.1).scale(1.2)
                         );
                     
-                      // After animation ends, restart simulation
+                      // After both transitions, restart simulation
                       transition.on("end", () => {
                         nodes.forEach(d => {
                           d.fx = d.initialX;
@@ -954,6 +955,7 @@
                     
                         simulation.alpha(0.3).restart();
                     
+                        // Release nodes
                         setTimeout(() => {
                           nodes.forEach(d => {
                             d.fx = null;
@@ -961,8 +963,10 @@
                           });
                         }, 1000);
                     
-                        node.transition().duration(200).attr("r", 12)
-                            .transition().duration(300).attr("r", 8);
+                        // Pulse feedback
+                        node.transition()
+                          .duration(200).attr("r", 12)
+                          .transition().duration(300).attr("r", 8);
                       });
                     }
 
