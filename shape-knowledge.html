@@ -942,22 +942,23 @@
             window.open(d.url, '_blank');
         });
 
-        // Drag functions
+        // Modified drag functions with position constraints
         function dragstarted(event) {
             if (!event.active) simulation.alphaTarget(0.3).restart();
             event.subject.fx = event.subject.x;
             event.subject.fy = event.subject.y;
         }
-
+        
         function dragged(event) {
-            event.subject.fx = event.x;
-            event.subject.fy = event.y;
+            const padding = 20;
+            event.subject.fx = Math.max(padding, Math.min(width - padding, event.x));
+            event.subject.fy = Math.max(padding, Math.min(height - padding, event.y));
         }
-
+        
         function dragended(event) {
             if (!event.active) simulation.alphaTarget(0);
-            // event.subject.fx = null;
-            // event.subject.fy = null;
+           // event.subject.fx = null;
+           // event.subject.fy = null;
         }
 
         // Update positions with boundary checking
@@ -980,25 +981,6 @@
             nodeGroup
                 .attr('transform', d => `translate(${d.x},${d.y})`);
         });
-
-        // Modified drag functions with position constraints
-        function dragstarted(event) {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
-            event.subject.fx = event.subject.x;
-            event.subject.fy = event.subject.y;
-        }
-        
-        function dragged(event) {
-            const padding = 20;
-            event.subject.fx = Math.max(padding, Math.min(width - padding, event.x));
-            event.subject.fy = Math.max(padding, Math.min(height - padding, event.y));
-        }
-        
-        function dragended(event) {
-            if (!event.active) simulation.alphaTarget(0);
-           // event.subject.fx = null;
-           // event.subject.fy = null;
-        }
 
         // Add zoom behavior
         const zoom = d3.zoom()
