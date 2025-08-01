@@ -717,25 +717,11 @@
         // Create the graph visualization
         const width = document.getElementById('graph').clientWidth;
         const height = 400;
-        // Define the zoom transform used for initial view and resets
-        const initialZoomTransform = d3.zoomIdentity
-          .translate(width * -0.1, height * -0.1)
-          .scale(1.2);
 
         const svg = d3.select('#graph')
             .append('svg')
             .attr('width', width)
             .attr('height', height);
-
-        const container = svg.append('g');
-
-        // Add zoom behavior
-        const zoom = d3.zoom()
-            .scaleExtent([0.5, 2]) // Limit zoom out/in
-            .translateExtent([[0, 0], [width, height]]) // Limit pan
-            .on('zoom', (event) => {
-                container.attr('transform', event.transform);
-            });
 
         // Create nodes for files
         const nodes = sortedFiles.map((file, index) => ({
@@ -769,23 +755,12 @@
 
         // Modified force simulation
         const simulation = d3.forceSimulation(nodes)
-            .force('link', d3.forceLink(links).id(d => d.id).distance(90)) // Set fixed distance for links
-            .force('charge', d3.forceManyBody().strength(-700)) // Stronger repulsion
+            .force('link', d3.forceLink(links).id(d => d.id).distance(50)) // Set fixed distance for links
+            .force('charge', d3.forceManyBody().strength(-300)) // Stronger repulsion
             .force('center', d3.forceCenter(width / 2, height / 2))
           //  .force('collision', d3.forceCollide().radius(20).strength(1)) // Stronger collision
-            .force('x', d3.forceX(width / 2).strength(0.2))
-            .force('y', d3.forceY(height / 2).strength(0.2))
-
-        function updatePositions() {
-          link
-            .attr("x1", d => d.source.x)
-            .attr("y1", d => d.source.y)
-            .attr("x2", d => d.target.x)
-            .attr("y2", d => d.target.y);
-        
-          nodeGroup
-            .attr("transform", d => `translate(${d.x},${d.y})`);
-        }
+            .force('x', d3.forceX(width / 2).strength(0.1))
+            .force('y', d3.forceY(height / 2).strength(0.1));
 
         // Add reset button
         const resetButton = d3.select('#graph')
@@ -852,65 +827,58 @@
             }
         `;
         document.head.appendChild(sparkleStyle);
+        
+        // Function to reset the simulation
+        function resetSimulation() {
+            // Add a little flash effect when clicked
+            const button = document.querySelector('.reset-button');
+            if (button) {
+                button.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    button.style.transform = '';
+                }, 150);
+            }
+            
+            // Reset zoom
+            svg.transition()
+                .duration(750)
+                .call(zoom.transform, d3.zoomIdentity);
+        
+            // Reset node positions
+            nodes.forEach(node => {
+                node.initialX = node.x;
+                node.initialY = node.y;
+            });
+
+            // Restart simulation
+            simulation.alpha(1).restart();
+        }
             
         // Initialize sparkles after a short delay to ensure button is rendered
         setTimeout(createSparkleParticles, 1000);
             
                     // Function to reset the simulation
                     function resetSimulation() {
-                      // Reset zoom
-                      svg.transition()
-                        .duration(1000)
-                        .ease(d3.easeSinInOut)
-                        .call(zoom.transform, initialZoomTransform);
+                        // Reset zoom
+                        svg.transition()
+                            .duration(750)
+                            .call(zoom.transform, d3.zoomIdentity);
                     
-                      // Stop the simulation
-                      simulation.stop();
-                    
-                      // Lock nodes to their target positions for the animation
-                      nodes.forEach(d => {
-                        d.fx = d.x;
-                        d.fy = d.y;
-                      });
-                    
-                      // Animate node positions
-                      d3.transition()
-                        .duration(1400)
-                        .ease(d3.easeSinInOut)
-                        .tween("nodeMove", () => {
-                          const interpolators = nodes.map(d => {
-                            const ix = d3.interpolateNumber(d.x, d.initialX);
-                            const iy = d3.interpolateNumber(d.y, d.initialY);
-                            return t => {
-                              d.fx = ix(t); // animate locked position
-                              d.fy = iy(t);
-                            };
-                          });
-                    
-                          return t => {
-                            interpolators.forEach(f => f(t));
-                            updatePositions();
-                          };
-                        })
-                        .on("end", () => {
-                          // Restart simulation while still locked (to settle layout)
-                          simulation.alpha(0.3).restart();
-                    
-                          // After settling, release the locks
-                          setTimeout(() => {
-                            nodes.forEach(d => {
-                              d.fx = null;
-                              d.fy = null;
-                            });
-                          }, 1000);
+                        // Reset node positions
+                        nodes.forEach(node => {
+                            node.fx = node.initialX;
+                            node.fy = node.initialY;
                         });
+                    
+                        // Restart simulation
+                        simulation.alpha(0.5).restart();
                     }
 
                     // Initialize sparkles after a short delay to ensure button is rendered
                     setTimeout(createSparkleParticles, 1000);
 
         // Create links with improved styling
-        const link = container.append('g')
+        const link = svg.append('g')
             .selectAll('line')
             .data(links)
             .join('line')
@@ -920,7 +888,7 @@
             .attr('stroke-width', 1);
 
         // Create nodes with improved interaction
-        const nodeGroup = container.append('g')
+        const nodeGroup = svg.append('g')
             .selectAll('g')
             .data(nodes)
             .join('g')
@@ -1002,27 +970,26 @@
         }
 
         // Update positions with boundary checking
-        let initialized = false;
-        
         simulation.on('tick', () => {
-          const padding = 20;
+            // Constrain nodes to viewport with padding
+            const padding = 20;
+            nodes.forEach(node => {
+                node.x = Math.max(padding, Math.min(width - padding, node.x));
+                node.y = Math.max(padding, Math.min(height - padding, node.y));
+            });
         
-          nodes.forEach(node => {
-            node.x = Math.max(padding, Math.min(width - padding, node.x));
-            node.y = Math.max(padding, Math.min(height - padding, node.y));
+            // Update link positions
+            link
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
         
-            // ❗ Freeze initialX/Y only once
-            if (!initialized && node.initialX == null) {
-              node.initialX = node.x;
-              node.initialY = node.y;
-            }
-          });
-        
-          initialized = true;
-          updatePositions();
+            // Update node positions
+            nodeGroup
+                .attr('transform', d => `translate(${d.x},${d.y})`);
         });
 
-        
         // Modified drag functions with position constraints
         function dragstarted(event) {
             if (!event.active) simulation.alphaTarget(0.3).restart();
@@ -1042,8 +1009,15 @@
            // event.subject.fy = null;
         }
 
+        // Add zoom behavior
+        const zoom = d3.zoom()
+            .scaleExtent([0.5, 2]) // Limit zoom out/in
+            .translateExtent([[0, 0], [width, height]]) // Limit pan
+            .on('zoom', (event) => {
+                svg.selectAll('g').attr('transform', event.transform);
+            });
+
         svg.call(zoom);
-        svg.call(zoom.transform, initialZoomTransform);
 
         // Filter functionality
         function updateVisualization() {
