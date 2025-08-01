@@ -1019,13 +1019,11 @@
         simulation.on("tick", () => {
           const padding = 20;
         
-            nodes.forEach(d => {
-              d.initialX = d.x;
-              d.initialY = d.y;
-            });
-    
+          nodes.forEach(d => {
+            d.x = Math.max(padding, Math.min(width - padding, d.x));
+            d.y = Math.max(padding, Math.min(height - padding, d.y));
           });
-
+        
           updatePositions();
         });
 
