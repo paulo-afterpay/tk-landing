@@ -1003,12 +1003,12 @@
         svg.call(zoom.transform, initialZoomTransform);
 
         // Filter functionality
-        function updateVisualization() {
+       function updateVisualization() {
             const timeFilters = Array.from(document.querySelectorAll('#timePeriodOptions input:checked')).map(cb => cb.value);
             const typeFilters = Array.from(document.querySelectorAll('#typeOptions input:checked')).map(cb => cb.value);
             const productFilters = Array.from(document.querySelectorAll('#productSurfaceOptions input:checked')).map(cb => cb.value);
         
-            // Update dropdown text
+            // Update dropdown button text
             document.getElementById('timePeriodDropdown').textContent = 
                 timeFilters.length === 5 ? 'All Time Periods' :
                 timeFilters.length === 0 ? 'No Time Periods' :
@@ -1020,26 +1020,35 @@
                 `${typeFilters.length} Selected`;
         
             document.getElementById('productSurfaceDropdown').textContent = 
-                productFilters.length === 3 ? 'All Product Surfaces' :  // Changed from 4 to 3
+                productFilters.length === 3 ? 'All Product Surfaces' :
                 productFilters.length === 0 ? 'No Product Surfaces' :
                 `${productFilters.length} Selected`;
         
-            // Update nodes
-            node.style('display', d => {
-                const matchesTime = timeFilters.includes(d.metadata.timePeriod);
-                const matchesType = typeFilters.includes(d.metadata.documentType);
-                const matchesProduct = productFilters.includes(d.metadata.productSurface);
-                return matchesTime && matchesType && matchesProduct ? null : 'none';
-            });
+            // Update node visibility + force color refresh
+            node
+                .style('display', d => {
+                    const matchesTime = timeFilters.includes(d.metadata.timePeriod);
+                    const matchesType = typeFilters.includes(d.metadata.documentType);
+                    const matchesProduct = productFilters.includes(d.metadata.productSurface);
+                    return matchesTime && matchesType && matchesProduct ? null : 'none';
+                })
+                .attr('fill', d => {
+                    switch (d.metadata.productSurface) {
+                        case 'Afterpay': return '#00bfa5';         // Bondi Mint
+                        case 'Cash App Card': return '#000000';    // Black
+                        case 'Cash App Afterpay': return '#00e013';// Cash App Green
+                        default: return '#95a5a6';                 // fallback gray
+                    }
+                });
         
-            // Update links
+            // Update link visibility
             link.style('display', d => {
                 const sourceVisible = timeFilters.includes(d.source.metadata.timePeriod) &&
-                                   typeFilters.includes(d.source.metadata.documentType) &&
-                                   productFilters.includes(d.source.metadata.productSurface);
+                                    typeFilters.includes(d.source.metadata.documentType) &&
+                                    productFilters.includes(d.source.metadata.productSurface);
                 const targetVisible = timeFilters.includes(d.target.metadata.timePeriod) &&
-                                   typeFilters.includes(d.target.metadata.documentType) &&
-                                   productFilters.includes(d.target.metadata.productSurface);
+                                    typeFilters.includes(d.target.metadata.documentType) &&
+                                    productFilters.includes(d.target.metadata.productSurface);
                 return sourceVisible && targetVisible ? null : 'none';
             });
         
