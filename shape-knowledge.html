@@ -732,6 +732,8 @@
             .scaleExtent([0.5, 2])
             .translateExtent([[0, 0], [width, height]])
             .on('zoom', (event) => {
+                console.log("🧭 Zoom event triggered");
+                console.log("🔍 Current transform:", event.transform);
                 container.attr('transform', event.transform);
             });
         
@@ -913,6 +915,7 @@
         
                     // Function to reset the simulation
                    function resetSimulation() {
+                      console.log("🚨 Reset triggered");
                       simulation.stop();
                     
                       // Lock current node positions
@@ -925,6 +928,14 @@
                       const transition = d3.transition()
                         .duration(1000)
                         .ease(d3.easeCubicInOut);
+
+                     // Log before zoom
+                      console.log("🔄 Starting zoom reset");
+                      console.log("➡️ Target zoom:", {
+                        x: width * -0.1,
+                        y: height * -0.1,
+                        k: 1.2
+                      });
                     
                       // Animate node positions
                       transition.tween("nodeReset", () => {
@@ -952,6 +963,8 @@
                     
                       // After transition, relaunch simulation
                       transition.on("end", () => {
+                        console.log("✅ Reset animation complete");
+                          
                         nodes.forEach(d => {
                           d.fx = d.initialX;
                           d.fy = d.initialY;
