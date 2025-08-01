@@ -723,6 +723,13 @@
             .attr('width', width)
             .attr('height', height);
 
+        svg.append("rect")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("fill", "none")
+            .attr("stroke", "red")
+            .attr("stroke-width", 2);
+
         // Create nodes for files
         const nodes = sortedFiles.map((file, index) => ({
             id: index,
@@ -856,26 +863,6 @@
             
         // Initialize sparkles after a short delay to ensure button is rendered
         setTimeout(createSparkleParticles, 1000);
-            
-                    // Function to reset the simulation
-                    function resetSimulation() {
-                        // Reset zoom
-                        svg.transition()
-                            .duration(750)
-                            .call(zoom.transform, d3.zoomIdentity);
-                    
-                        // Reset node positions
-                        nodes.forEach(node => {
-                            node.fx = node.initialX;
-                            node.fy = node.initialY;
-                        });
-                    
-                        // Restart simulation
-                        simulation.alpha(0.5).restart();
-                    }
-
-                    // Initialize sparkles after a short delay to ensure button is rendered
-                    setTimeout(createSparkleParticles, 1000);
 
         // Create links with improved styling
         const link = svg.append('g')
@@ -976,6 +963,12 @@
             nodes.forEach(node => {
                 node.x = Math.max(padding, Math.min(width - padding, node.x));
                 node.y = Math.max(padding, Math.min(height - padding, node.y));
+
+                // ✅ Save initial position once
+                if (!node.initialX) {
+                  node.initialX = node.x;
+                  node.initialY = node.y;
+                }
             });
         
             // Update link positions
