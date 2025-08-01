@@ -838,14 +838,29 @@
                             .duration(750)
                             .call(zoom.transform, d3.zoomIdentity);
                     
-                        // Reset node positions
-                        nodes.forEach(node => {
-                            node.fx = node.initialX;
-                            node.fy = node.initialY;
-                        });
+                        // Animate nodes back to their original positions
+                        nodeGroup.transition()
+                            .duration(800)
+                            .ease(d3.easeCubicOut) // Or d3.easeBackOut for bounce
+                            .attr('transform', d => `translate(${d.initialX},${d.initialY})`)
+                            .on('end', () => {
+                                // Lock them there briefly for the simulation
+                                nodes.forEach(d => {
+                                    d.fx = d.initialX;
+                                    d.fy = d.initialY;
+                                });
                     
-                        // Restart simulation
-                        simulation.alpha(0.5).restart();
+                                // Restart the simulation
+                                simulation.alpha(0.5).restart();
+                    
+                                // Optionally free them again after animation
+                                setTimeout(() => {
+                                    nodes.forEach(d => {
+                                        d.fx = null;
+                                        d.fy = null;
+                                    });
+                                }, 1500);
+                            });
                     }
 
                     // Initialize sparkles after a short delay to ensure button is rendered
