@@ -858,22 +858,16 @@
             
                     // Function to reset the simulation
                     function resetSimulation() {
-                      // Reset zoom
+                      // Stop simulation before animation
+                      simulation.stop();
+                    
+                      // Reset zoom smoothly
                       svg.transition()
                         .duration(1000)
                         .ease(d3.easeSinInOut)
                         .call(zoom.transform, initialZoomTransform);
                     
-                      // Stop simulation to avoid conflict
-                      simulation.stop();
-                    
-                      // Lock nodes to current position before animating
-                      nodes.forEach(d => {
-                        d.fx = d.x;
-                        d.fy = d.y;
-                      });
-                    
-                      // Smooth transition to original positions
+                      // Animate node positions back to initial
                       d3.transition()
                         .duration(1400)
                         .ease(d3.easeSinInOut)
@@ -882,8 +876,8 @@
                             const ix = d3.interpolateNumber(d.x, d.initialX);
                             const iy = d3.interpolateNumber(d.y, d.initialY);
                             return t => {
-                              d.fx = ix(t);
-                              d.fy = iy(t);
+                              d.x = ix(t);
+                              d.y = iy(t);
                             };
                           });
                     
@@ -893,16 +887,8 @@
                           };
                         })
                         .on("end", () => {
-                          // Let simulation pick up from final position
+                          // Restart simulation gently after animation completes
                           simulation.alpha(0.3).restart();
-                    
-                          // Release locks after easing completes
-                          setTimeout(() => {
-                            nodes.forEach(d => {
-                              d.fx = null;
-                              d.fy = null;
-                            });
-                          }, 800);
                         });
                     }
 
@@ -1002,7 +988,7 @@
         }
 
         // Update positions with boundary checking
-        let initialized = false;
+        let initialPositionsSet = false;
         
         simulation.on("tick", () => {
           const padding = 20;
