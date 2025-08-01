@@ -856,16 +856,22 @@
             
                     // Function to reset the simulation
                     function resetSimulation() {
-                      // Smooth zoom reset
+                      // Reset zoom
                       svg.transition()
                         .duration(1000)
                         .ease(d3.easeSinInOut)
                         .call(zoom.transform, initialZoomTransform);
                     
-                      // Pause simulation to avoid force tugs
+                      // Stop simulation to avoid layout interference
                       simulation.stop();
                     
-                      // Smoothly interpolate node positions back to initial
+                      // ✅ Clear drag locks before animation
+                      nodes.forEach(d => {
+                        d.fx = null;
+                        d.fy = null;
+                      });
+                    
+                      // Animate nodes back to initial positions
                       d3.transition()
                         .duration(1400)
                         .ease(d3.easeSinInOut)
@@ -881,20 +887,12 @@
                     
                           return t => {
                             interpolators.forEach(f => f(t));
-                            updatePositions(); // update links and node positions
+                            updatePositions();
                           };
                         })
                         .on("end", () => {
-                          // Immediately release nodes (no fx)
-                          nodes.forEach(d => {
-                            d.fx = null;
-                            d.fy = null;
-                          });
-                    
-                          // Slight delay before restarting simulation
-                          setTimeout(() => {
-                            simulation.alpha(0.3).restart();
-                          }, 200);
+                          // Restart simulation gently after animation
+                          simulation.alpha(0.3).restart();
                         });
                     }
 
