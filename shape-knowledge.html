@@ -743,8 +743,8 @@
             .scale(1.2);
         
         // 5. Apply zoom behavior ONCE and set initial view
-        svg.call(zoom);
-        svg.call(zoom.transform, initialZoomTransform);
+        container.call(zoom);
+        container.call(zoom.transform, initialZoomTransform);
 
         // Create nodes for files
         const nodes = sortedFiles.map((file, index) => ({
