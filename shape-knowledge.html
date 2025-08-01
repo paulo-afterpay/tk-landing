@@ -727,12 +727,14 @@
             .attr('width', width)
             .attr('height', height);
 
+        const container = svg.append('g');
+
         // Add zoom behavior
         const zoom = d3.zoom()
             .scaleExtent([0.5, 2]) // Limit zoom out/in
             .translateExtent([[0, 0], [width, height]]) // Limit pan
             .on('zoom', (event) => {
-                svg.selectAll('g').attr('transform', event.transform);
+                container.attr('transform', event.transform);
             });
 
         // Create nodes for files
@@ -900,7 +902,7 @@
                     setTimeout(createSparkleParticles, 1000);
 
         // Create links with improved styling
-        const link = svg.append('g')
+        const link = container.append('g')
             .selectAll('line')
             .data(links)
             .join('line')
@@ -910,7 +912,7 @@
             .attr('stroke-width', 1);
 
         // Create nodes with improved interaction
-        const nodeGroup = svg.append('g')
+        const nodeGroup = container.append('g')
             .selectAll('g')
             .data(nodes)
             .join('g')
