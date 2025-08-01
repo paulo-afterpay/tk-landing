@@ -743,8 +743,8 @@
             .scale(1.2);
         
         // 5. Apply zoom behavior ONCE and set initial view
-        container.call(zoom);
-        container.call(zoom.transform, initialZoomTransform);
+        svg.call(zoom);
+        svg.call(zoom.transform, initialZoomTransform);
 
         // Create nodes for files
         const nodes = sortedFiles.map((file, index) => ({
@@ -915,6 +915,7 @@
         
                     // Function to reset the simulation
                    function resetSimulation() {
+                      console.log("🧠 Zoom behavior bound to:", zoom._container);
                       console.log("🚨 Reset triggered");
                     
                       simulation.stop();
@@ -924,7 +925,7 @@
                         d.fy = d.y;
                       });
                     
-                      const transition = container.transition()
+                      const transition = svg.transition()
                         .duration(1000)
                         .ease(d3.easeCubicInOut)
                         .call(
