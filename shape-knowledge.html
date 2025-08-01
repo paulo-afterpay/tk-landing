@@ -723,17 +723,6 @@
             .attr('width', width)
             .attr('height', height);
 
-        // ✅ NEW: Group that will receive zoom transform
-        const container = svg.append('g').attr('class', 'container');
-        
-        // ✅ Red outline (optional debug border)
-        container.append("rect")
-            .attr("width", width)
-            .attr("height", height)
-            .attr("fill", "none")
-            .attr("stroke", "red")
-            .attr("stroke-width", 2);
-
         // Create nodes for files
         const nodes = sortedFiles.map((file, index) => ({
             id: index,
@@ -838,8 +827,6 @@
             }
         `;
         document.head.appendChild(sparkleStyle);
-
-        svg.call(zoom);
         
         // Function to reset the simulation
         function resetSimulation() {
@@ -859,8 +846,10 @@
         
             // Reset node positions
             nodes.forEach(node => {
-                node.initialX = node.x;
-                node.initialY = node.y;
+                node.x = width / 2 + (Math.random() - 0.5) * 100;
+                node.y = height / 2 + (Math.random() - 0.5) * 100;
+                node.fx = null;
+                node.fy = null;
             });
 
             // Restart simulation
@@ -869,9 +858,31 @@
             
         // Initialize sparkles after a short delay to ensure button is rendered
         setTimeout(createSparkleParticles, 1000);
+            
+                    // Function to reset the simulation
+                    function resetSimulation() {
+                        // Reset zoom
+                        svg.transition()
+                            .duration(750)
+                            .call(zoom.transform, d3.zoomIdentity);
+                    
+                        // Reset node positions
+                        nodes.forEach(node => {
+                            node.x = width / 2 + (Math.random() - 0.5) * 100;
+                            node.y = height / 2 + (Math.random() - 0.5) * 100;
+                            node.fx = null;
+                            node.fy = null;
+                        });
+                    
+                        // Restart simulation
+                        simulation.alpha(1).restart();
+                    }
+
+                    // Initialize sparkles after a short delay to ensure button is rendered
+                    setTimeout(createSparkleParticles, 1000);
 
         // Create links with improved styling
-        const link = container.append('g')
+        const link = svg.append('g')
             .selectAll('line')
             .data(links)
             .join('line')
@@ -881,7 +892,7 @@
             .attr('stroke-width', 1);
 
         // Create nodes with improved interaction
-        const nodeGroup = container.append('g')
+        const nodeGroup = svg.append('g')
             .selectAll('g')
             .data(nodes)
             .join('g')
@@ -969,12 +980,6 @@
             nodes.forEach(node => {
                 node.x = Math.max(padding, Math.min(width - padding, node.x));
                 node.y = Math.max(padding, Math.min(height - padding, node.y));
-
-                // ✅ Save initial position once
-                if (!node.initialX) {
-                  node.initialX = node.x;
-                  node.initialY = node.y;
-                }
             });
         
             // Update link positions
@@ -1013,8 +1018,10 @@
             .scaleExtent([0.5, 2]) // Limit zoom out/in
             .translateExtent([[0, 0], [width, height]]) // Limit pan
             .on('zoom', (event) => {
-                container.attr('transform', event.transform);
+                svg.selectAll('g').attr('transform', event.transform);
             });
+
+        svg.call(zoom);
 
         // Filter functionality
         function updateVisualization() {
@@ -1156,5 +1163,7 @@
             }
         });
     </script>
+</body>
+</html>
 </body>
 </html>
