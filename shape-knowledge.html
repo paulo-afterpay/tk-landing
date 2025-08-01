@@ -857,28 +857,31 @@
         setTimeout(createSparkleParticles, 1000);
             
                     // Function to reset the simulation
-                    function resetSimulation() {
-                      // Instantly reset zoom (avoid transition delay)
+                   function resetSimulation() {
+                      // Instantly reset zoom
                       svg.call(zoom.transform, initialZoomTransform);
                     
-                      // Stop simulation before starting transition
+                      // Stop simulation before repositioning
                       simulation.stop();
                     
-                      // Cache current positions
-                      const startPositions = nodes.map(d => ({ x: d.x, y: d.y }));
+                      // Set fx/fy to current position to freeze node
+                      nodes.forEach(d => {
+                        d.fx = d.x;
+                        d.fy = d.y;
+                      });
                     
-                      // Animate x/y back to initial positions
+                      // Transition fx/fy toward initialX/Y
                       const transition = d3.transition()
                         .duration(800)
                         .ease(d3.easeCubicInOut);
                     
                       transition.tween("reset", () => {
-                        const interpolators = nodes.map((d, i) => {
-                          const ix = d3.interpolateNumber(startPositions[i].x, d.initialX);
-                          const iy = d3.interpolateNumber(startPositions[i].y, d.initialY);
+                        const interpolators = nodes.map(d => {
+                          const fx = d3.interpolateNumber(d.fx, d.initialX);
+                          const fy = d3.interpolateNumber(d.fy, d.initialY);
                           return t => {
-                            d.x = ix(t);
-                            d.y = iy(t);
+                            d.fx = fx(t);
+                            d.fy = fy(t);
                           };
                         });
                     
@@ -888,13 +891,30 @@
                         };
                       });
                     
-                      // On transition end: clear velocity + restart simulation
+                      // After reset finishes:
                       transition.on("end", () => {
-                        nodes.forEach(d => {
-                          d.vx = 0;
-                          d.vy = 0;
-                        });
+                        // Pulse visual
+                        node.transition()
+                          .duration(200)
+                          .ease(d3.easeCubicOut)
+                          .attr("r", 12)
+                          .attr("stroke-width", 4)
+                          .transition()
+                          .duration(300)
+                          .ease(d3.easeCubicIn)
+                          .attr("r", 8)
+                          .attr("stroke-width", 2);
+                    
+                        // Restart simulation gently
                         simulation.alpha(0.3).restart();
+                    
+                        // Let physics take over after 800ms
+                        setTimeout(() => {
+                          nodes.forEach(d => {
+                            d.fx = null;
+                            d.fy = null;
+                          });
+                        }, 800);
                       });
                     }
 
