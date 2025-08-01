@@ -723,7 +723,11 @@
             .attr('width', width)
             .attr('height', height);
 
-        svg.append("rect")
+        // ✅ NEW: Group that will receive zoom transform
+        const container = svg.append('g').attr('class', 'container');
+        
+        // ✅ Red outline (optional debug border)
+        container.append("rect")
             .attr("width", width)
             .attr("height", height)
             .attr("fill", "none")
@@ -834,6 +838,8 @@
             }
         `;
         document.head.appendChild(sparkleStyle);
+
+        svg.call(zoom);
         
         // Function to reset the simulation
         function resetSimulation() {
@@ -865,7 +871,7 @@
         setTimeout(createSparkleParticles, 1000);
 
         // Create links with improved styling
-        const link = svg.append('g')
+        const link = container.append('g')
             .selectAll('line')
             .data(links)
             .join('line')
@@ -875,7 +881,7 @@
             .attr('stroke-width', 1);
 
         // Create nodes with improved interaction
-        const nodeGroup = svg.append('g')
+        const nodeGroup = container.append('g')
             .selectAll('g')
             .data(nodes)
             .join('g')
@@ -1007,10 +1013,8 @@
             .scaleExtent([0.5, 2]) // Limit zoom out/in
             .translateExtent([[0, 0], [width, height]]) // Limit pan
             .on('zoom', (event) => {
-                svg.selectAll('g').attr('transform', event.transform);
+                container.attr('transform', event.transform);
             });
-
-        svg.call(zoom);
 
         // Filter functionality
         function updateVisualization() {
