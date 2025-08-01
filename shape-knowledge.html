@@ -729,6 +729,8 @@
             ...file
         }));
 
+        let initialPositionsSet = false;
+
         // Create links between documents that share metadata
         const links = [];
         for (let i = 0; i < sortedFiles.length; i++) {
@@ -829,40 +831,31 @@
         document.head.appendChild(sparkleStyle);
         
         // Function to reset the simulation
-        function resetSimulation() {
-            // Zoom reset
-            svg.transition()
-                .duration(800)
-                .call(zoom.transform, initialZoomTransform);
+         function resetSimulation() {
+          svg.transition()
+            .duration(800)
+            .call(zoom.transform, initialZoomTransform);
         
-            // Lock nodes to current position
-            nodes.forEach(d => {
-                d.fx = d.x;
-                d.fy = d.y;
-            });
-        
-            // Animate node movement back to center (or spread)
-            d3.transition()
-              .duration(800)
-              .tween("reset", () => {
-                const ix = nodes.map(d => d3.interpolateNumber(d.x, width / 2 + (Math.random() - 0.5) * 100));
-                const iy = nodes.map(d => d3.interpolateNumber(d.y, height / 2 + (Math.random() - 0.5) * 100));
-                return t => {
-                  nodes.forEach((d, i) => {
-                    d.x = ix[i](t);
-                    d.y = iy[i](t);
-                  });
-                };
-              })
-              .on("end", () => {
-                // Release nodes
-                nodes.forEach(d => {
-                    d.fx = null;
-                    d.fy = null;
+          d3.transition()
+            .duration(800)
+            .tween("reset", () => {
+              const ix = nodes.map(d => d3.interpolateNumber(d.x, d.initialX));
+              const iy = nodes.map(d => d3.interpolateNumber(d.y, d.initialY));
+              return t => {
+                nodes.forEach((d, i) => {
+                  d.x = ix[i](t);
+                  d.y = iy[i](t);
                 });
-        
-                simulation.alpha(0.8).restart();
+                updatePositions();
+              };
+            })
+            .on("end", () => {
+              nodes.forEach(d => {
+                d.fx = null;
+                d.fy = null;
               });
+              simulation.alpha(0.7).restart();
+            });
         }
             
         // Initialize sparkles after a short delay to ensure button is rendered
@@ -961,25 +954,34 @@
            // event.subject.fy = null;
         }
 
+        function updatePositions() {
+          link
+            .attr("x1", d => d.source.x)
+            .attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x)
+            .attr("y2", d => d.target.y);
+        
+          nodeGroup
+            .attr("transform", d => `translate(${d.x},${d.y})`);
+        }
+
         // Update positions with boundary checking
-        simulation.on('tick', () => {
-            // Constrain nodes to viewport with padding
-            const padding = 20;
-            nodes.forEach(node => {
-                node.x = Math.max(padding, Math.min(width - padding, node.x));
-                node.y = Math.max(padding, Math.min(height - padding, node.y));
+        simulation.on("tick", () => {
+          const padding = 20;
+          nodes.forEach(node => {
+            node.x = Math.max(padding, Math.min(width - padding, node.x));
+            node.y = Math.max(padding, Math.min(height - padding, node.y));
+          });
+        
+          updatePositions();
+        
+          if (!initialPositionsSet && simulation.alpha() < 0.05) {
+            nodes.forEach(d => {
+              d.initialX = d.x;
+              d.initialY = d.y;
             });
-        
-            // Update link positions
-            link
-                .attr('x1', d => d.source.x)
-                .attr('y1', d => d.source.y)
-                .attr('x2', d => d.target.x)
-                .attr('y2', d => d.target.y);
-        
-            // Update node positions
-            nodeGroup
-                .attr('transform', d => `translate(${d.x},${d.y})`);
+            initialPositionsSet = true;
+          }
         });
 
         // Add zoom behavior
