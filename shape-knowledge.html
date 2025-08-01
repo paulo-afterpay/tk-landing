@@ -858,16 +858,16 @@
             
                     // Function to reset the simulation
                     function resetSimulation() {
-                      // Immediately reset zoom
+                      // Instantly reset zoom (avoid transition delay)
                       svg.call(zoom.transform, initialZoomTransform);
                     
-                      // Stop simulation to prevent interference during animation
+                      // Stop simulation before starting transition
                       simulation.stop();
                     
-                      // Cache start positions
+                      // Cache current positions
                       const startPositions = nodes.map(d => ({ x: d.x, y: d.y }));
                     
-                      // Animate node positions directly
+                      // Animate x/y back to initial positions
                       const transition = d3.transition()
                         .duration(800)
                         .ease(d3.easeCubicInOut);
@@ -883,13 +883,17 @@
                         });
                     
                         return t => {
-                          interpolators.forEach(fn => fn(t));
+                          interpolators.forEach(f => f(t));
                           updatePositions();
                         };
                       });
                     
-                      // Restart simulation after animation ends
+                      // On transition end: clear velocity + restart simulation
                       transition.on("end", () => {
+                        nodes.forEach(d => {
+                          d.vx = 0;
+                          d.vy = 0;
+                        });
                         simulation.alpha(0.3).restart();
                       });
                     }
