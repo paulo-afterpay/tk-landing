@@ -885,21 +885,16 @@
                           };
                         })
                         .on("end", () => {
-                          // Don't apply fx/fy — we go straight to release
-                          // Let forces reposition things naturally
+                          // Immediately release nodes (no fx)
+                          nodes.forEach(d => {
+                            d.fx = null;
+                            d.fy = null;
+                          });
                     
-                          // Delay simulation restart to prevent snap-back
+                          // Slight delay before restarting simulation
                           setTimeout(() => {
                             simulation.alpha(0.3).restart();
-                          }, 200); // Slight pause after animation
-                    
-                          // Optional: gently release nodes after physics start
-                          setTimeout(() => {
-                            nodes.forEach(d => {
-                              d.fx = null;
-                              d.fy = null;
-                            });
-                          }, 1000); // Let them float after stabilizing
+                          }, 200);
                         });
                     }
 
