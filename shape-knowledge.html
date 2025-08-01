@@ -1018,32 +1018,6 @@
             event.subject.fx = event.subject.x;
             event.subject.fy = event.subject.y;
         }
-
-        function dragged(event) {
-            event.subject.fx = event.x;
-            event.subject.fy = event.y;
-        }
-
-        function dragended(event) {
-            if (!event.active) simulation.alphaTarget(0);
-            // event.subject.fx = null;
-            // event.subject.fy = null;
-        }
-
-        // Update positions with boundary checking
-        let initialPositionsSet = false;
-
-        nodes.forEach(d => {
-          if (d.initialX == null || isNaN(d.initialX)) d.initialX = d.x;
-          if (d.initialY == null || isNaN(d.initialY)) d.initialY = d.y;
-        });
-     
-        // Modified drag functions with position constraints
-        function dragstarted(event) {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
-            event.subject.fx = event.subject.x;
-            event.subject.fy = event.subject.y;
-        }
         
         function dragged(event) {
             const padding = 20;
@@ -1056,6 +1030,14 @@
            // event.subject.fx = null;
            // event.subject.fy = null;
         }
+
+        // Update positions with boundary checking
+        let initialPositionsSet = false;
+
+        nodes.forEach(d => {
+          if (d.initialX == null || isNaN(d.initialX)) d.initialX = d.x;
+          if (d.initialY == null || isNaN(d.initialY)) d.initialY = d.y;
+        });
 
         // Filter functionality
         function updateVisualization() {
