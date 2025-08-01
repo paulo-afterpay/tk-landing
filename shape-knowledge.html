@@ -867,7 +867,7 @@
                       // Stop simulation to avoid layout interference
                       simulation.stop();
                     
-                      // ✅ Clear drag locks before animation
+                      // Clear drag locks before animation
                       nodes.forEach(d => {
                         d.fx = null;
                         d.fy = null;
@@ -893,8 +893,10 @@
                           };
                         })
                         .on("end", () => {
-                          // Restart simulation gently after animation
-                          simulation.alpha(0.3).restart();
+                          // Delay simulation restart slightly for visual settle
+                          setTimeout(() => {
+                            simulation.alpha(0.3).restart();
+                          }, 300); // delay ~1 frame at 60fps
                         });
                     }
 
