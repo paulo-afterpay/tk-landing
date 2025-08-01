@@ -858,38 +858,40 @@
             
                     // Function to reset the simulation
                     function resetSimulation() {
-                      // Stop simulation before animation
+                      // Immediately reset zoom
+                      svg.call(zoom.transform, initialZoomTransform);
+                    
+                      // Stop simulation to prevent interference during animation
                       simulation.stop();
                     
-                      // Reset zoom smoothly
-                      svg.transition()
-                        .duration(1000)
-                        .ease(d3.easeSinInOut)
-                        .call(zoom.transform, initialZoomTransform);
+                      // Cache start positions
+                      const startPositions = nodes.map(d => ({ x: d.x, y: d.y }));
                     
-                      // Animate node positions back to initial
-                      d3.transition()
-                        .duration(1400)
-                        .ease(d3.easeSinInOut)
-                        .tween("nodeMove", () => {
-                          const interpolators = nodes.map(d => {
-                            const ix = d3.interpolateNumber(d.x, d.initialX);
-                            const iy = d3.interpolateNumber(d.y, d.initialY);
-                            return t => {
-                              d.x = ix(t);
-                              d.y = iy(t);
-                            };
-                          });
+                      // Animate node positions directly
+                      const transition = d3.transition()
+                        .duration(800)
+                        .ease(d3.easeCubicInOut);
                     
+                      transition.tween("reset", () => {
+                        const interpolators = nodes.map((d, i) => {
+                          const ix = d3.interpolateNumber(startPositions[i].x, d.initialX);
+                          const iy = d3.interpolateNumber(startPositions[i].y, d.initialY);
                           return t => {
-                            interpolators.forEach(f => f(t));
-                            updatePositions();
+                            d.x = ix(t);
+                            d.y = iy(t);
                           };
-                        })
-                        .on("end", () => {
-                          // Restart simulation gently after animation completes
-                          simulation.alpha(0.3).restart();
                         });
+                    
+                        return t => {
+                          interpolators.forEach(fn => fn(t));
+                          updatePositions();
+                        };
+                      });
+                    
+                      // Restart simulation after animation ends
+                      transition.on("end", () => {
+                        simulation.alpha(0.3).restart();
+                      });
                     }
 
                     // Initialize sparkles after a short delay to ensure button is rendered
