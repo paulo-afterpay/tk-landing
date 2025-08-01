@@ -848,11 +848,13 @@
                         svg.transition()
                             .duration(750)
                             .call(zoom.transform, d3.zoomIdentity);
-                    
+
+                        simulation.stop();
+                        
                         // Animate nodes back to their original positions
                         d3.transition()
                           .duration(800)
-                          .ease(d3.easeCubicOut)
+                          .ease(d3.easeBackOut)
                           .tween("nodeMove", () => {
                             const interpolators = nodes.map(d => {
                               const ix = d3.interpolateNumber(d.x, d.initialX);
@@ -865,7 +867,6 @@
                         
                             return t => {
                               interpolators.forEach(f => f(t));
-                              simulation.tick();
                               updatePositions();
                             };
                           })
