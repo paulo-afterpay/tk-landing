@@ -890,31 +890,30 @@
                       };
                     })
                     .on("end", () => {
-                      // Lock nodes to final position briefly
+                      // Stabilize briefly
                       nodes.forEach(d => {
                         d.fx = d.initialX;
                         d.fy = d.initialY;
+                        d.vx = 0;
+                        d.vy = 0;
                       });
                 
-                      // Restart simulation gently
                       simulation.alpha(0.3).restart();
                 
-                      // OPTIONAL: release them after a short delay
+                      // Release after settle
                       setTimeout(() => {
                         nodes.forEach(d => {
                           d.fx = null;
                           d.fy = null;
                         });
-                      }, 1200);
+                      }, 1000);
                 
-                      // Add pulse for visual feedback
+                      // Pulse
                       node.transition()
                         .duration(200)
-                        .ease(d3.easeCubicOut)
                         .attr("r", 12)
                         .transition()
                         .duration(300)
-                        .ease(d3.easeCubicIn)
                         .attr("r", 8);
                     });
                 }
@@ -1020,18 +1019,13 @@
         simulation.on("tick", () => {
           const padding = 20;
         
-          nodes.forEach(node => {
-            node.x = Math.max(padding, Math.min(width - padding, node.x));
-            node.y = Math.max(padding, Math.min(height - padding, node.y));
-        
-            // Only set initial position once, ever
-            if (!initialPositionsSet && node.initialX == null) {
-              node.initialX = node.x;
-              node.initialY = node.y;
-            }
+            nodes.forEach(d => {
+              d.initialX = d.x;
+              d.initialY = d.y;
+            });
+    
           });
-        
-          initialPositionsSet = true;
+
           updatePositions();
         });
 
