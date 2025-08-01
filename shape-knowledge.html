@@ -864,16 +864,16 @@
                         .ease(d3.easeSinInOut)
                         .call(zoom.transform, initialZoomTransform);
                     
-                      // Stop the simulation
+                      // Stop simulation to avoid conflict
                       simulation.stop();
                     
-                      // Lock nodes to their target positions for the animation
+                      // Lock nodes to current position before animating
                       nodes.forEach(d => {
                         d.fx = d.x;
                         d.fy = d.y;
                       });
                     
-                      // Animate node positions
+                      // Smooth transition to original positions
                       d3.transition()
                         .duration(1400)
                         .ease(d3.easeSinInOut)
@@ -882,7 +882,7 @@
                             const ix = d3.interpolateNumber(d.x, d.initialX);
                             const iy = d3.interpolateNumber(d.y, d.initialY);
                             return t => {
-                              d.fx = ix(t); // animate locked position
+                              d.fx = ix(t);
                               d.fy = iy(t);
                             };
                           });
@@ -893,16 +893,16 @@
                           };
                         })
                         .on("end", () => {
-                          // Restart simulation while still locked (to settle layout)
+                          // Let simulation pick up from final position
                           simulation.alpha(0.3).restart();
                     
-                          // After settling, release the locks
+                          // Release locks after easing completes
                           setTimeout(() => {
                             nodes.forEach(d => {
                               d.fx = null;
                               d.fy = null;
                             });
-                          }, 1000);
+                          }, 800);
                         });
                     }
 
@@ -1004,21 +1004,21 @@
         // Update positions with boundary checking
         let initialized = false;
         
-        simulation.on('tick', () => {
+        simulation.on("tick", () => {
           const padding = 20;
         
           nodes.forEach(node => {
             node.x = Math.max(padding, Math.min(width - padding, node.x));
             node.y = Math.max(padding, Math.min(height - padding, node.y));
         
-            // ❗ Freeze initialX/Y only once
-            if (!initialized && node.initialX == null) {
+            // Only set initial position once, ever
+            if (!initialPositionsSet && node.initialX == null) {
               node.initialX = node.x;
               node.initialY = node.y;
             }
           });
         
-          initialized = true;
+          initialPositionsSet = true;
           updatePositions();
         });
 
