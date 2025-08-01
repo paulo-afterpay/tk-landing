@@ -785,24 +785,6 @@
             .attr("transform", d => `translate(${d.x},${d.y})`);
         }
 
-        let initialized = false;
-        simulation.on("tick", () => {
-          const padding = 20;
-        
-          nodes.forEach(node => {
-            node.x = Math.max(padding, Math.min(width - padding, node.x));
-            node.y = Math.max(padding, Math.min(height - padding, node.y));
-        
-            if (!initialized) {
-              node.initialX = node.x;
-              node.initialY = node.y;
-            }
-          });
-        
-          initialized = true;
-          updatePositions();
-        });
-
         // Add reset button
         const resetButton = d3.select('#graph')
             .append('button')
