@@ -717,6 +717,10 @@
         // Create the graph visualization
         const width = document.getElementById('graph').clientWidth;
         const height = 400;
+        // Define the zoom transform used for initial view and resets
+        const initialZoomTransform = d3.zoomIdentity
+          .translate(width * -0.1, height * -0.1)
+          .scale(1.2);
 
         const svg = d3.select('#graph')
             .append('svg')
@@ -848,7 +852,7 @@
                         svg.transition()
                             .duration(1000)
                             .ease(d3.easeSinInOut)
-                            .call(zoom.transform, d3.zoomIdentity);
+                            .call(zoom.transform, initialZoomTransform);
 
                         simulation.stop();
                         
@@ -1045,6 +1049,8 @@
             });
 
         svg.call(zoom);
+        const initialZoomTransform = d3.zoomIdentity.translate(width * -0.1, height * -0.1).scale(1.2);
+        svg.call(zoom.transform, initialZoomTransform);
 
         // Filter functionality
         function updateVisualization() {
