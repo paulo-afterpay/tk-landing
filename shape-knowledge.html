@@ -722,13 +722,14 @@
           .translate(width * -0.1, height * -0.1)
           .scale(1.2);
 
-        svg.call(zoom);
-        svg.call(zoom.transform, initialZoomTransform);
-
         const svg = d3.select('#graph')
             .append('svg')
             .attr('width', width)
             .attr('height', height);
+
+        // Now safe to apply zoom
+        svg.call(zoom);
+        svg.call(zoom.transform, initialZoomTransform);
 
         // Create nodes for files
         const nodes = sortedFiles.map((file, index) => ({
