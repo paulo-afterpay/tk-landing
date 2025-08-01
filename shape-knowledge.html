@@ -717,42 +717,25 @@
         // Create the graph visualization
         const width = document.getElementById('graph').clientWidth;
         const height = 400;
+        // Define the zoom transform used for initial view and resets
+        const initialZoomTransform = d3.zoomIdentity
+          .translate(width * -0.1, height * -0.1)
+          .scale(1.2);
 
-        // 1. Define SVG
         const svg = d3.select('#graph')
             .append('svg')
             .attr('width', width)
             .attr('height', height);
 
-        // 🔴 Debug viewport boundary
-        svg.append("rect")
-          .attr("width", width)
-          .attr("height", height)
-          .attr("fill", "none")
-          .attr("stroke", "red")
-          .attr("stroke-width", 2);
-        
-        // 2. Define the container group
         const container = svg.append('g');
-        
-        // 3. Define the zoom behavior
+
+        // Add zoom behavior
         const zoom = d3.zoom()
-            .scaleExtent([0.5, 2])
-            .translateExtent([[0, 0], [width, height]])
+            .scaleExtent([0.5, 2]) // Limit zoom out/in
+            .translateExtent([[0, 0], [width, height]]) // Limit pan
             .on('zoom', (event) => {
-                console.log("🧭 Zoom event triggered");
-                console.log("🔍 Current transform:", event.transform);
                 container.attr('transform', event.transform);
             });
-        
-        // 4. Define the initial zoom transform for use in reset
-        const initialZoomTransform = d3.zoomIdentity
-            .translate(width * -0.1, height * -0.1)
-            .scale(1.2);
-        
-        // 5. Apply zoom behavior ONCE and set initial view
-        svg.call(zoom);
-        svg.call(zoom.transform, initialZoomTransform);
 
         // Create nodes for files
         const nodes = sortedFiles.map((file, index) => ({
@@ -792,6 +775,17 @@
           //  .force('collision', d3.forceCollide().radius(20).strength(1)) // Stronger collision
             .force('x', d3.forceX(width / 2).strength(0.2))
             .force('y', d3.forceY(height / 2).strength(0.2))
+
+        function updatePositions() {
+          link
+            .attr("x1", d => d.source.x)
+            .attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x)
+            .attr("y2", d => d.target.y);
+        
+          nodeGroup
+            .attr("transform", d => `translate(${d.x},${d.y})`);
+        }
 
         // Add reset button
         const resetButton = d3.select('#graph')
@@ -861,141 +855,106 @@
             
         // Initialize sparkles after a short delay to ensure button is rendered
         setTimeout(createSparkleParticles, 1000);
-
-            // Create links with improved styling
-                    const link = container.append('g')
-                        .selectAll('line')
-                        .data(links)
-                        .join('line')
-                        .attr('class', 'link')
-                        .attr('stroke', '#999')
-                        .attr('stroke-opacity', 0.3)
-                        .attr('stroke-width', 1);
             
-                    // Create nodes with improved interaction
-                    const nodeGroup = container.append('g')
-                        .selectAll('g')
-                        .data(nodes)
-                        .join('g')
-                        .attr('class', 'node-group')
-                        .call(d3.drag()
-                            .on('start', dragstarted)
-                            .on('drag', dragged)
-                            .on('end', dragended));
-            
-                    const node = nodeGroup.append('circle')
-                        .attr('class', 'node')
-                        .attr('r', 8)
-                        .attr('fill', d => {
-                            switch(d.metadata.productSurface) {
-                                case 'Cash App Card': return '#ff7675';
-                                case 'Afterpay': return '#74b9ff';
-                                case 'Cash App Afterpay': return '#55efc4';
-                                default: return '#95a5a6';
-                            }
-                        })
-                        .attr('stroke', '#fff')
-                        .attr('stroke-width', 2);
-
-        
-                    function updatePositions() {
-                      link
-                        .attr("x1", d => d.source.x)
-                        .attr("y1", d => d.source.y)
-                        .attr("x2", d => d.target.x)
-                        .attr("y2", d => d.target.y);
-                    
-                      nodeGroup
-                        .attr("transform", d => `translate(${d.x},${d.y})`);
-                    }
-
-        
-                    simulation.on("tick", () => {
-                      const padding = 20;
-                    
-                      nodes.forEach(d => {
-                        d.x = Math.max(padding, Math.min(width - padding, d.x));
-                        d.y = Math.max(padding, Math.min(height - padding, d.y));
-                      });
-                      updatePositions();
-                    });
-
-        
                     // Function to reset the simulation
                    function resetSimulation() {
-                      console.log("🧠 Zoom behavior bound to:", zoom._container);
-                      console.log("🚨 Reset triggered");
+                      // Instantly reset zoom
+                      svg.call(zoom.transform, initialZoomTransform);
                     
+                      // Stop simulation before repositioning
                       simulation.stop();
                     
+                      // Set fx/fy to current position to freeze node
                       nodes.forEach(d => {
                         d.fx = d.x;
                         d.fy = d.y;
                       });
                     
-                      const transition = svg.transition()
-                        .duration(1000)
-                        .ease(d3.easeCubicInOut)
-                        .call(
-                          zoom.transform,
-                          d3.zoomIdentity.translate(width * -0.1, height * -0.1).scale(1.2)
-                        );
+                      // Transition fx/fy toward initialX/Y
+                      const transition = d3.transition()
+                        .duration(800)
+                        .ease(d3.easeCubicInOut);
                     
-                      // Sync node movement within same transition
-                      transition.tween("nodeReset", () => {
-                        console.log("🔁 Animating node reset");
-                    
+                      transition.tween("reset", () => {
                         const interpolators = nodes.map(d => {
-                          const ix = d3.interpolateNumber(d.x, d.initialX);
-                          const iy = d3.interpolateNumber(d.y, d.initialY);
+                          const fx = d3.interpolateNumber(d.fx, d.initialX);
+                          const fy = d3.interpolateNumber(d.fy, d.initialY);
                           return t => {
-                            d.x = ix(t);
-                            d.y = iy(t);
+                            d.fx = fx(t);
+                            d.fy = fy(t);
                           };
                         });
                     
                         return t => {
                           interpolators.forEach(f => f(t));
                           updatePositions();
-
-                          // 🧭 Log final position
-                          if (t === 1) {
-                            console.log("📍 Final node positions:");
-                            nodes.forEach(d => {
-                              console.log(`Node ${d.id}: x=${d.x.toFixed(2)}, y=${d.y.toFixed(2)}`);
-                                });
-                            };
-                          });
+                        };
+                      });
                     
+                      // After reset finishes:
                       transition.on("end", () => {
-                        console.log("✅ Reset animation complete");
+                        // Pulse visual
+                        node.transition()
+                          .duration(200)
+                          .ease(d3.easeCubicOut)
+                          .attr("r", 12)
+                          .attr("stroke-width", 4)
+                          .transition()
+                          .duration(300)
+                          .ease(d3.easeCubicIn)
+                          .attr("r", 8)
+                          .attr("stroke-width", 2);
                     
-                        nodes.forEach(d => {
-                          d.fx = d.initialX;
-                          d.fy = d.initialY;
-                          d.vx = 0;
-                          d.vy = 0;
-
-                          // 🔍 Log zoom state
-                          console.log("✅ Final zoom transform:");
-                          const transform = d3.zoomTransform(svg.node());
-                          console.log(transform);
-                            
-                        });
-                    
+                        // Restart simulation gently
                         simulation.alpha(0.3).restart();
                     
+                        // Let physics take over after 800ms
                         setTimeout(() => {
                           nodes.forEach(d => {
                             d.fx = null;
                             d.fy = null;
                           });
-                        }, 1000);
+                        }, 800);
                       });
                     }
 
                     // Initialize sparkles after a short delay to ensure button is rendered
                     setTimeout(createSparkleParticles, 1000);
+
+        // Create links with improved styling
+        const link = container.append('g')
+            .selectAll('line')
+            .data(links)
+            .join('line')
+            .attr('class', 'link')
+            .attr('stroke', '#999')
+            .attr('stroke-opacity', 0.3)
+            .attr('stroke-width', 1);
+
+        // Create nodes with improved interaction
+        const nodeGroup = container.append('g')
+            .selectAll('g')
+            .data(nodes)
+            .join('g')
+            .attr('class', 'node-group')
+            .call(d3.drag()
+                .on('start', dragstarted)
+                .on('drag', dragged)
+                .on('end', dragended));
+
+        const node = nodeGroup.append('circle')
+            .attr('class', 'node')
+            .attr('r', 8)
+            .attr('fill', d => {
+                switch(d.metadata.productSurface) {
+                    case 'Cash App Card': return '#ff7675';
+                    case 'Afterpay': return '#74b9ff';
+                    case 'Cash App Afterpay': return '#55efc4';
+                    default: return '#95a5a6';
+                }
+            })
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 2);
 
         // Add tooltips
         const tooltip = d3.select('body').append('div')
@@ -1042,6 +1001,46 @@
             event.subject.fx = event.subject.x;
             event.subject.fy = event.subject.y;
         }
+
+        function dragged(event) {
+            event.subject.fx = event.x;
+            event.subject.fy = event.y;
+        }
+
+        function dragended(event) {
+            if (!event.active) simulation.alphaTarget(0);
+            // event.subject.fx = null;
+            // event.subject.fy = null;
+        }
+
+        // Update positions with boundary checking
+        let initialPositionsSet = false;
+        
+        simulation.on("tick", () => {
+          const padding = 20;
+        
+          nodes.forEach(node => {
+            node.x = Math.max(padding, Math.min(width - padding, node.x));
+            node.y = Math.max(padding, Math.min(height - padding, node.y));
+        
+            // Only set initial position once, ever
+            if (!initialPositionsSet && node.initialX == null) {
+              node.initialX = node.x;
+              node.initialY = node.y;
+            }
+          });
+        
+          initialPositionsSet = true;
+          updatePositions();
+        });
+
+        
+        // Modified drag functions with position constraints
+        function dragstarted(event) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+        }
         
         function dragged(event) {
             const padding = 20;
@@ -1055,13 +1054,8 @@
            // event.subject.fy = null;
         }
 
-        // Update positions with boundary checking
-        let initialPositionsSet = false;
-
-        nodes.forEach(d => {
-          if (d.initialX == null || isNaN(d.initialX)) d.initialX = d.x;
-          if (d.initialY == null || isNaN(d.initialY)) d.initialY = d.y;
-        });
+        svg.call(zoom);
+        svg.call(zoom.transform, initialZoomTransform);
 
         // Filter functionality
         function updateVisualization() {
