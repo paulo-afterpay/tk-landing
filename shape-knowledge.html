@@ -830,56 +830,43 @@
         
         // Function to reset the simulation
         function resetSimulation() {
-            // Add a little flash effect when clicked
-            const button = document.querySelector('.reset-button');
-            if (button) {
-                button.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    button.style.transform = '';
-                }, 150);
-            }
-            
-            // Reset zoom
+            // Zoom reset
             svg.transition()
-                .duration(750)
-                .call(zoom.transform, d3.zoomIdentity);
+                .duration(800)
+                .call(zoom.transform, initialZoomTransform);
         
-            // Reset node positions
-            nodes.forEach(node => {
-                node.x = width / 2 + (Math.random() - 0.5) * 100;
-                node.y = height / 2 + (Math.random() - 0.5) * 100;
-                node.fx = null;
-                node.fy = null;
+            // Lock nodes to current position
+            nodes.forEach(d => {
+                d.fx = d.x;
+                d.fy = d.y;
             });
-
-            // Restart simulation
-            simulation.alpha(1).restart();
+        
+            // Animate node movement back to center (or spread)
+            d3.transition()
+              .duration(800)
+              .tween("reset", () => {
+                const ix = nodes.map(d => d3.interpolateNumber(d.x, width / 2 + (Math.random() - 0.5) * 100));
+                const iy = nodes.map(d => d3.interpolateNumber(d.y, height / 2 + (Math.random() - 0.5) * 100));
+                return t => {
+                  nodes.forEach((d, i) => {
+                    d.x = ix[i](t);
+                    d.y = iy[i](t);
+                  });
+                };
+              })
+              .on("end", () => {
+                // Release nodes
+                nodes.forEach(d => {
+                    d.fx = null;
+                    d.fy = null;
+                });
+        
+                simulation.alpha(0.8).restart();
+              });
         }
             
         // Initialize sparkles after a short delay to ensure button is rendered
         setTimeout(createSparkleParticles, 1000);
-            
-                    // Function to reset the simulation
-                    function resetSimulation() {
-                        // Reset zoom
-                        svg.transition()
-                            .duration(750)
-                            .call(zoom.transform, d3.zoomIdentity);
-                    
-                        // Reset node positions
-                        nodes.forEach(node => {
-                            node.x = width / 2 + (Math.random() - 0.5) * 100;
-                            node.y = height / 2 + (Math.random() - 0.5) * 100;
-                            node.fx = null;
-                            node.fy = null;
-                        });
-                    
-                        // Restart simulation
-                        simulation.alpha(1).restart();
-                    }
-
-                    // Initialize sparkles after a short delay to ensure button is rendered
-                    setTimeout(createSparkleParticles, 1000);
 
         // Create links with improved styling
         const link = svg.append('g')
@@ -1022,6 +1009,14 @@
             });
 
         svg.call(zoom);
+
+        // Zoom in initially by 1.3x centered on canvas
+        const initialZoomTransform = d3.zoomIdentity
+            .translate(width / 2, height / 2)
+            .scale(1.4)
+            .translate(-width / 2, -height / 2);
+        
+        svg.call(zoom.transform, initialZoomTransform);
 
         // Filter functionality
         function updateVisualization() {
