@@ -762,6 +762,17 @@
             .force('x', d3.forceX(width / 2).strength(0.1))
             .force('y', d3.forceY(height / 2).strength(0.1));
 
+        function updatePositions() {
+          link
+            .attr("x1", d => d.source.x)
+            .attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x)
+            .attr("y2", d => d.target.y);
+        
+          nodeGroup
+            .attr("transform", d => `translate(${d.x},${d.y})`);
+        }
+
         // Add reset button
         const resetButton = d3.select('#graph')
             .append('button')
@@ -839,28 +850,40 @@
                             .call(zoom.transform, d3.zoomIdentity);
                     
                         // Animate nodes back to their original positions
-                        nodeGroup.transition()
-                            .duration(800)
-                            .ease(d3.easeCubicOut) // Or d3.easeBackOut for bounce
-                            .attr('transform', d => `translate(${d.initialX},${d.initialY})`)
-                            .on('end', () => {
-                                // Lock them there briefly for the simulation
-                                nodes.forEach(d => {
-                                    d.fx = d.initialX;
-                                    d.fy = d.initialY;
-                                });
-                    
-                                // Restart the simulation
-                                simulation.alpha(0.5).restart();
-                    
-                                // Optionally free them again after animation
-                                setTimeout(() => {
-                                    nodes.forEach(d => {
-                                        d.fx = null;
-                                        d.fy = null;
-                                    });
-                                }, 1500);
+                        d3.transition()
+                          .duration(800)
+                          .ease(d3.easeCubicOut)
+                          .tween("nodeMove", () => {
+                            const interpolators = nodes.map(d => {
+                              const ix = d3.interpolateNumber(d.x, d.initialX);
+                              const iy = d3.interpolateNumber(d.y, d.initialY);
+                              return t => {
+                                d.x = ix(t);
+                                d.y = iy(t);
+                              };
                             });
+                        
+                            return t => {
+                              interpolators.forEach(f => f(t));
+                              simulation.tick();
+                              updatePositions();
+                            };
+                          })
+                          .on("end", () => {
+                            nodes.forEach(d => {
+                              d.fx = d.initialX;
+                              d.fy = d.initialY;
+                            });
+                        
+                            simulation.alpha(0.5).restart();
+                        
+                            setTimeout(() => {
+                              nodes.forEach(d => {
+                                d.fx = null;
+                                d.fy = null;
+                              });
+                            }, 1500);
+                          });
                     }
 
                     // Initialize sparkles after a short delay to ensure button is rendered
