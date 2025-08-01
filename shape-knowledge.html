@@ -1026,6 +1026,11 @@
 
         // Update positions with boundary checking
         let initialPositionsSet = false;
+
+        nodes.forEach(d => {
+          if (d.initialX == null || isNaN(d.initialX)) d.initialX = d.x;
+          if (d.initialY == null || isNaN(d.initialY)) d.initialY = d.y;
+        });
         
         simulation.on("tick", () => {
           const padding = 20;
