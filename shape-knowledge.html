@@ -853,8 +853,8 @@
                         
                         // Animate nodes back to their original positions
                         d3.transition()
-                          .duration(800)
-                          .ease(d3.easeBackOut)
+                          .duration(1400)
+                          .ease(d3.easeSinInOut)
                           .tween("nodeMove", () => {
                             const interpolators = nodes.map(d => {
                               const ix = d3.interpolateNumber(d.x, d.initialX);
