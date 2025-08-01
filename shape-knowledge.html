@@ -845,6 +845,42 @@
         // Initialize sparkles after a short delay to ensure button is rendered
         setTimeout(createSparkleParticles, 1000);
 
+            // Create links with improved styling
+                    const link = container.append('g')
+                        .selectAll('line')
+                        .data(links)
+                        .join('line')
+                        .attr('class', 'link')
+                        .attr('stroke', '#999')
+                        .attr('stroke-opacity', 0.3)
+                        .attr('stroke-width', 1);
+            
+                    // Create nodes with improved interaction
+                    const nodeGroup = container.append('g')
+                        .selectAll('g')
+                        .data(nodes)
+                        .join('g')
+                        .attr('class', 'node-group')
+                        .call(d3.drag()
+                            .on('start', dragstarted)
+                            .on('drag', dragged)
+                            .on('end', dragended));
+            
+                    const node = nodeGroup.append('circle')
+                        .attr('class', 'node')
+                        .attr('r', 8)
+                        .attr('fill', d => {
+                            switch(d.metadata.productSurface) {
+                                case 'Cash App Card': return '#ff7675';
+                                case 'Afterpay': return '#74b9ff';
+                                case 'Cash App Afterpay': return '#55efc4';
+                                default: return '#95a5a6';
+                            }
+                        })
+                        .attr('stroke', '#fff')
+                        .attr('stroke-width', 2);
+
+        
                     function updatePositions() {
                       link
                         .attr("x1", d => d.source.x)
@@ -941,41 +977,6 @@
 
                     // Initialize sparkles after a short delay to ensure button is rendered
                     setTimeout(createSparkleParticles, 1000);
-
-        // Create links with improved styling
-        const link = container.append('g')
-            .selectAll('line')
-            .data(links)
-            .join('line')
-            .attr('class', 'link')
-            .attr('stroke', '#999')
-            .attr('stroke-opacity', 0.3)
-            .attr('stroke-width', 1);
-
-        // Create nodes with improved interaction
-        const nodeGroup = container.append('g')
-            .selectAll('g')
-            .data(nodes)
-            .join('g')
-            .attr('class', 'node-group')
-            .call(d3.drag()
-                .on('start', dragstarted)
-                .on('drag', dragged)
-                .on('end', dragended));
-
-        const node = nodeGroup.append('circle')
-            .attr('class', 'node')
-            .attr('r', 8)
-            .attr('fill', d => {
-                switch(d.metadata.productSurface) {
-                    case 'Cash App Card': return '#ff7675';
-                    case 'Afterpay': return '#74b9ff';
-                    case 'Cash App Afterpay': return '#55efc4';
-                    default: return '#95a5a6';
-                }
-            })
-            .attr('stroke', '#fff')
-            .attr('stroke-width', 2);
 
         svg.call(zoom);  
         svg.call(zoom.transform, initialZoomTransform);
