@@ -392,7 +392,6 @@
     </div>
 
     <script>
-        // Product configurations
         const productConfig = {
             'CARD': { name: 'Cash App Card', class: 'product-card' },
             'CAP': { name: 'Cash App Pay', class: 'product-cap' },
@@ -401,7 +400,6 @@
             'CAAP': { name: 'Afterpay', class: 'product-caap' }
         };
 
-        // All 154 flows with calculated percentages
         const rawFlowData = [
             {sequence: "CARD", count: 16976811},
             {sequence: "CARD -> CAP", count: 8976607},
@@ -578,14 +576,12 @@
             {sequence: "CARD -> RETRO -> CAAP -> CAP", count: 1}
         ];
 
-        // Calculate total and percentages
         const totalUsers = rawFlowData.reduce((sum, flow) => sum + flow.count, 0);
         const flowData = rawFlowData.map(flow => ({
             ...flow,
             percentage: ((flow.count / totalUsers) * 100).toFixed(2)
         }));
 
-        // Parse sequence into steps
         function parseSequence(sequenceStr) {
             const steps = sequenceStr.split(' -> ');
             const parsedSteps = [];
@@ -612,13 +608,14 @@
             return parsedSteps;
         }
 
-        // Global state for filters
         let activeFilters = new Set();
         let filteredData = flowData;
 
-        // Check if flow contains selected products
         function flowContainsProducts(flow, selectedProducts) {
             if (selectedProducts.size === 0) return true;
-            
             const flowProducts = new Set(flow.sequence.split(' -> '));
             return [...selectedProducts].every(product => flowProducts.has(product));
+        }
+
+        function applyFilters() {
+            filteredData = flowData.filter(flow => flowContainsProducts(flow, activeFilters));
