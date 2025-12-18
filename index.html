@@ -184,6 +184,32 @@
             box-shadow: 0 6px 20px var(--shadow-color);
         }
 
+        .product-flows-button {
+        position: fixed;
+        bottom: 80px;  /* Position above the feedback button */
+        right: 20px;
+        background: rgba(255, 255, 255, 0.9);
+        color: #2C3E50;
+        padding: 12px 20px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        }
+        
+        .product-flows-button:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+
         /* Modal styles */
         .modal {
             display: none;
@@ -438,6 +464,11 @@
             </form>
         </div>
     </div>
+
+    <a href="product_flow_aligned.html" class="product-flows-button">
+    <span>📊</span>
+    Product Flows
+    </a>
 
     <a href="https://docs.google.com/forms/d/e/1FAIpQLSdJ2_o6nb3PgLKIWPGRFI3-pmzqfg1e9YL71v-cBmeCGnyddg/viewform" class="feedback-button" target="_blank">
         <span>💡</span>
