@@ -621,8 +621,4 @@
             if (selectedProducts.size === 0) return true;
             
             const flowProducts = new Set(flow.sequence.split(' -> '));
-            return [...selectedProducts].every(product => flowProducts.has(product));
-        }
-
-        // Apply filters and update display
-        function
+            return
