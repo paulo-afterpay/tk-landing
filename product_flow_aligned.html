@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Flow Analysis - Top 20 Aligned Paths</title>
+    <title>Cash App PAP</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         body {
@@ -297,8 +297,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="title">Product Adoption Flow Analysis</div>
-            <div class="subtitle">All 154 Customer Journey Paths - Complete Step-by-Step Analysis</div>
+            <div class="title">Product Sequencing Frequency</div>
+            <div class="subtitle">A look at the most common user journeys across our credit ecosystem</div>
         </div>
         
         <div class="stats-summary">
@@ -342,7 +342,7 @@
                 <label class="filter-checkbox" data-product="CAAP">
                     <input type="checkbox" id="filter-CAAP">
                     <div class="filter-color-indicator product-caap"></div>
-                    <span class="filter-label">Cash App Afterpay</span>
+                    <span class="filter-label">Afterpay</span>
                 </label>
             </div>
             <div class="filter-actions">
@@ -354,8 +354,8 @@
         
         <div class="step-headers">
             <div>Rank</div>
-            <div>Step 1</div>
-            <div>Step 2</div>
+            <div>Step 1: first product adopted</div>
+            <div>Step 2: second product adopted</div>
             <div>Step 3</div>
             <div>Step 4</div>
             <div>Step 5</div>
@@ -386,7 +386,7 @@
             </div>
             <div class="legend-item">
                 <div class="legend-color product-caap"></div>
-                <span>Cash App Afterpay</span>
+                <span>Afterpay</span>
             </div>
         </div>
     </div>
@@ -398,7 +398,7 @@
             'CAP': { name: 'Cash App Pay', class: 'product-cap' },
             'BORROW': { name: 'Borrow', class: 'product-borrow' },
             'RETRO': { name: 'Retro', class: 'product-retro' },
-            'CAAP': { name: 'Cash App Afterpay', class: 'product-caap' }
+            'CAAP': { name: 'Afterpay', class: 'product-caap' }
         };
 
         // All 154 flows with calculated percentages
@@ -625,130 +625,4 @@
         }
 
         // Apply filters and update display
-        function applyFilters() {
-            filteredData = flowData.filter(flow => flowContainsProducts(flow, activeFilters));
-            
-            // Update statistics
-            const filteredCount = filteredData.length;
-            const filteredUsers = filteredData.reduce((sum, flow) => sum + flow.count, 0);
-            const coveragePercent = ((filteredUsers / totalUsers) * 100).toFixed(1);
-            
-            document.getElementById('flows-shown').textContent = filteredCount;
-            document.getElementById('coverage-percent').textContent = `${coveragePercent}%`;
-            
-            // Update results summary
-            const summaryDiv = document.getElementById('results-summary');
-            if (activeFilters.size > 0) {
-                const productNames = [...activeFilters].map(p => productConfig[p].name).join(', ');
-                summaryDiv.innerHTML = `
-                    Showing flows that include: <strong>${productNames}</strong><br>
-                    Found ${filteredCount} flows covering ${filteredUsers.toLocaleString()} users (${coveragePercent}% of total)
-                `;
-                summaryDiv.style.display = 'block';
-            } else {
-                summaryDiv.style.display = 'none';
-            }
-            
-            // Re-render visualization
-            renderFlowVisualization();
-        }
-
-        // Create the flow visualization
-        function renderFlowVisualization() {
-            const container = d3.select("#flow-container");
-            container.selectAll("*").remove(); // Clear existing content
-            
-            filteredData.forEach((flow, index) => {
-                const steps = parseSequence(flow.sequence);
-                
-                const row = container.append("div")
-                    .attr("class", "flow-row");
-                
-                // Rank (use original rank from full dataset)
-                const originalRank = flowData.findIndex(f => f.sequence === flow.sequence) + 1;
-                row.append("div")
-                    .attr("class", "rank")
-                    .text(originalRank);
-                
-                // Steps
-                steps.forEach(step => {
-                    const cell = row.append("div")
-                        .attr("class", `step-cell ${step.filled ? 'filled' : 'empty'} ${step.class}`)
-                        .text(step.name);
-                });
-                
-                // User count
-                row.append("div")
-                    .attr("class", "user-count")
-                    .text(flow.count.toLocaleString());
-                
-                // Percentage
-                row.append("div")
-                    .attr("class", "percentage")
-                    .text(`${flow.percentage}%`);
-            });
-        }
-
-        // Handle filter checkbox changes
-        function handleFilterChange(product, isChecked) {
-            if (isChecked) {
-                activeFilters.add(product);
-            } else {
-                activeFilters.delete(product);
-            }
-            
-            // Update checkbox visual state
-            const checkbox = document.querySelector(`[data-product="${product}"]`);
-            if (isChecked) {
-                checkbox.classList.add('active');
-            } else {
-                checkbox.classList.remove('active');
-            }
-            
-            applyFilters();
-        }
-
-        // Clear all filters
-        function clearAllFilters() {
-            activeFilters.clear();
-            document.querySelectorAll('.filter-checkbox input').forEach(cb => {
-                cb.checked = false;
-            });
-            document.querySelectorAll('.filter-checkbox').forEach(cb => {
-                cb.classList.remove('active');
-            });
-            applyFilters();
-        }
-
-        // Select all filters
-        function selectAllFilters() {
-            activeFilters = new Set(['CARD', 'CAP', 'BORROW', 'RETRO', 'CAAP']);
-            document.querySelectorAll('.filter-checkbox input').forEach(cb => {
-                cb.checked = true;
-            });
-            document.querySelectorAll('.filter-checkbox').forEach(cb => {
-                cb.classList.add('active');
-            });
-            applyFilters();
-        }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set up filter event listeners
-            document.querySelectorAll('.filter-checkbox input').forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const product = this.id.replace('filter-', '');
-                    handleFilterChange(product, this.checked);
-                });
-            });
-
-            // Set up filter action buttons
-            document.getElementById('clear-filters').addEventListener('click', clearAllFilters);
-            document.getElementById('select-all-filters').addEventListener('click', selectAllFilters);
-
-            // Initial render
-            renderFlowVisualization();
-        });
-    </script>
-</body>
-</html>
+        function
