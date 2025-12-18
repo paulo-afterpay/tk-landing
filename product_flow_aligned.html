@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Flow Analysis - Top 20 Aligned Paths</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        
+        .flow-table-container {
+            max-height: 800px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .flow-table-container::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        .flow-table-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 6px;
+        }
+        
+        .flow-table-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 6px;
+        }
+        
+        .flow-table-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+        
+        .step-headers {
+            display: grid;
+            grid-template-columns: 60px repeat(5, 1fr) 120px 80px;
+            gap: 10px;
+            padding: 15px 0;
+            border-bottom: 2px solid #34495e;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+        
+        .flow-row {
+            display: grid;
+            grid-template-columns: 60px repeat(5, 1fr) 120px 80px;
+            gap: 10px;
+            padding: 12px 0;
+            border-bottom: 1px solid #ecf0f1;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+        
+        .flow-row:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .rank {
+            text-align: center;
+            font-weight: bold;
+            color: #7f8c8d;
+        }
+        
+        .step-cell {
+            text-align: center;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            min-height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .step-cell.filled {
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .step-cell.empty {
+            background-color: #f8f9fa;
+            border: 1px dashed #ddd;
+        }
+        
+        .user-count {
+            text-align: right;
+            font-weight: bold;
+            color: #e74c3c;
+            font-size: 14px;
+        }
+        
+        .percentage {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+        
+        .product-card {
+            background: #3498db;
+        }
+        
+        .product-cap {
+            background: #e74c3c;
+        }
+        
+        .product-borrow {
+            background: #f39c12;
+        }
+        
+        .product-retro {
+            background: #9b59b6;
+        }
+        
+        .product-caap {
+            background: #1abc9c;
+        }
+        
+        .legend {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .stats-summary {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 8px;
+            min-width: 120px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2980b9;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .filters-container {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .filters-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .filter-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .filter-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        
+        .filter-checkbox:hover {
+            border-color: #3498db;
+            background: #f0f8ff;
+        }
+        
+        .filter-checkbox.active {
+            border-color: #3498db;
+            background: #e3f2fd;
+        }
+        
+        .filter-checkbox input[type="checkbox"] {
+            margin: 0;
+            cursor: pointer;
+        }
+        
+        .filter-label {
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .filter-color-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            margin-right: 4px;
+        }
+        
+        .filter-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .filter-btn {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover {
+            background: #f0f0f0;
+        }
+        
+        .results-summary {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            border-radius: 6px;
+            padding: 10px 15px;
+            margin: 15px 0;
+            font-size: 14px;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">Product Adoption Flow Analysis</div>
+            <div class="subtitle">All 154 Customer Journey Paths - Complete Step-by-Step Analysis</div>
+        </div>
+        
+        <div class="stats-summary">
+            <div class="stat-item">
+                <div class="stat-value">48.3M</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="flows-shown">154</div>
+                <div class="stat-label">Flows Shown</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="coverage-percent">100%</div>
+                <div class="stat-label">Coverage</div>
+            </div>
+        </div>
+        
+        <div class="filters-container">
+            <div class="filters-title">Filter by Products Included</div>
+            <div class="filter-options">
+                <label class="filter-checkbox" data-product="CARD">
+                    <input type="checkbox" id="filter-CARD">
+                    <div class="filter-color-indicator product-card"></div>
+                    <span class="filter-label">Cash App Card</span>
+                </label>
+                <label class="filter-checkbox" data-product="CAP">
+                    <input type="checkbox" id="filter-CAP">
+                    <div class="filter-color-indicator product-cap"></div>
+                    <span class="filter-label">Cash App Pay</span>
+                </label>
+                <label class="filter-checkbox" data-product="BORROW">
+                    <input type="checkbox" id="filter-BORROW">
+                    <div class="filter-color-indicator product-borrow"></div>
+                    <span class="filter-label">Borrow</span>
+                </label>
+                <label class="filter-checkbox" data-product="RETRO">
+                    <input type="checkbox" id="filter-RETRO">
+                    <div class="filter-color-indicator product-retro"></div>
+                    <span class="filter-label">Retro</span>
+                </label>
+                <label class="filter-checkbox" data-product="CAAP">
+                    <input type="checkbox" id="filter-CAAP">
+                    <div class="filter-color-indicator product-caap"></div>
+                    <span class="filter-label">Cash App Afterpay</span>
+                </label>
+            </div>
+            <div class="filter-actions">
+                <button class="filter-btn" id="clear-filters">Clear All</button>
+                <button class="filter-btn" id="select-all-filters">Select All</button>
+            </div>
+            <div id="results-summary" class="results-summary" style="display: none;"></div>
+        </div>
+        
+        <div class="step-headers">
+            <div>Rank</div>
+            <div>Step 1</div>
+            <div>Step 2</div>
+            <div>Step 3</div>
+            <div>Step 4</div>
+            <div>Step 5</div>
+            <div>Users</div>
+            <div>%</div>
+        </div>
+        
+        <div class="flow-table-container">
+            <div id="flow-container"></div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color product-card"></div>
+                <span>Cash App Card</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color product-cap"></div>
+                <span>Cash App Pay</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color product-borrow"></div>
+                <span>Borrow</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color product-retro"></div>
+                <span>Retro</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color product-caap"></div>
+                <span>Cash App Afterpay</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Product configurations
+        const productConfig = {
+            'CARD': { name: 'Cash App Card', class: 'product-card' },
+            'CAP': { name: 'Cash App Pay', class: 'product-cap' },
+            'BORROW': { name: 'Borrow', class: 'product-borrow' },
+            'RETRO': { name: 'Retro', class: 'product-retro' },
+            'CAAP': { name: 'Cash App Afterpay', class: 'product-caap' }
+        };
+
+        // All 154 flows with calculated percentages
+        const rawFlowData = [
+            {sequence: "CARD", count: 16976811},
+            {sequence: "CARD -> CAP", count: 8976607},
+            {sequence: "CAP", count: 4514365},
+            {sequence: "CARD -> BORROW", count: 3434545},
+            {sequence: "BORROW", count: 2602875},
+            {sequence: "CARD -> CAP -> BORROW", count: 2556656},
+            {sequence: "CAP -> CARD", count: 1842181},
+            {sequence: "BORROW -> CARD", count: 1455878},
+            {sequence: "BORROW -> CARD -> CAP", count: 939655},
+            {sequence: "CARD -> BORROW -> RETRO", count: 511782},
+            {sequence: "CARD -> BORROW -> CAP", count: 503682},
+            {sequence: "BORROW -> CARD -> CAP -> RETRO", count: 449679},
+            {sequence: "BORROW -> CARD -> RETRO", count: 391240},
+            {sequence: "CARD -> CAP -> BORROW -> RETRO", count: 381522},
+            {sequence: "CAP -> CARD -> BORROW", count: 281081},
+            {sequence: "CAAP", count: 250610},
+            {sequence: "CAP -> BORROW", count: 244833},
+            {sequence: "CARD -> RETRO", count: 193540},
+            {sequence: "CARD -> BORROW -> CAP -> RETRO", count: 179286},
+            {sequence: "CARD -> CAP -> RETRO", count: 170301},
+            {sequence: "CARD -> RETRO -> BORROW", count: 153109},
+            {sequence: "CARD -> CAP -> RETRO -> BORROW", count: 146991},
+            {sequence: "BORROW -> CAP", count: 105005},
+            {sequence: "CARD -> CAAP", count: 99930},
+            {sequence: "CARD -> CAP -> CAAP", count: 74662},
+            {sequence: "BORROW -> CAP -> CARD", count: 74073},
+            {sequence: "BORROW -> RETRO", count: 72121},
+            {sequence: "CAP -> CARD -> BORROW -> RETRO", count: 46181},
+            {sequence: "CARD -> BORROW -> CAAP", count: 45360},
+            {sequence: "CAP -> CAAP", count: 41943},
+            {sequence: "CARD -> CAP -> BORROW -> CAAP", count: 40555},
+            {sequence: "RETRO", count: 36333},
+            {sequence: "RETRO -> BORROW", count: 29096},
+            {sequence: "BORROW -> CARD -> RETRO -> CAP", count: 24560},
+            {sequence: "BORROW -> CAAP", count: 24412},
+            {sequence: "CARD -> CAP -> CAAP -> BORROW", count: 24186},
+            {sequence: "BORROW -> CAP -> CARD -> RETRO", count: 23857},
+            {sequence: "CARD -> CAAP -> BORROW", count: 22126},
+            {sequence: "CARD -> BORROW -> RETRO -> CAAP", count: 19284},
+            {sequence: "CAP -> CARD -> RETRO", count: 18593},
+            {sequence: "CARD -> RETRO -> CAP -> BORROW", count: 16863},
+            {sequence: "BORROW -> CARD -> CAP -> RETRO -> CAAP", count: 15762},
+            {sequence: "CAP -> CARD -> RETRO -> BORROW", count: 15169},
+            {sequence: "CARD -> CAP -> BORROW -> RETRO -> CAAP", count: 14322},
+            {sequence: "BORROW -> CARD -> RETRO -> CAAP", count: 13884},
+            {sequence: "CAAP -> BORROW", count: 13170},
+            {sequence: "CAP -> BORROW -> CARD", count: 12596},
+            {sequence: "CAP -> CARD -> CAAP", count: 12218},
+            {sequence: "CARD -> BORROW -> RETRO -> CAP", count: 12029},
+            {sequence: "CARD -> RETRO -> CAP", count: 11572},
+            {sequence: "BORROW -> CARD -> CAAP", count: 11071},
+            {sequence: "BORROW -> CARD -> CAP -> CAAP", count: 10387},
+            {sequence: "CAP -> BORROW -> RETRO", count: 10252},
+            {sequence: "CARD -> BORROW -> CAAP -> RETRO", count: 7402},
+            {sequence: "CARD -> BORROW -> CAP -> RETRO -> CAAP", count: 6551},
+            {sequence: "CARD -> CAP -> BORROW -> CAAP -> RETRO", count: 6101},
+            {sequence: "CARD -> BORROW -> CAP -> CAAP", count: 5814},
+            {sequence: "BORROW -> CARD -> CAP -> CAAP -> RETRO", count: 5118},
+            {sequence: "CARD -> RETRO -> BORROW -> CAAP", count: 4873},
+            {sequence: "CARD -> CAP -> RETRO -> CAAP", count: 4573},
+            {sequence: "CAP -> CARD -> BORROW -> CAAP", count: 4521},
+            {sequence: "CARD -> RETRO -> CAAP", count: 4445},
+            {sequence: "CAP -> BORROW -> CAAP", count: 4390},
+            {sequence: "CAP -> RETRO", count: 4363},
+            {sequence: "CARD -> CAP -> RETRO -> BORROW -> CAAP", count: 4294},
+            {sequence: "BORROW -> CARD -> CAAP -> RETRO", count: 4083},
+            {sequence: "BORROW -> CAP -> RETRO", count: 3866},
+            {sequence: "CAP -> BORROW -> CARD -> RETRO", count: 3603},
+            {sequence: "CARD -> RETRO -> BORROW -> CAP", count: 3596},
+            {sequence: "BORROW -> RETRO -> CAAP", count: 3137},
+            {sequence: "CARD -> CAP -> CAAP -> RETRO", count: 3096},
+            {sequence: "CAP -> RETRO -> BORROW", count: 3080},
+            {sequence: "CARD -> CAP -> RETRO -> CAAP -> BORROW", count: 2997},
+            {sequence: "CARD -> CAAP -> RETRO", count: 2881},
+            {sequence: "CARD -> RETRO -> CAAP -> BORROW", count: 2875},
+            {sequence: "CAP -> CARD -> CAAP -> BORROW", count: 2734},
+            {sequence: "CAP -> CAAP -> BORROW", count: 2669},
+            {sequence: "CARD -> BORROW -> CAP -> CAAP -> RETRO", count: 2532},
+            {sequence: "BORROW -> CAAP -> RETRO", count: 2051},
+            {sequence: "CAP -> CARD -> BORROW -> RETRO -> CAAP", count: 1844},
+            {sequence: "CARD -> CAP -> CAAP -> RETRO -> BORROW", count: 1778},
+            {sequence: "CARD -> CAAP -> RETRO -> BORROW", count: 1710},
+            {sequence: "BORROW -> CAP -> CAAP", count: 1556},
+            {sequence: "CARD -> CAP -> CAAP -> BORROW -> RETRO", count: 1537},
+            {sequence: "CARD -> CAAP -> BORROW -> RETRO", count: 1496},
+            {sequence: "CAAP -> CAP", count: 1092},
+            {sequence: "RETRO -> BORROW -> CAAP", count: 1051},
+            {sequence: "CAAP -> RETRO", count: 946},
+            {sequence: "CAP -> CARD -> BORROW -> CAAP -> RETRO", count: 890},
+            {sequence: "RETRO -> CAAP", count: 863},
+            {sequence: "BORROW -> CAP -> CARD -> RETRO -> CAAP", count: 855},
+            {sequence: "BORROW -> CAP -> CARD -> CAAP", count: 844},
+            {sequence: "BORROW -> CARD -> RETRO -> CAP -> CAAP", count: 810},
+            {sequence: "RETRO -> CAAP -> BORROW", count: 764},
+            {sequence: "CAAP -> BORROW -> RETRO", count: 678},
+            {sequence: "CAAP -> RETRO -> BORROW", count: 639},
+            {sequence: "CAP -> CARD -> RETRO -> CAAP", count: 544},
+            {sequence: "CARD -> RETRO -> CAP -> BORROW -> CAAP", count: 509},
+            {sequence: "CAP -> BORROW -> RETRO -> CAAP", count: 452},
+            {sequence: "CAP -> CARD -> RETRO -> BORROW -> CAAP", count: 450},
+            {sequence: "CAP -> CARD -> CAAP -> RETRO", count: 404},
+            {sequence: "CARD -> BORROW -> RETRO -> CAP -> CAAP", count: 390},
+            {sequence: "BORROW -> CAP -> CARD -> CAAP -> RETRO", count: 376},
+            {sequence: "CARD -> CAAP -> CAP", count: 370},
+            {sequence: "CAP -> CARD -> RETRO -> CAAP -> BORROW", count: 361},
+            {sequence: "CAP -> BORROW -> CAAP -> RETRO", count: 342},
+            {sequence: "CARD -> RETRO -> CAP -> CAAP", count: 277},
+            {sequence: "CAP -> CARD -> CAAP -> RETRO -> BORROW", count: 266},
+            {sequence: "CARD -> RETRO -> CAP -> CAAP -> BORROW", count: 207},
+            {sequence: "CAP -> CARD -> CAAP -> BORROW -> RETRO", count: 205},
+            {sequence: "CAP -> CAAP -> RETRO", count: 185},
+            {sequence: "CAP -> BORROW -> CARD -> CAAP", count: 158},
+            {sequence: "CAP -> BORROW -> CARD -> RETRO -> CAAP", count: 150},
+            {sequence: "BORROW -> CAP -> CAAP -> RETRO", count: 139},
+            {sequence: "BORROW -> CAP -> RETRO -> CAAP", count: 139},
+            {sequence: "RETRO -> CARD", count: 126},
+            {sequence: "CAP -> CAAP -> BORROW -> RETRO", count: 126},
+            {sequence: "CAP -> RETRO -> BORROW -> CAAP", count: 114},
+            {sequence: "CARD -> CAAP -> CAP -> BORROW", count: 111},
+            {sequence: "CARD -> RETRO -> BORROW -> CAP -> CAAP", count: 111},
+            {sequence: "CAP -> RETRO -> CAAP", count: 110},
+            {sequence: "BORROW -> RETRO -> CARD", count: 104},
+            {sequence: "CAP -> CAAP -> RETRO -> BORROW", count: 96},
+            {sequence: "RETRO -> CARD -> CAP -> BORROW", count: 95},
+            {sequence: "BORROW -> RETRO -> CARD -> CAP", count: 94},
+            {sequence: "CAP -> RETRO -> CAAP -> BORROW", count: 88},
+            {sequence: "RETRO -> CARD -> BORROW", count: 81},
+            {sequence: "CAAP -> CAP -> BORROW", count: 70},
+            {sequence: "CAP -> BORROW -> CARD -> CAAP -> RETRO", count: 69},
+            {sequence: "RETRO -> CARD -> CAP", count: 60},
+            {sequence: "BORROW -> CARD -> CAAP -> CAP", count: 53},
+            {sequence: "CARD -> BORROW -> CAAP -> CAP", count: 42},
+            {sequence: "BORROW -> CARD -> CAAP -> CAP -> RETRO", count: 38},
+            {sequence: "BORROW -> CAAP -> CAP", count: 27},
+            {sequence: "RETRO -> CARD -> BORROW -> CAP", count: 21},
+            {sequence: "CAP -> CAAP -> CARD", count: 16},
+            {sequence: "CARD -> BORROW -> CAAP -> CAP -> RETRO", count: 14},
+            {sequence: "CARD -> CAAP -> CAP -> BORROW -> RETRO", count: 13},
+            {sequence: "CARD -> CAAP -> CAP -> RETRO", count: 12},
+            {sequence: "CARD -> CAAP -> CAP -> RETRO -> BORROW", count: 9},
+            {sequence: "CAAP -> CAP -> CARD", count: 8},
+            {sequence: "CAAP -> CAP -> BORROW -> RETRO", count: 7},
+            {sequence: "BORROW -> CARD -> RETRO -> CAAP -> CAP", count: 5},
+            {sequence: "BORROW -> CAAP -> CAP -> RETRO", count: 4},
+            {sequence: "CAP -> CAAP -> CARD -> BORROW", count: 4},
+            {sequence: "RETRO -> CARD -> CAP -> CAAP -> BORROW", count: 4},
+            {sequence: "RETRO -> BORROW -> CARD -> CAP", count: 3},
+            {sequence: "RETRO -> CAP -> CARD", count: 3},
+            {sequence: "CAAP -> CAP -> RETRO -> BORROW", count: 3},
+            {sequence: "RETRO -> BORROW -> CARD", count: 3},
+            {sequence: "CAP -> CAAP -> CARD -> BORROW -> RETRO", count: 2},
+            {sequence: "CARD -> BORROW -> RETRO -> CAAP -> CAP", count: 2},
+            {sequence: "RETRO -> CAP -> CARD -> BORROW", count: 2},
+            {sequence: "BORROW -> CAP -> CAAP -> CARD -> RETRO", count: 2},
+            {sequence: "RETRO -> CARD -> BORROW -> CAAP", count: 2},
+            {sequence: "BORROW -> RETRO -> CAP -> CARD", count: 2},
+            {sequence: "BORROW -> CAP -> CAAP -> CARD", count: 2},
+            {sequence: "RETRO -> CARD -> CAP -> BORROW -> CAAP", count: 2},
+            {sequence: "BORROW -> RETRO -> CARD -> CAAP", count: 1},
+            {sequence: "BORROW -> CAAP -> CAP -> CARD", count: 1},
+            {sequence: "CAAP -> CAP -> CARD -> BORROW", count: 1},
+            {sequence: "BORROW -> RETRO -> CARD -> CAP -> CAAP", count: 1},
+            {sequence: "RETRO -> CAP -> CARD -> BORROW -> CAAP", count: 1},
+            {sequence: "CAAP -> CAP -> CARD -> RETRO", count: 1},
+            {sequence: "RETRO -> CARD -> CAAP -> BORROW", count: 1},
+            {sequence: "CAP -> CAAP -> BORROW -> CARD", count: 1},
+            {sequence: "CARD -> RETRO -> CAAP -> CAP -> BORROW", count: 1},
+            {sequence: "RETRO -> CARD -> BORROW -> CAP -> CAAP", count: 1},
+            {sequence: "RETRO -> CARD -> CAP -> CAAP", count: 1},
+            {sequence: "CAP -> CAAP -> BORROW -> CARD -> RETRO", count: 1},
+            {sequence: "CARD -> RETRO -> BORROW -> CAAP -> CAP", count: 1},
+            {sequence: "CAP -> CAAP -> CARD -> RETRO -> BORROW", count: 1},
+            {sequence: "CARD -> RETRO -> CAAP -> CAP", count: 1}
+        ];
+
+        // Calculate total and percentages
+        const totalUsers = rawFlowData.reduce((sum, flow) => sum + flow.count, 0);
+        const flowData = rawFlowData.map(flow => ({
+            ...flow,
+            percentage: ((flow.count / totalUsers) * 100).toFixed(2)
+        }));
+
+        // Parse sequence into steps
+        function parseSequence(sequenceStr) {
+            const steps = sequenceStr.split(' -> ');
+            const parsedSteps = [];
+            
+            for (let i = 0; i < 5; i++) {
+                if (i < steps.length) {
+                    const product = steps[i];
+                    parsedSteps.push({
+                        product: product,
+                        name: productConfig[product].name,
+                        class: productConfig[product].class,
+                        filled: true
+                    });
+                } else {
+                    parsedSteps.push({
+                        product: null,
+                        name: '',
+                        class: 'empty',
+                        filled: false
+                    });
+                }
+            }
+            
+            return parsedSteps;
+        }
+
+        // Global state for filters
+        let activeFilters = new Set();
+        let filteredData = flowData;
+
+        // Check if flow contains selected products
+        function flowContainsProducts(flow, selectedProducts) {
+            if (selectedProducts.size === 0) return true;
+            
+            const flowProducts = new Set(flow.sequence.split(' -> '));
+            return [...selectedProducts].every(product => flowProducts.has(product));
+        }
+
+        // Apply filters and update display
+        function applyFilters() {
+            filteredData = flowData.filter(flow => flowContainsProducts(flow, activeFilters));
+            
+            // Update statistics
+            const filteredCount = filteredData.length;
+            const filteredUsers = filteredData.reduce((sum, flow) => sum + flow.count, 0);
+            const coveragePercent = ((filteredUsers / totalUsers) * 100).toFixed(1);
+            
+            document.getElementById('flows-shown').textContent = filteredCount;
+            document.getElementById('coverage-percent').textContent = `${coveragePercent}%`;
+            
+            // Update results summary
+            const summaryDiv = document.getElementById('results-summary');
+            if (activeFilters.size > 0) {
+                const productNames = [...activeFilters].map(p => productConfig[p].name).join(', ');
+                summaryDiv.innerHTML = `
+                    Showing flows that include: <strong>${productNames}</strong><br>
+                    Found ${filteredCount} flows covering ${filteredUsers.toLocaleString()} users (${coveragePercent}% of total)
+                `;
+                summaryDiv.style.display = 'block';
+            } else {
+                summaryDiv.style.display = 'none';
+            }
+            
+            // Re-render visualization
+            renderFlowVisualization();
+        }
+
+        // Create the flow visualization
+        function renderFlowVisualization() {
+            const container = d3.select("#flow-container");
+            container.selectAll("*").remove(); // Clear existing content
+            
+            filteredData.forEach((flow, index) => {
+                const steps = parseSequence(flow.sequence);
+                
+                const row = container.append("div")
+                    .attr("class", "flow-row");
+                
+                // Rank (use original rank from full dataset)
+                const originalRank = flowData.findIndex(f => f.sequence === flow.sequence) + 1;
+                row.append("div")
+                    .attr("class", "rank")
+                    .text(originalRank);
+                
+                // Steps
+                steps.forEach(step => {
+                    const cell = row.append("div")
+                        .attr("class", `step-cell ${step.filled ? 'filled' : 'empty'} ${step.class}`)
+                        .text(step.name);
+                });
+                
+                // User count
+                row.append("div")
+                    .attr("class", "user-count")
+                    .text(flow.count.toLocaleString());
+                
+                // Percentage
+                row.append("div")
+                    .attr("class", "percentage")
+                    .text(`${flow.percentage}%`);
+            });
+        }
+
+        // Handle filter checkbox changes
+        function handleFilterChange(product, isChecked) {
+            if (isChecked) {
+                activeFilters.add(product);
+            } else {
+                activeFilters.delete(product);
+            }
+            
+            // Update checkbox visual state
+            const checkbox = document.querySelector(`[data-product="${product}"]`);
+            if (isChecked) {
+                checkbox.classList.add('active');
+            } else {
+                checkbox.classList.remove('active');
+            }
+            
+            applyFilters();
+        }
+
+        // Clear all filters
+        function clearAllFilters() {
+            activeFilters.clear();
+            document.querySelectorAll('.filter-checkbox input').forEach(cb => {
+                cb.checked = false;
+            });
+            document.querySelectorAll('.filter-checkbox').forEach(cb => {
+                cb.classList.remove('active');
+            });
+            applyFilters();
+        }
+
+        // Select all filters
+        function selectAllFilters() {
+            activeFilters = new Set(['CARD', 'CAP', 'BORROW', 'RETRO', 'CAAP']);
+            document.querySelectorAll('.filter-checkbox input').forEach(cb => {
+                cb.checked = true;
+            });
+            document.querySelectorAll('.filter-checkbox').forEach(cb => {
+                cb.classList.add('active');
+            });
+            applyFilters();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up filter event listeners
+            document.querySelectorAll('.filter-checkbox input').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const product = this.id.replace('filter-', '');
+                    handleFilterChange(product, this.checked);
+                });
+            });
+
+            // Set up filter action buttons
+            document.getElementById('clear-filters').addEventListener('click', clearAllFilters);
+            document.getElementById('select-all-filters').addEventListener('click', selectAllFilters);
+
+            // Initial render
+            renderFlowVisualization();
+        });
+    </script>
+</body>
+</html>
