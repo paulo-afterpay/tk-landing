@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cash App PAP</title>
+    <title>Cash App PAP - Snowflake Data Source</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -20,6 +21,26 @@
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 30px;
+        }
+        
+        .data-source-info {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .data-source-info h3 {
+            margin: 0 0 10px 0;
+            color: #1976d2;
+            font-size: 16px;
+        }
+        
+        .data-source-info p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #424242;
         }
         
         .flow-table-container {
@@ -46,6 +67,126 @@
         
         .flow-table-container::-webkit-scrollbar-thumb:hover {
             background: #555;
+        }
+        
+        .stats-summary {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 8px;
+            min-width: 120px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2980b9;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .filters-container {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .filters-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .filter-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .filter-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        
+        .filter-checkbox:hover {
+            border-color: #3498db;
+            background: #f0f8ff;
+        }
+        
+        .filter-checkbox.active {
+            border-color: #3498db;
+            background: #e3f2fd;
+        }
+        
+        .filter-checkbox input[type="checkbox"] {
+            margin: 0;
+            cursor: pointer;
+        }
+        
+        .filter-label {
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .filter-color-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            margin-right: 4px;
+        }
+        
+        .filter-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .filter-btn {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover {
+            background: #f0f0f0;
+        }
+        
+        .results-summary {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            border-radius: 6px;
+            padding: 10px 15px;
+            margin: 15px 0;
+            font-size: 14px;
+            color: #2e7d32;
         }
         
         .header {
@@ -173,124 +314,101 @@
             border-radius: 4px;
         }
         
-        .stats-summary {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
+        /* Sankey Chart Styles */
+        .sankey-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #ecf0f1;
         }
         
-        .stat-item {
+        .sankey-header {
             text-align: center;
-            padding: 15px;
-            background: #ecf0f1;
-            border-radius: 8px;
-            min-width: 120px;
+            margin-bottom: 30px;
         }
         
-        .stat-value {
+        .sankey-title {
             font-size: 24px;
             font-weight: bold;
-            color: #2980b9;
+            color: #2c3e50;
+            margin-bottom: 10px;
         }
         
-        .stat-label {
-            font-size: 12px;
+        .sankey-subtitle {
+            font-size: 16px;
             color: #7f8c8d;
-            margin-top: 5px;
         }
         
-        .filters-container {
+        .sankey-controls {
             background: #f8f9fa;
             border: 1px solid #ddd;
             border-radius: 8px;
             padding: 20px;
             margin: 20px 0;
+            text-align: center;
         }
         
-        .filters-title {
-            font-size: 16px;
+        .sankey-product-selector label {
             font-weight: bold;
+            margin-right: 10px;
             color: #2c3e50;
-            margin-bottom: 15px;
         }
         
-        .filter-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        .filter-checkbox {
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .sankey-product-selector select {
             padding: 8px 12px;
-            background: white;
             border: 2px solid #ddd;
             border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-            user-select: none;
-        }
-        
-        .filter-checkbox:hover {
-            border-color: #3498db;
-            background: #f0f8ff;
-        }
-        
-        .filter-checkbox.active {
-            border-color: #3498db;
-            background: #e3f2fd;
-        }
-        
-        .filter-checkbox input[type="checkbox"] {
-            margin: 0;
-            cursor: pointer;
-        }
-        
-        .filter-label {
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-        }
-        
-        .filter-color-indicator {
-            width: 12px;
-            height: 12px;
-            border-radius: 3px;
-            margin-right: 4px;
-        }
-        
-        .filter-actions {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-        }
-        
-        .filter-btn {
-            padding: 6px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
             background: white;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-        
-        .filter-btn:hover {
-            background: #f0f0f0;
-        }
-        
-        .results-summary {
-            background: #e8f5e8;
-            border: 1px solid #4caf50;
-            border-radius: 6px;
-            padding: 10px 15px;
-            margin: 15px 0;
             font-size: 14px;
-            color: #2e7d32;
+            cursor: pointer;
+        }
+        
+        #sankey-chart-container {
+            margin-top: 30px;
+        }
+        
+        .sankey-chart-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        #sankey-chart-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        #sankey-chart-subtitle {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        #sankey-chart {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .sankey-link {
+            fill: none;
+            stroke-opacity: 0.4;
+        }
+        
+        .sankey-link:hover {
+            stroke-opacity: 0.7;
+        }
+        
+        .sankey-node rect {
+            fill-opacity: 0.9;
+            shape-rendering: crispEdges;
+        }
+        
+        .sankey-node text {
+            pointer-events: none;
+            text-shadow: 0 1px 0 #fff;
+            font-size: 12px;
+            font-weight: 500;
         }
     </style>
 </head>
@@ -301,13 +419,20 @@
             <div class="subtitle">A look at the most common user journeys across our credit ecosystem</div>
         </div>
         
+        <div class="data-source-info">
+            <h3>📊 Data Source: Snowflake</h3>
+            <p><strong>Table:</strong> app_cash_beta.pgoeb.cll_cross_journey_topology_1217</p>
+            <p><strong>Last Updated:</strong> <span id="data-timestamp">Loading...</span></p>
+            <p><strong>Total Flows:</strong> 173 distinct product sequences</p>
+        </div>
+        
         <div class="stats-summary">
             <div class="stat-item">
-                <div class="stat-value">48.3M</div>
+                <div class="stat-value" id="total-users">48.3M</div>
                 <div class="stat-label">Total Users</div>
             </div>
             <div class="stat-item">
-                <div class="stat-value" id="flows-shown">154</div>
+                <div class="stat-value" id="flows-shown">173</div>
                 <div class="stat-label">Flows Shown</div>
             </div>
             <div class="stat-item">
@@ -367,6 +492,36 @@
             <div id="flow-container"></div>
         </div>
         
+        <!-- Sankey Chart Section -->
+        <div class="sankey-section">
+            <div class="sankey-header">
+                <div class="sankey-title">Custom Sankey Analysis</div>
+                <div class="sankey-subtitle">Select a starting product to see where users go next</div>
+            </div>
+            
+            <div class="sankey-controls">
+                <div class="sankey-product-selector">
+                    <label for="sankey-product-select">Starting Product:</label>
+                    <select id="sankey-product-select">
+                        <option value="">-- Select a Product --</option>
+                        <option value="CARD">Cash App Card</option>
+                        <option value="CAP">Cash App Pay</option>
+                        <option value="BORROW">Borrow</option>
+                        <option value="CAAP">Afterpay</option>
+                        <option value="RETRO">Retro</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="sankey-chart-container" style="display: none;">
+                <div class="sankey-chart-header">
+                    <div id="sankey-chart-title"></div>
+                    <div id="sankey-chart-subtitle"></div>
+                </div>
+                <div id="sankey-chart"></div>
+            </div>
+        </div>
+        
         <div class="legend">
             <div class="legend-item">
                 <div class="legend-color product-card"></div>
@@ -401,189 +556,203 @@
             'CAAP': { name: 'Afterpay', class: 'product-caap' }
         };
 
-        // All 154 flows with calculated percentages
+        // Complete flow data from Snowflake - ALL 173 flows
+        // Source: app_cash_beta.pgoeb.cll_cross_journey_topology_1217
+        // Total users: 48,281,498
         const rawFlowData = [
-            {sequence: "CARD", count: 16976811},
-            {sequence: "CARD -> CAP", count: 8976607},
-            {sequence: "CAP", count: 4514365},
-            {sequence: "CARD -> BORROW", count: 3434545},
-            {sequence: "BORROW", count: 2602875},
-            {sequence: "CARD -> CAP -> BORROW", count: 2556656},
-            {sequence: "CAP -> CARD", count: 1842181},
-            {sequence: "BORROW -> CARD", count: 1455878},
-            {sequence: "BORROW -> CARD -> CAP", count: 939655},
-            {sequence: "CARD -> BORROW -> RETRO", count: 511782},
-            {sequence: "CARD -> BORROW -> CAP", count: 503682},
-            {sequence: "BORROW -> CARD -> CAP -> RETRO", count: 449679},
-            {sequence: "BORROW -> CARD -> RETRO", count: 391240},
-            {sequence: "CARD -> CAP -> BORROW -> RETRO", count: 381522},
-            {sequence: "CAP -> CARD -> BORROW", count: 281081},
-            {sequence: "CAAP", count: 250610},
-            {sequence: "CAP -> BORROW", count: 244833},
-            {sequence: "CARD -> RETRO", count: 193540},
-            {sequence: "CARD -> BORROW -> CAP -> RETRO", count: 179286},
-            {sequence: "CARD -> CAP -> RETRO", count: 170301},
-            {sequence: "CARD -> RETRO -> BORROW", count: 153109},
-            {sequence: "CARD -> CAP -> RETRO -> BORROW", count: 146991},
-            {sequence: "BORROW -> CAP", count: 105005},
-            {sequence: "CARD -> CAAP", count: 99930},
-            {sequence: "CARD -> CAP -> CAAP", count: 74662},
-            {sequence: "BORROW -> CAP -> CARD", count: 74073},
-            {sequence: "BORROW -> RETRO", count: 72121},
-            {sequence: "CAP -> CARD -> BORROW -> RETRO", count: 46181},
-            {sequence: "CARD -> BORROW -> CAAP", count: 45360},
-            {sequence: "CAP -> CAAP", count: 41943},
-            {sequence: "CARD -> CAP -> BORROW -> CAAP", count: 40555},
-            {sequence: "RETRO", count: 36333},
-            {sequence: "RETRO -> BORROW", count: 29096},
-            {sequence: "BORROW -> CARD -> RETRO -> CAP", count: 24560},
-            {sequence: "BORROW -> CAAP", count: 24412},
-            {sequence: "CARD -> CAP -> CAAP -> BORROW", count: 24186},
-            {sequence: "BORROW -> CAP -> CARD -> RETRO", count: 23857},
-            {sequence: "CARD -> CAAP -> BORROW", count: 22126},
-            {sequence: "CARD -> BORROW -> RETRO -> CAAP", count: 19284},
-            {sequence: "CAP -> CARD -> RETRO", count: 18593},
-            {sequence: "CARD -> RETRO -> CAP -> BORROW", count: 16863},
-            {sequence: "BORROW -> CARD -> CAP -> RETRO -> CAAP", count: 15762},
-            {sequence: "CAP -> CARD -> RETRO -> BORROW", count: 15169},
-            {sequence: "CARD -> CAP -> BORROW -> RETRO -> CAAP", count: 14322},
-            {sequence: "BORROW -> CARD -> RETRO -> CAAP", count: 13884},
-            {sequence: "CAAP -> BORROW", count: 13170},
-            {sequence: "CAP -> BORROW -> CARD", count: 12596},
-            {sequence: "CAP -> CARD -> CAAP", count: 12218},
-            {sequence: "CARD -> BORROW -> RETRO -> CAP", count: 12029},
-            {sequence: "CARD -> RETRO -> CAP", count: 11572},
-            {sequence: "BORROW -> CARD -> CAAP", count: 11071},
-            {sequence: "BORROW -> CARD -> CAP -> CAAP", count: 10387},
-            {sequence: "CAP -> BORROW -> RETRO", count: 10252},
-            {sequence: "CARD -> BORROW -> CAAP -> RETRO", count: 7402},
-            {sequence: "CARD -> BORROW -> CAP -> RETRO -> CAAP", count: 6551},
-            {sequence: "CARD -> CAP -> BORROW -> CAAP -> RETRO", count: 6101},
-            {sequence: "CARD -> BORROW -> CAP -> CAAP", count: 5814},
-            {sequence: "BORROW -> CARD -> CAP -> CAAP -> RETRO", count: 5118},
-            {sequence: "CARD -> RETRO -> BORROW -> CAAP", count: 4873},
-            {sequence: "CARD -> CAP -> RETRO -> CAAP", count: 4573},
-            {sequence: "CAP -> CARD -> BORROW -> CAAP", count: 4521},
-            {sequence: "CARD -> RETRO -> CAAP", count: 4445},
-            {sequence: "CAP -> BORROW -> CAAP", count: 4390},
-            {sequence: "CAP -> RETRO", count: 4363},
-            {sequence: "CARD -> CAP -> RETRO -> BORROW -> CAAP", count: 4294},
-            {sequence: "BORROW -> CARD -> CAAP -> RETRO", count: 4083},
-            {sequence: "BORROW -> CAP -> RETRO", count: 3866},
-            {sequence: "CAP -> BORROW -> CARD -> RETRO", count: 3603},
-            {sequence: "CARD -> RETRO -> BORROW -> CAP", count: 3596},
-            {sequence: "BORROW -> RETRO -> CAAP", count: 3137},
-            {sequence: "CARD -> CAP -> CAAP -> RETRO", count: 3096},
-            {sequence: "CAP -> RETRO -> BORROW", count: 3080},
-            {sequence: "CARD -> CAP -> RETRO -> CAAP -> BORROW", count: 2997},
-            {sequence: "CARD -> CAAP -> RETRO", count: 2881},
-            {sequence: "CARD -> RETRO -> CAAP -> BORROW", count: 2875},
-            {sequence: "CAP -> CARD -> CAAP -> BORROW", count: 2734},
-            {sequence: "CAP -> CAAP -> BORROW", count: 2669},
-            {sequence: "CARD -> BORROW -> CAP -> CAAP -> RETRO", count: 2532},
-            {sequence: "BORROW -> CAAP -> RETRO", count: 2051},
-            {sequence: "CAP -> CARD -> BORROW -> RETRO -> CAAP", count: 1844},
-            {sequence: "CARD -> CAP -> CAAP -> RETRO -> BORROW", count: 1778},
-            {sequence: "CARD -> CAAP -> RETRO -> BORROW", count: 1710},
-            {sequence: "BORROW -> CAP -> CAAP", count: 1556},
-            {sequence: "CARD -> CAP -> CAAP -> BORROW -> RETRO", count: 1537},
-            {sequence: "CARD -> CAAP -> BORROW -> RETRO", count: 1496},
-            {sequence: "CAAP -> CAP", count: 1092},
-            {sequence: "RETRO -> BORROW -> CAAP", count: 1051},
-            {sequence: "CAAP -> RETRO", count: 946},
-            {sequence: "CAP -> CARD -> BORROW -> CAAP -> RETRO", count: 890},
-            {sequence: "RETRO -> CAAP", count: 863},
-            {sequence: "BORROW -> CAP -> CARD -> RETRO -> CAAP", count: 855},
-            {sequence: "BORROW -> CAP -> CARD -> CAAP", count: 844},
-            {sequence: "BORROW -> CARD -> RETRO -> CAP -> CAAP", count: 810},
-            {sequence: "RETRO -> CAAP -> BORROW", count: 764},
-            {sequence: "CAAP -> BORROW -> RETRO", count: 678},
-            {sequence: "CAAP -> RETRO -> BORROW", count: 639},
-            {sequence: "CAP -> CARD -> RETRO -> CAAP", count: 544},
-            {sequence: "CARD -> RETRO -> CAP -> BORROW -> CAAP", count: 509},
-            {sequence: "CAP -> BORROW -> RETRO -> CAAP", count: 452},
-            {sequence: "CAP -> CARD -> RETRO -> BORROW -> CAAP", count: 450},
-            {sequence: "CAP -> CARD -> CAAP -> RETRO", count: 404},
-            {sequence: "CARD -> BORROW -> RETRO -> CAP -> CAAP", count: 390},
-            {sequence: "BORROW -> CAP -> CARD -> CAAP -> RETRO", count: 376},
-            {sequence: "CARD -> CAAP -> CAP", count: 370},
-            {sequence: "CAP -> CARD -> RETRO -> CAAP -> BORROW", count: 361},
-            {sequence: "CAP -> BORROW -> CAAP -> RETRO", count: 342},
-            {sequence: "CARD -> RETRO -> CAP -> CAAP", count: 277},
-            {sequence: "CAP -> CARD -> CAAP -> RETRO -> BORROW", count: 266},
-            {sequence: "CARD -> RETRO -> CAP -> CAAP -> BORROW", count: 207},
-            {sequence: "CAP -> CARD -> CAAP -> BORROW -> RETRO", count: 205},
-            {sequence: "CAP -> CAAP -> RETRO", count: 185},
-            {sequence: "CAP -> BORROW -> CARD -> CAAP", count: 158},
-            {sequence: "CAP -> BORROW -> CARD -> RETRO -> CAAP", count: 150},
-            {sequence: "BORROW -> CAP -> CAAP -> RETRO", count: 139},
-            {sequence: "BORROW -> CAP -> RETRO -> CAAP", count: 139},
-            {sequence: "RETRO -> CARD", count: 126},
-            {sequence: "CAP -> CAAP -> BORROW -> RETRO", count: 126},
-            {sequence: "CAP -> RETRO -> BORROW -> CAAP", count: 114},
-            {sequence: "CARD -> CAAP -> CAP -> BORROW", count: 111},
-            {sequence: "CARD -> RETRO -> BORROW -> CAP -> CAAP", count: 111},
-            {sequence: "CAP -> RETRO -> CAAP", count: 110},
-            {sequence: "BORROW -> RETRO -> CARD", count: 104},
-            {sequence: "CAP -> CAAP -> RETRO -> BORROW", count: 96},
-            {sequence: "RETRO -> CARD -> CAP -> BORROW", count: 95},
-            {sequence: "BORROW -> RETRO -> CARD -> CAP", count: 94},
-            {sequence: "CAP -> RETRO -> CAAP -> BORROW", count: 88},
-            {sequence: "RETRO -> CARD -> BORROW", count: 81},
-            {sequence: "CAAP -> CAP -> BORROW", count: 70},
-            {sequence: "CAP -> BORROW -> CARD -> CAAP -> RETRO", count: 69},
-            {sequence: "RETRO -> CARD -> CAP", count: 60},
-            {sequence: "BORROW -> CARD -> CAAP -> CAP", count: 53},
-            {sequence: "CARD -> BORROW -> CAAP -> CAP", count: 42},
-            {sequence: "BORROW -> CARD -> CAAP -> CAP -> RETRO", count: 38},
-            {sequence: "BORROW -> CAAP -> CAP", count: 27},
-            {sequence: "RETRO -> CARD -> BORROW -> CAP", count: 21},
-            {sequence: "CAP -> CAAP -> CARD", count: 16},
-            {sequence: "CARD -> BORROW -> CAAP -> CAP -> RETRO", count: 14},
-            {sequence: "CARD -> CAAP -> CAP -> BORROW -> RETRO", count: 13},
-            {sequence: "CARD -> CAAP -> CAP -> RETRO", count: 12},
-            {sequence: "CARD -> CAAP -> CAP -> RETRO -> BORROW", count: 9},
-            {sequence: "CAAP -> CAP -> CARD", count: 8},
-            {sequence: "CAAP -> CAP -> BORROW -> RETRO", count: 7},
-            {sequence: "BORROW -> CARD -> RETRO -> CAAP -> CAP", count: 5},
-            {sequence: "BORROW -> CAAP -> CAP -> RETRO", count: 4},
-            {sequence: "CAP -> CAAP -> CARD -> BORROW", count: 4},
-            {sequence: "RETRO -> CARD -> CAP -> CAAP -> BORROW", count: 4},
-            {sequence: "RETRO -> BORROW -> CARD -> CAP", count: 3},
-            {sequence: "RETRO -> CAP -> CARD", count: 3},
-            {sequence: "CAAP -> CAP -> RETRO -> BORROW", count: 3},
-            {sequence: "RETRO -> BORROW -> CARD", count: 3},
-            {sequence: "CAP -> CAAP -> CARD -> BORROW -> RETRO", count: 2},
-            {sequence: "CARD -> BORROW -> RETRO -> CAAP -> CAP", count: 2},
-            {sequence: "RETRO -> CAP -> CARD -> BORROW", count: 2},
-            {sequence: "BORROW -> CAP -> CAAP -> CARD -> RETRO", count: 2},
-            {sequence: "RETRO -> CARD -> BORROW -> CAAP", count: 2},
-            {sequence: "BORROW -> RETRO -> CAP -> CARD", count: 2},
-            {sequence: "BORROW -> CAP -> CAAP -> CARD", count: 2},
-            {sequence: "RETRO -> CARD -> CAP -> BORROW -> CAAP", count: 2},
-            {sequence: "BORROW -> RETRO -> CARD -> CAAP", count: 1},
-            {sequence: "BORROW -> CAAP -> CAP -> CARD", count: 1},
-            {sequence: "CAAP -> CAP -> CARD -> BORROW", count: 1},
-            {sequence: "BORROW -> RETRO -> CARD -> CAP -> CAAP", count: 1},
-            {sequence: "RETRO -> CAP -> CARD -> BORROW -> CAAP", count: 1},
-            {sequence: "CAAP -> CAP -> CARD -> RETRO", count: 1},
-            {sequence: "RETRO -> CARD -> CAAP -> BORROW", count: 1},
-            {sequence: "CAP -> CAAP -> BORROW -> CARD", count: 1},
-            {sequence: "CARD -> RETRO -> CAAP -> CAP -> BORROW", count: 1},
-            {sequence: "RETRO -> CARD -> BORROW -> CAP -> CAAP", count: 1},
-            {sequence: "RETRO -> CARD -> CAP -> CAAP", count: 1},
-            {sequence: "CAP -> CAAP -> BORROW -> CARD -> RETRO", count: 1},
-            {sequence: "CARD -> RETRO -> BORROW -> CAAP -> CAP", count: 1},
-            {sequence: "CAP -> CAAP -> CARD -> RETRO -> BORROW", count: 1},
-            {sequence: "CARD -> RETRO -> CAAP -> CAP", count: 1}
+            {sequence: "CARD", count: 16976811, percentage: 35.162146},
+            {sequence: "CARD -> CAP", count: 8976607, percentage: 18.592230},
+            {sequence: "CAP", count: 4514365, percentage: 9.350093},
+            {sequence: "CARD -> BORROW", count: 3434545, percentage: 7.113584},
+            {sequence: "BORROW", count: 2602875, percentage: 5.391040},
+            {sequence: "CARD -> CAP -> BORROW", count: 2556656, percentage: 5.295312},
+            {sequence: "CAP -> CARD", count: 1842181, percentage: 3.815501},
+            {sequence: "BORROW -> CARD", count: 1455878, percentage: 3.015395},
+            {sequence: "BORROW -> CARD -> CAP", count: 939655, percentage: 1.946201},
+            {sequence: "CARD -> BORROW -> RETRO", count: 511782, percentage: 1.059996},
+            {sequence: "CARD -> BORROW -> CAP", count: 503682, percentage: 1.043219},
+            {sequence: "BORROW -> CARD -> CAP -> RETRO", count: 449679, percentage: 0.931369},
+            {sequence: "BORROW -> CARD -> RETRO", count: 391240, percentage: 0.810331},
+            {sequence: "CARD -> CAP -> BORROW -> RETRO", count: 381522, percentage: 0.790203},
+            {sequence: "CAP -> CARD -> BORROW", count: 281081, percentage: 0.582171},
+            {sequence: "CAAP", count: 250610, percentage: 0.519060},
+            {sequence: "CAP -> BORROW", count: 244833, percentage: 0.507095},
+            {sequence: "CARD -> RETRO", count: 193540, percentage: 0.400857},
+            {sequence: "CARD -> BORROW -> CAP -> RETRO", count: 179286, percentage: 0.371335},
+            {sequence: "CARD -> CAP -> RETRO", count: 170301, percentage: 0.352725},
+            {sequence: "CARD -> RETRO -> BORROW", count: 153109, percentage: 0.317117},
+            {sequence: "CARD -> CAP -> RETRO -> BORROW", count: 146991, percentage: 0.304446},
+            {sequence: "BORROW -> CAP", count: 105005, percentage: 0.217485},
+            {sequence: "CARD -> CAAP", count: 99930, percentage: 0.206974},
+            {sequence: "CARD -> CAP -> CAAP", count: 74662, percentage: 0.154639},
+            {sequence: "BORROW -> CAP -> CARD", count: 74073, percentage: 0.153419},
+            {sequence: "BORROW -> RETRO", count: 72121, percentage: 0.149376},
+            {sequence: "CAP -> CARD -> BORROW -> RETRO", count: 46181, percentage: 0.095649},
+            {sequence: "CARD -> BORROW -> CAAP", count: 45360, percentage: 0.093949},
+            {sequence: "CAP -> CAAP", count: 41943, percentage: 0.086872},
+            {sequence: "CARD -> CAP -> BORROW -> CAAP", count: 40555, percentage: 0.083997},
+            {sequence: "RETRO", count: 36333, percentage: 0.075252},
+            {sequence: "RETRO -> BORROW", count: 29096, percentage: 0.060263},
+            {sequence: "BORROW -> CARD -> RETRO -> CAP", count: 24560, percentage: 0.050868},
+            {sequence: "BORROW -> CAAP", count: 24412, percentage: 0.050562},
+            {sequence: "CARD -> CAP -> CAAP -> BORROW", count: 24186, percentage: 0.050094},
+            {sequence: "BORROW -> CAP -> CARD -> RETRO", count: 23857, percentage: 0.049412},
+            {sequence: "CARD -> CAAP -> BORROW", count: 22126, percentage: 0.045827},
+            {sequence: "CARD -> BORROW -> RETRO -> CAAP", count: 19284, percentage: 0.039941},
+            {sequence: "CAP -> CARD -> RETRO", count: 18593, percentage: 0.038510},
+            {sequence: "CARD -> RETRO -> CAP -> BORROW", count: 16863, percentage: 0.034926},
+            {sequence: "BORROW -> CARD -> CAP -> RETRO -> CAAP", count: 15762, percentage: 0.032646},
+            {sequence: "CAP -> CARD -> RETRO -> BORROW", count: 15169, percentage: 0.031418},
+            {sequence: "CARD -> CAP -> BORROW -> RETRO -> CAAP", count: 14322, percentage: 0.029664},
+            {sequence: "BORROW -> CARD -> RETRO -> CAAP", count: 13884, percentage: 0.028756},
+            {sequence: "CAAP -> BORROW", count: 13170, percentage: 0.027278},
+            {sequence: "CAP -> BORROW -> CARD", count: 12596, percentage: 0.026089},
+            {sequence: "CAP -> CARD -> CAAP", count: 12218, percentage: 0.025306},
+            {sequence: "CARD -> BORROW -> RETRO -> CAP", count: 12029, percentage: 0.024914},
+            {sequence: "CARD -> RETRO -> CAP", count: 11572, percentage: 0.023968},
+            {sequence: "BORROW -> CARD -> CAAP", count: 11071, percentage: 0.022930},
+            {sequence: "BORROW -> CARD -> CAP -> CAAP", count: 10387, percentage: 0.021513},
+            {sequence: "CAP -> BORROW -> RETRO", count: 10252, percentage: 0.021234},
+            {sequence: "CARD -> BORROW -> CAAP -> RETRO", count: 7402, percentage: 0.015331},
+            {sequence: "CARD -> BORROW -> CAP -> RETRO -> CAAP", count: 6551, percentage: 0.013568},
+            {sequence: "CARD -> CAP -> BORROW -> CAAP -> RETRO", count: 6101, percentage: 0.012636},
+            {sequence: "CARD -> BORROW -> CAP -> CAAP", count: 5814, percentage: 0.012042},
+            {sequence: "BORROW -> CARD -> CAP -> CAAP -> RETRO", count: 5118, percentage: 0.010600},
+            {sequence: "CARD -> RETRO -> BORROW -> CAAP", count: 4873, percentage: 0.010093},
+            {sequence: "CARD -> CAP -> RETRO -> CAAP", count: 4573, percentage: 0.009472},
+            {sequence: "CAP -> CARD -> BORROW -> CAAP", count: 4521, percentage: 0.009364},
+            {sequence: "CARD -> RETRO -> CAAP", count: 4445, percentage: 0.009206},
+            {sequence: "CAP -> BORROW -> CAAP", count: 4390, percentage: 0.009093},
+            {sequence: "CAP -> RETRO", count: 4363, percentage: 0.009037},
+            {sequence: "CARD -> CAP -> RETRO -> BORROW -> CAAP", count: 4294, percentage: 0.008894},
+            {sequence: "BORROW -> CARD -> CAAP -> RETRO", count: 4083, percentage: 0.008457},
+            {sequence: "BORROW -> CAP -> RETRO", count: 3866, percentage: 0.008007},
+            {sequence: "CAP -> BORROW -> CARD -> RETRO", count: 3603, percentage: 0.007462},
+            {sequence: "CARD -> RETRO -> BORROW -> CAP", count: 3596, percentage: 0.007448},
+            {sequence: "BORROW -> RETRO -> CAAP", count: 3137, percentage: 0.006497},
+            {sequence: "CARD -> CAP -> CAAP -> RETRO", count: 3096, percentage: 0.006412},
+            {sequence: "CAP -> RETRO -> BORROW", count: 3080, percentage: 0.006379},
+            {sequence: "CARD -> CAP -> RETRO -> CAAP -> BORROW", count: 2997, percentage: 0.006207},
+            {sequence: "CARD -> CAAP -> RETRO", count: 2881, percentage: 0.005967},
+            {sequence: "CARD -> RETRO -> CAAP -> BORROW", count: 2875, percentage: 0.005955},
+            {sequence: "CAP -> CARD -> CAAP -> BORROW", count: 2734, percentage: 0.005663},
+            {sequence: "CAP -> CAAP -> BORROW", count: 2669, percentage: 0.005528},
+            {sequence: "CARD -> BORROW -> CAP -> CAAP -> RETRO", count: 2532, percentage: 0.005244},
+            {sequence: "BORROW -> CAAP -> RETRO", count: 2051, percentage: 0.004248},
+            {sequence: "CAP -> CARD -> BORROW -> RETRO -> CAAP", count: 1844, percentage: 0.003819},
+            {sequence: "CARD -> CAP -> CAAP -> RETRO -> BORROW", count: 1778, percentage: 0.003683},
+            {sequence: "CARD -> CAAP -> RETRO -> BORROW", count: 1710, percentage: 0.003542},
+            {sequence: "BORROW -> CAP -> CAAP", count: 1556, percentage: 0.003223},
+            {sequence: "CARD -> CAP -> CAAP -> BORROW -> RETRO", count: 1537, percentage: 0.003183},
+            {sequence: "CARD -> CAAP -> BORROW -> RETRO", count: 1496, percentage: 0.003098},
+            {sequence: "CAAP -> CAP", count: 1092, percentage: 0.002262},
+            {sequence: "RETRO -> BORROW -> CAAP", count: 1051, percentage: 0.002177},
+            {sequence: "CAAP -> RETRO", count: 946, percentage: 0.001959},
+            {sequence: "CAP -> CARD -> BORROW -> CAAP -> RETRO", count: 890, percentage: 0.001843},
+            {sequence: "RETRO -> CAAP", count: 863, percentage: 0.001787},
+            {sequence: "BORROW -> CAP -> CARD -> RETRO -> CAAP", count: 855, percentage: 0.001771},
+            {sequence: "BORROW -> CAP -> CARD -> CAAP", count: 844, percentage: 0.001748},
+            {sequence: "BORROW -> CARD -> RETRO -> CAP -> CAAP", count: 810, percentage: 0.001678},
+            {sequence: "RETRO -> CAAP -> BORROW", count: 764, percentage: 0.001582},
+            {sequence: "CAAP -> BORROW -> RETRO", count: 678, percentage: 0.001404},
+            {sequence: "CAAP -> RETRO -> BORROW", count: 639, percentage: 0.001323},
+            {sequence: "CAP -> CARD -> RETRO -> CAAP", count: 544, percentage: 0.001127},
+            {sequence: "CARD -> RETRO -> CAP -> BORROW -> CAAP", count: 509, percentage: 0.001054},
+            {sequence: "CAP -> BORROW -> RETRO -> CAAP", count: 452, percentage: 0.000936},
+            {sequence: "CAP -> CARD -> RETRO -> BORROW -> CAAP", count: 450, percentage: 0.000932},
+            {sequence: "CAP -> CARD -> CAAP -> RETRO", count: 404, percentage: 0.000837},
+            {sequence: "CARD -> BORROW -> RETRO -> CAP -> CAAP", count: 390, percentage: 0.000808},
+            {sequence: "BORROW -> CAP -> CARD -> CAAP -> RETRO", count: 376, percentage: 0.000779},
+            {sequence: "CARD -> CAAP -> CAP", count: 370, percentage: 0.000766},
+            {sequence: "CAP -> CARD -> RETRO -> CAAP -> BORROW", count: 361, percentage: 0.000748},
+            {sequence: "CAP -> BORROW -> CAAP -> RETRO", count: 342, percentage: 0.000708},
+            {sequence: "CARD -> RETRO -> CAP -> CAAP", count: 277, percentage: 0.000574},
+            {sequence: "CAP -> CARD -> CAAP -> RETRO -> BORROW", count: 266, percentage: 0.000551},
+            {sequence: "CARD -> RETRO -> CAP -> CAAP -> BORROW", count: 207, percentage: 0.000429},
+            {sequence: "CAP -> CARD -> CAAP -> BORROW -> RETRO", count: 205, percentage: 0.000425},
+            {sequence: "CAP -> CAAP -> RETRO", count: 185, percentage: 0.000383},
+            {sequence: "CAP -> BORROW -> CARD -> CAAP", count: 158, percentage: 0.000327},
+            {sequence: "CAP -> BORROW -> CARD -> RETRO -> CAAP", count: 150, percentage: 0.000311},
+            {sequence: "BORROW -> CAP -> RETRO -> CAAP", count: 139, percentage: 0.000288},
+            {sequence: "BORROW -> CAP -> CAAP -> RETRO", count: 139, percentage: 0.000288},
+            {sequence: "RETRO -> CARD", count: 126, percentage: 0.000261},
+            {sequence: "CAP -> CAAP -> BORROW -> RETRO", count: 126, percentage: 0.000261},
+            {sequence: "CAP -> RETRO -> BORROW -> CAAP", count: 114, percentage: 0.000236},
+            {sequence: "CARD -> CAAP -> CAP -> BORROW", count: 111, percentage: 0.000230},
+            {sequence: "CARD -> RETRO -> BORROW -> CAP -> CAAP", count: 111, percentage: 0.000230},
+            {sequence: "CAP -> RETRO -> CAAP", count: 110, percentage: 0.000228},
+            {sequence: "BORROW -> RETRO -> CARD", count: 104, percentage: 0.000215},
+            {sequence: "CAP -> CAAP -> RETRO -> BORROW", count: 96, percentage: 0.000199},
+            {sequence: "RETRO -> CARD -> CAP -> BORROW", count: 95, percentage: 0.000197},
+            {sequence: "BORROW -> RETRO -> CARD -> CAP", count: 94, percentage: 0.000195},
+            {sequence: "CAP -> RETRO -> CAAP -> BORROW", count: 88, percentage: 0.000182},
+            {sequence: "RETRO -> CARD -> BORROW", count: 81, percentage: 0.000168},
+            {sequence: "CAAP -> CAP -> BORROW", count: 70, percentage: 0.000145},
+            {sequence: "CAP -> BORROW -> CARD -> CAAP -> RETRO", count: 69, percentage: 0.000143},
+            {sequence: "RETRO -> CARD -> CAP", count: 60, percentage: 0.000124},
+            {sequence: "BORROW -> CARD -> CAAP -> CAP", count: 53, percentage: 0.000110},
+            {sequence: "CARD -> BORROW -> CAAP -> CAP", count: 42, percentage: 0.000087},
+            {sequence: "BORROW -> CARD -> CAAP -> CAP -> RETRO", count: 38, percentage: 0.000079},
+            {sequence: "BORROW -> CAAP -> CAP", count: 27, percentage: 0.000056},
+            {sequence: "RETRO -> CARD -> BORROW -> CAP", count: 21, percentage: 0.000043},
+            {sequence: "CAP -> CAAP -> CARD", count: 16, percentage: 0.000033},
+            {sequence: "CARD -> BORROW -> CAAP -> CAP -> RETRO", count: 14, percentage: 0.000029},
+            {sequence: "CARD -> CAAP -> CAP -> BORROW -> RETRO", count: 13, percentage: 0.000027},
+            {sequence: "CARD -> CAAP -> CAP -> RETRO", count: 12, percentage: 0.000025},
+            {sequence: "CARD -> CAAP -> CAP -> RETRO -> BORROW", count: 9, percentage: 0.000019},
+            {sequence: "CAAP -> CAP -> CARD", count: 8, percentage: 0.000017},
+            {sequence: "CAAP -> CAP -> BORROW -> RETRO", count: 7, percentage: 0.000014},
+            {sequence: "BORROW -> CARD -> RETRO -> CAAP -> CAP", count: 5, percentage: 0.000010},
+            {sequence: "BORROW -> CAAP -> CAP -> RETRO", count: 4, percentage: 0.000008},
+            {sequence: "CAP -> CAAP -> CARD -> BORROW", count: 4, percentage: 0.000008},
+            {sequence: "RETRO -> CARD -> CAP -> CAAP -> BORROW", count: 4, percentage: 0.000008},
+            {sequence: "RETRO -> BORROW -> CARD", count: 3, percentage: 0.000006},
+            {sequence: "RETRO -> BORROW -> CARD -> CAP", count: 3, percentage: 0.000006},
+            {sequence: "CAAP -> CAP -> RETRO -> BORROW", count: 3, percentage: 0.000006},
+            {sequence: "RETRO -> CAP -> CARD", count: 3, percentage: 0.000006},
+            {sequence: "RETRO -> CAP -> CARD -> BORROW", count: 2, percentage: 0.000004},
+            {sequence: "RETRO -> CARD -> BORROW -> CAAP", count: 2, percentage: 0.000004},
+            {sequence: "RETRO -> CARD -> CAP -> BORROW -> CAAP", count: 2, percentage: 0.000004},
+            {sequence: "BORROW -> CAP -> CAAP -> CARD", count: 2, percentage: 0.000004},
+            {sequence: "BORROW -> RETRO -> CAP -> CARD", count: 2, percentage: 0.000004},
+            {sequence: "BORROW -> CAP -> CAAP -> CARD -> RETRO", count: 2, percentage: 0.000004},
+            {sequence: "CAP -> CAAP -> CARD -> BORROW -> RETRO", count: 2, percentage: 0.000004},
+            {sequence: "CARD -> BORROW -> RETRO -> CAAP -> CAP", count: 2, percentage: 0.000004},
+            {sequence: "CAAP -> CAP -> CARD -> RETRO", count: 1, percentage: 0.000002},
+            {sequence: "BORROW -> RETRO -> CARD -> CAP -> CAAP", count: 1, percentage: 0.000002},
+            {sequence: "RETRO -> CARD -> BORROW -> CAP -> CAAP", count: 1, percentage: 0.000002},
+            {sequence: "CARD -> RETRO -> CAAP -> CAP", count: 1, percentage: 0.000002},
+            {sequence: "CARD -> RETRO -> BORROW -> CAAP -> CAP", count: 1, percentage: 0.000002},
+            {sequence: "BORROW -> RETRO -> CARD -> CAAP", count: 1, percentage: 0.000002},
+            {sequence: "RETRO -> CAP -> CARD -> BORROW -> CAAP", count: 1, percentage: 0.000002},
+            {sequence: "CARD -> RETRO -> CAAP -> CAP -> BORROW", count: 1, percentage: 0.000002},
+            {sequence: "RETRO -> CARD -> CAP -> CAAP", count: 1, percentage: 0.000002},
+            {sequence: "CAP -> CAAP -> CARD -> RETRO -> BORROW", count: 1, percentage: 0.000002},
+            {sequence: "CAP -> CAAP -> BORROW -> CARD", count: 1, percentage: 0.000002},
+            {sequence: "RETRO -> CARD -> CAAP -> BORROW", count: 1, percentage: 0.000002},
+            {sequence: "CAAP -> CAP -> CARD -> BORROW", count: 1, percentage: 0.000002},
+            {sequence: "CAP -> CAAP -> BORROW -> CARD -> RETRO", count: 1, percentage: 0.000002},
+            {sequence: "BORROW -> CAAP -> CAP -> CARD", count: 1, percentage: 0.000002}
         ];
 
-        // Calculate total and percentages
+        // Calculate total users from the data
         const totalUsers = rawFlowData.reduce((sum, flow) => sum + flow.count, 0);
+        
+        // Update the displayed total users to match Snowflake data
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('total-users').textContent = (totalUsers / 1000000).toFixed(1) + 'M';
+            document.getElementById('data-timestamp').textContent = new Date().toLocaleDateString();
+        });
+
+        // Convert the data to the expected format (already has percentage)
         const flowData = rawFlowData.map(flow => ({
             ...flow,
-            percentage: ((flow.count / totalUsers) * 100).toFixed(2)
+            percentage: flow.percentage.toFixed(2)
         }));
+
+        // Global state for filters
+        let activeFilters = new Set();
+        let filteredData = flowData;
 
         // Parse sequence into steps
         function parseSequence(sequenceStr) {
@@ -611,10 +780,6 @@
             
             return parsedSteps;
         }
-
-        // Global state for filters
-        let activeFilters = new Set();
-        let filteredData = flowData;
 
         // Check if flow contains selected products
         function flowContainsProducts(flow, selectedProducts) {
@@ -656,7 +821,7 @@
         // Create the flow visualization
         function renderFlowVisualization() {
             const container = d3.select("#flow-container");
-            container.selectAll("*").remove(); // Clear existing content
+            container.selectAll("*").remove();
             
             filteredData.forEach((flow, index) => {
                 const steps = parseSequence(flow.sequence);
@@ -670,19 +835,16 @@
                     .attr("class", "rank")
                     .text(originalRank);
                 
-                // Steps
                 steps.forEach(step => {
-                    const cell = row.append("div")
+                    row.append("div")
                         .attr("class", `step-cell ${step.filled ? 'filled' : 'empty'} ${step.class}`)
                         .text(step.name);
                 });
                 
-                // User count
                 row.append("div")
                     .attr("class", "user-count")
                     .text(flow.count.toLocaleString());
                 
-                // Percentage
                 row.append("div")
                     .attr("class", "percentage")
                     .text(`${flow.percentage}%`);
@@ -732,6 +894,421 @@
             applyFilters();
         }
 
+        // Sankey Chart Functions
+        function setupSankeyChart() {
+            const productSelect = document.getElementById('sankey-product-select');
+            productSelect.addEventListener('change', function() {
+                const selectedProduct = this.value;
+                if (selectedProduct) {
+                    generateSankeyChart(selectedProduct);
+                } else {
+                    document.getElementById('sankey-chart-container').style.display = 'none';
+                }
+            });
+        }
+        
+        function generateSankeyChart(startingProduct) {
+            console.log(`=== Generating Sankey for ${startingProduct} ===`);
+            
+            // Filter flows that start with the selected product
+            const relevantFlows = flowData.filter(flow => {
+                const steps = flow.sequence.split(' -> ');
+                return steps[0] === startingProduct;
+            });
+            
+            console.log(`Found ${relevantFlows.length} relevant flows:`, relevantFlows.slice(0, 5));
+            
+            if (relevantFlows.length === 0) {
+                console.log('No flows found for this product');
+                document.getElementById('sankey-chart-container').style.display = 'none';
+                return;
+            }
+            
+            // Calculate total users for this starting product
+            const totalStartingUsers = relevantFlows.reduce((sum, flow) => sum + flow.count, 0);
+            console.log(`Total users starting with ${startingProduct}: ${totalStartingUsers.toLocaleString()}`);
+            
+            // Build Sankey data structure
+            const sankeyData = buildSankeyData(relevantFlows);
+            console.log('Sankey data built:', sankeyData);
+            
+            if (!sankeyData.nodes.length || !sankeyData.links.length) {
+                console.error('No valid Sankey data generated');
+                return;
+            }
+            
+            // Update chart title
+            const productName = productConfig[startingProduct].name;
+            document.getElementById('sankey-chart-title').textContent = 
+                `User Journey from ${productName}`;
+            document.getElementById('sankey-chart-subtitle').textContent = 
+                `${totalStartingUsers.toLocaleString()} users who started with ${productName}`;
+            
+            // Show the chart container first
+            document.getElementById('sankey-chart-container').style.display = 'block';
+            
+            // Render the Sankey chart
+            try {
+                renderSankey(sankeyData);
+                console.log('Sankey chart rendered successfully');
+            } catch (error) {
+                console.error('Error rendering Sankey chart:', error);
+                document.getElementById('sankey-chart').innerHTML = 
+                    '<div style="text-align: center; padding: 40px; color: #e74c3c;">Error rendering chart. Check console for details.</div>';
+            }
+        }
+        
+        function buildSankeyData(flows) {
+            const nodes = [];
+            const links = [];
+            const nodeMap = new Map();
+            
+            // Collect all unique products at each step level
+            const levelProducts = new Map();
+            let maxSteps = 0;
+            
+            flows.forEach(flow => {
+                const steps = flow.sequence.split(' -> ');
+                maxSteps = Math.max(maxSteps, steps.length);
+                
+                steps.forEach((product, stepIndex) => {
+                    const nodeId = `${product}_step_${stepIndex}`;
+                    if (!nodeMap.has(nodeId)) {
+                        const node = {
+                            id: nodeId,
+                            name: productConfig[product].name,
+                            product: product,
+                            step: stepIndex,
+                            value: 0
+                        };
+                        nodes.push(node);
+                        nodeMap.set(nodeId, nodes.length - 1);
+                    }
+                });
+            });
+            
+            // Create links and accumulate values
+            flows.forEach(flow => {
+                const steps = flow.sequence.split(' -> ');
+                
+                // Add value to each node in the path
+                steps.forEach((product, stepIndex) => {
+                    const nodeId = `${product}_step_${stepIndex}`;
+                    const nodeIndex = nodeMap.get(nodeId);
+                    if (nodeIndex !== undefined) {
+                        nodes[nodeIndex].value += flow.count;
+                    }
+                });
+                
+                // Create links between consecutive steps
+                for (let i = 0; i < steps.length - 1; i++) {
+                    const sourceId = `${steps[i]}_step_${i}`;
+                    const targetId = `${steps[i + 1]}_step_${i + 1}`;
+                    const sourceIndex = nodeMap.get(sourceId);
+                    const targetIndex = nodeMap.get(targetId);
+                    
+                    if (sourceIndex !== undefined && targetIndex !== undefined) {
+                        // Find existing link or create new one
+                        let link = links.find(l => l.source === sourceIndex && l.target === targetIndex);
+                        if (!link) {
+                            link = {
+                                source: sourceIndex,
+                                target: targetIndex,
+                                value: 0
+                            };
+                            links.push(link);
+                        }
+                        link.value += flow.count;
+                    }
+                }
+            });
+            
+            console.log('Built Sankey data:', { nodes: nodes.length, links: links.length });
+            console.log('Sample nodes:', nodes.slice(0, 5));
+            console.log('Sample links:', links.slice(0, 5));
+            
+            return { nodes, links };
+        }
+        
+        function renderSankey(data) {
+            console.log('Rendering Sankey with data:', data);
+            
+            if (!data.nodes.length || !data.links.length) {
+                console.error('No data to render');
+                return;
+            }
+            
+            // Clear previous chart
+            d3.select('#sankey-chart').selectAll('*').remove();
+            
+            const margin = { top: 20, right: 150, bottom: 20, left: 20 };
+            const containerWidth = document.getElementById('sankey-chart').offsetWidth || 1200;
+            const width = containerWidth - margin.left - margin.right;
+            const height = 600 - margin.top - margin.bottom;
+            
+            const svg = d3.select('#sankey-chart')
+                .append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom);
+                
+            const g = svg.append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+            
+            // Create Sankey generator
+            const sankey = d3.sankey()
+                .nodeWidth(15)
+                .nodePadding(10)
+                .extent([[1, 1], [width - 1, height - 6]]);
+            
+            // Process the data through the Sankey layout
+            const sankeyData = sankey({
+                nodes: data.nodes.map(d => Object.assign({}, d)),
+                links: data.links.map(d => Object.assign({}, d))
+            });
+            
+            console.log('Sankey layout complete:', sankeyData);
+            
+            // Force vertical alignment by step - override D3's positioning
+            const maxStep = Math.max(...sankeyData.nodes.map(n => n.step));
+            const stepWidth = width / (maxStep + 1);
+            const nodeWidth = 15;
+            
+            sankeyData.nodes.forEach(node => {
+                // Force x-position based on step number
+                node.x0 = node.step * stepWidth;
+                node.x1 = node.x0 + nodeWidth;
+            });
+            
+            // Group nodes by step for vertical positioning
+            const nodesByStep = new Map();
+            sankeyData.nodes.forEach(node => {
+                if (!nodesByStep.has(node.step)) {
+                    nodesByStep.set(node.step, []);
+                }
+                nodesByStep.get(node.step).push(node);
+            });
+            
+            // Reposition nodes vertically within each step column
+            const nodePadding = 15;
+            
+            // First, calculate the correct values for each node based on actual flow
+            sankeyData.nodes.forEach(node => {
+                // For nodes, the value should be the sum of all flows passing through
+                const incomingFlow = sankeyData.links
+                    .filter(l => l.target === node)
+                    .reduce((sum, l) => sum + l.value, 0);
+                const outgoingFlow = sankeyData.links
+                    .filter(l => l.source === node)
+                    .reduce((sum, l) => sum + l.value, 0);
+                
+                // Use the maximum of incoming or outgoing (they should be equal in a proper Sankey)
+                node.value = Math.max(incomingFlow, outgoingFlow, node.value || 0);
+            });
+            
+            // Find the maximum flow across all nodes for consistent scaling
+            const maxNodeValue = Math.max(...sankeyData.nodes.map(n => n.value));
+            const availableHeight = height - 40; // Leave margins
+            
+            nodesByStep.forEach((stepNodes, step) => {
+                // Sort by value for better organization
+                stepNodes.sort((a, b) => b.value - a.value);
+                
+                let currentY = 20;
+                stepNodes.forEach(node => {
+                    // Calculate node height proportional to the GLOBAL maximum flow
+                    // This ensures consistent scaling across all steps
+                    const nodeHeight = Math.max(15, (node.value / maxNodeValue) * availableHeight);
+                    node.y0 = currentY;
+                    node.y1 = currentY + nodeHeight;
+                    currentY += nodeHeight + nodePadding;
+                    
+                    console.log(`Node ${node.name} at step ${step}: value=${node.value.toLocaleString()}, height=${nodeHeight.toFixed(1)}, proportion=${((node.value/maxNodeValue)*100).toFixed(1)}%`);
+                });
+            });
+            
+            console.log('Nodes repositioned for step alignment:', sankeyData.nodes.map(n => ({
+                name: n.name, 
+                step: n.step, 
+                x0: n.x0, 
+                y0: n.y0, 
+                height: n.y1 - n.y0
+            })));
+            
+            // Recalculate link widths and ensure proper node references
+            sankeyData.links.forEach(link => {
+                // Calculate stroke width based on value - make flows more visible
+                link.width = Math.max(8, Math.sqrt(link.value) / 10);
+                
+                // Ensure source and target are proper node objects (not just indices)
+                if (typeof link.source === 'number') {
+                    link.source = sankeyData.nodes[link.source];
+                }
+                if (typeof link.target === 'number') {
+                    link.target = sankeyData.nodes[link.target];
+                }
+            });
+            
+            console.log('Links after processing:', sankeyData.links.map(l => ({
+                value: l.value,
+                width: l.width,
+                source: l.source.name,
+                target: l.target.name,
+                sourcePos: `${l.source.x0},${l.source.y0}`,
+                targetPos: `${l.target.x0},${l.target.y0}`
+            })));
+            
+            // Add step headers above each column
+            for (let step = 0; step <= maxStep; step++) {
+                g.append('text')
+                    .attr('x', step * stepWidth + nodeWidth / 2)
+                    .attr('y', -5)
+                    .attr('text-anchor', 'middle')
+                    .style('font-size', '12px')
+                    .style('font-weight', 'bold')
+                    .style('fill', '#2c3e50')
+                    .text(`Step ${step + 1}`);
+            }
+            
+            // Color scale for products
+            const colorScale = d3.scaleOrdinal()
+                .domain(['CARD', 'CAP', 'BORROW', 'RETRO', 'CAAP'])
+                .range(['#3498db', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c']);
+            
+            // Calculate proper proportional flow positioning
+            sankeyData.nodes.forEach(node => {
+                node.sourceLinks = sankeyData.links.filter(l => l.source === node);
+                node.targetLinks = sankeyData.links.filter(l => l.target === node);
+                
+                // Sort links by value for consistent positioning
+                node.sourceLinks.sort((a, b) => b.value - a.value);
+                node.targetLinks.sort((a, b) => b.value - a.value);
+                
+                // Calculate proportional positions for outgoing flows
+                let sourceY = node.y0;
+                node.sourceLinks.forEach(link => {
+                    const linkHeight = (link.value / node.value) * (node.y1 - node.y0);
+                    link.sourceY0 = sourceY;
+                    link.sourceY1 = sourceY + linkHeight;
+                    sourceY += linkHeight;
+                });
+                
+                // Calculate proportional positions for incoming flows
+                let targetY = node.y0;
+                node.targetLinks.forEach(link => {
+                    const linkHeight = (link.value / node.value) * (node.y1 - node.y0);
+                    link.targetY0 = targetY;
+                    link.targetY1 = targetY + linkHeight;
+                    targetY += linkHeight;
+                });
+            });
+
+            // Draw links with proper proportional alignment
+            sankeyData.links.forEach((link, i) => {
+                const source = link.source;
+                const target = link.target;
+                
+                // Calculate connection points at node edges with proper proportions
+                const sourceX = source.x1; // Right edge of source
+                const targetX = target.x0; // Left edge of target
+                
+                // Use proportional positioning
+                const sourceY0 = link.sourceY0;
+                const sourceY1 = link.sourceY1;
+                const targetY0 = link.targetY0;
+                const targetY1 = link.targetY1;
+                
+                console.log(`Creating flow ${i}: ${source.name} → ${target.name}`, {
+                    sourceX, targetX, 
+                    sourceY0, sourceY1, targetY0, targetY1,
+                    linkValue: link.value
+                });
+                
+                // Create a proper Sankey path with proportional connections
+                const midX = (sourceX + targetX) / 2;
+                const pathData = `M ${sourceX} ${sourceY0} 
+                                 C ${midX} ${sourceY0}, ${midX} ${targetY0}, ${targetX} ${targetY0}
+                                 L ${targetX} ${targetY1}
+                                 C ${midX} ${targetY1}, ${midX} ${sourceY1}, ${sourceX} ${sourceY1} Z`;
+                
+                const flowPath = g.append('path')
+                    .attr('d', pathData)
+                    .attr('fill', colorScale(source.product))
+                    .attr('opacity', 0.6)
+                    .attr('stroke', 'none')
+                    .attr('class', 'sankey-flow')
+                    .style('cursor', 'pointer')
+                    .on('mouseover', function(event) {
+                        d3.select(this).attr('opacity', 0.8);
+                        
+                        // Create custom tooltip
+                        const tooltip = d3.select('body').append('div')
+                            .attr('class', 'sankey-tooltip')
+                            .style('position', 'absolute')
+                            .style('background', 'rgba(0, 0, 0, 0.8)')
+                            .style('color', 'white')
+                            .style('padding', '10px')
+                            .style('border-radius', '5px')
+                            .style('font-size', '12px')
+                            .style('pointer-events', 'none')
+                            .style('z-index', '1000')
+                            .html(`<strong>${source.name} → ${target.name}</strong><br/>
+                                   ${link.value.toLocaleString()} users<br/>
+                                   ${((link.value / source.value) * 100).toFixed(1)}% of ${source.name} users<br/>
+                                   ${((link.value / target.value) * 100).toFixed(1)}% of ${target.name} users`);
+                        
+                        // Position tooltip
+                        tooltip.style('left', (event.pageX + 10) + 'px')
+                               .style('top', (event.pageY - 10) + 'px');
+                    })
+                    .on('mousemove', function(event) {
+                        // Update tooltip position
+                        d3.select('.sankey-tooltip')
+                            .style('left', (event.pageX + 10) + 'px')
+                            .style('top', (event.pageY - 10) + 'px');
+                    })
+                    .on('mouseout', function(event) {
+                        d3.select(this).attr('opacity', 0.6);
+                        // Remove tooltip
+                        d3.select('.sankey-tooltip').remove();
+                    });
+                
+                // Also add the standard title tooltip as fallback
+                flowPath.append('title')
+                    .text(`${source.name} → ${target.name}: ${link.value.toLocaleString()} users`);
+            });
+            
+            // Draw nodes
+            const node = g.append('g')
+                .selectAll('g')
+                .data(sankeyData.nodes)
+                .join('g')
+                .attr('class', 'sankey-node');
+            
+            const nodeRects = node.append('rect')
+                .attr('x', d => d.x0)
+                .attr('y', d => d.y0)
+                .attr('height', d => d.y1 - d.y0)
+                .attr('width', d => d.x1 - d.x0)
+                .attr('fill', d => colorScale(d.product))
+                .attr('stroke', '#000')
+                .attr('stroke-width', 0.5);
+            
+            // Add tooltips to nodes
+            nodeRects.append('title')
+                .text(d => `${d.name}
+Total flow: ${d.value.toLocaleString()} users`);
+            
+            // Add node labels
+            node.append('text')
+                .attr('x', d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
+                .attr('y', d => (d.y1 + d.y0) / 2)
+                .attr('dy', '0.35em')
+                .attr('text-anchor', d => d.x0 < width / 2 ? 'start' : 'end')
+                .style('font-size', '11px')
+                .style('font-weight', '500')
+                .text(d => d.name);
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             // Set up filter event listeners
@@ -748,6 +1325,25 @@
 
             // Initial render
             renderFlowVisualization();
+            
+            // Wait a bit for D3 Sankey to load, then setup
+            setTimeout(() => {
+                console.log('Checking D3 Sankey availability...');
+                console.log('d3 object:', typeof d3);
+                console.log('d3.sankey:', typeof d3.sankey);
+                console.log('d3.sankeyLinkHorizontal:', typeof d3.sankeyLinkHorizontal);
+                
+                if (typeof d3.sankey === 'function') {
+                    console.log('D3 Sankey loaded successfully, setting up chart...');
+                    setupSankeyChart();
+                } else {
+                    console.error('D3 Sankey library not loaded properly');
+                    // Try to show an error message in the UI
+                    const container = document.getElementById('sankey-chart-container');
+                    container.innerHTML = '<div style="text-align: center; padding: 40px; color: #e74c3c; border: 2px dashed #e74c3c; margin: 20px;">D3 Sankey library failed to load. Please refresh the page.</div>';
+                    container.style.display = 'block';
+                }
+            }, 500);
         });
     </script>
 </body>
