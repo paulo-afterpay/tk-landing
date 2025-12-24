@@ -922,7 +922,7 @@
         function generateSankeyChart(startingProduct) {
             console.log(`=== Generating Sankey for ${startingProduct} ===`);
             
-            // Filter flows that start with the selected product
+        // Filter flows that start with the selected product
             const relevantFlows = flowData.filter(flow => {
                 const steps = flow.sequence.split(' -> ');
                 return steps[0] === startingProduct;
@@ -940,9 +940,9 @@
             const totalStartingUsers = relevantFlows.reduce((sum, flow) => sum + flow.count, 0);
             console.log(`Total users starting with ${startingProduct}: ${totalStartingUsers.toLocaleString()}`);
             
-            // Build Sankey data structure
-            const sankeyData = buildSankeyData(relevantFlows);
-            console.log('Sankey data built:', sankeyData);
+            // Build ENHANCED Sankey data structure that includes terminating flows
+            const sankeyData = buildEnhancedSankeyData(relevantFlows, startingProduct);
+            console.log('Enhanced Sankey data built:', sankeyData);
             
             if (!sankeyData.nodes.length || !sankeyData.links.length) {
                 console.error('No valid Sankey data generated');
@@ -952,9 +952,9 @@
             // Update chart title
             const productName = productConfig[startingProduct].name;
             document.getElementById('sankey-chart-title').textContent = 
-                `User Journey from ${productName}`;
+                `Complete User Journey from ${productName}`;
             document.getElementById('sankey-chart-subtitle').textContent = 
-                `${totalStartingUsers.toLocaleString()} users who started with ${productName}`;
+                `${totalStartingUsers.toLocaleString()} users who started with ${productName} (including those who stopped there)`;
             
             // Show the chart container first
             document.getElementById('sankey-chart-container').style.display = 'block';
@@ -962,21 +962,28 @@
             // Render the Sankey chart
             try {
                 renderSankey(sankeyData);
-                console.log('Sankey chart rendered successfully');
+                console.log('Enhanced Sankey chart rendered successfully');
             } catch (error) {
                 console.error('Error rendering Sankey chart:', error);
                 document.getElementById('sankey-chart').innerHTML = 
                     '<div style="text-align: center; padding: 40px; color: #e74c3c;">Error rendering chart. Check console for details.</div>';
             }
         }
-        
-        function buildSankeyData(flows) {
+                
+        function buildEnhancedSankeyData(flows, startingProduct) {
             const nodes = [];
             const links = [];
             const nodeMap = new Map();
             
+            console.log('Building enhanced Sankey data with terminating flows...');
+            
+            // Find the single-product flow (terminating flow)
+            const singleProductFlow = flows.find(flow => flow.sequence === startingProduct);
+            const terminatingUsers = singleProductFlow ? singleProductFlow.count : 0;
+            
+            console.log(`Terminating users (${startingProduct} only): ${terminatingUsers.toLocaleString()}`);
+            
             // Collect all unique products at each step level
-            const levelProducts = new Map();
             let maxSteps = 0;
             
             flows.forEach(flow => {
@@ -999,6 +1006,22 @@
                 });
             });
             
+            // Add a "TERMINATING" node to represent users who stop at the starting product
+            if (terminatingUsers > 0) {
+                const terminatingNodeId = `TERMINATING_step_1`;
+                const terminatingNode = {
+                    id: terminatingNodeId,
+                    name: `No Further Adoption`,
+                    product: 'TERMINATING',
+                    step: 1,
+                    value: terminatingUsers
+                };
+                nodes.push(terminatingNode);
+                nodeMap.set(terminatingNodeId, nodes.length - 1);
+                
+                console.log(`Added terminating node with ${terminatingUsers.toLocaleString()} users`);
+            }
+            
             // Create links and accumulate values
             flows.forEach(flow => {
                 const steps = flow.sequence.split(' -> ');
@@ -1012,7 +1035,25 @@
                     }
                 });
                 
-                // Create links between consecutive steps
+                // For single-product flows, create a link to the terminating node
+                if (steps.length === 1 && terminatingUsers > 0) {
+                    const sourceId = `${steps[0]}_step_0`;
+                    const targetId = `TERMINATING_step_1`;
+                    const sourceIndex = nodeMap.get(sourceId);
+                    const targetIndex = nodeMap.get(targetId);
+                    
+                    if (sourceIndex !== undefined && targetIndex !== undefined) {
+                        links.push({
+                            source: sourceIndex,
+                            target: targetIndex,
+                            value: flow.count
+                        });
+                        
+                        console.log(`Added terminating link: ${steps[0]} -> TERMINATING (${flow.count.toLocaleString()} users)`);
+                    }
+                }
+                
+                // Create links between consecutive steps (for multi-step flows)
                 for (let i = 0; i < steps.length - 1; i++) {
                     const sourceId = `${steps[i]}_step_${i}`;
                     const targetId = `${steps[i + 1]}_step_${i + 1}`;
@@ -1035,13 +1076,17 @@
                 }
             });
             
-            console.log('Built Sankey data:', { nodes: nodes.length, links: links.length });
+            console.log('Enhanced Sankey data built:', { 
+                nodes: nodes.length, 
+                links: links.length,
+                terminatingUsers: terminatingUsers.toLocaleString()
+            });
             console.log('Sample nodes:', nodes.slice(0, 5));
             console.log('Sample links:', links.slice(0, 5));
             
             return { nodes, links };
         }
-        
+                
         function renderSankey(data) {
             console.log('🎨 Rendering enhanced Sankey with comprehensive sizing:', data);
             
@@ -1206,8 +1251,8 @@
             
             // Color scale for products
             const colorScale = d3.scaleOrdinal()
-                .domain(['CARD', 'CAP', 'BORROW', 'RETRO', 'CAAP'])
-                .range(['#3498db', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c']);
+            .domain(['CARD', 'CAP', 'BORROW', 'RETRO', 'CAAP', 'TERMINATING'])
+            .range(['#3498db', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c', '#95a5a6']); // Added gray for terminating
             
             // Calculate proper proportional flow positioning
             sankeyData.nodes.forEach(node => {
