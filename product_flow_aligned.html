@@ -395,11 +395,11 @@
             background: white;
             border: 1px solid #ddd;
             border-radius: 8px;
-            overflow: auto; /* Enable scrolling */
-            max-height: 700px; /* Increased max height */
+            overflow: auto;
+            max-height: 700px;
             width: 100%;
-            min-height: 500px; /* Increased minimum height */
-            padding: 10px; /* Add internal padding */
+            min-height: 500px;
+            padding: 20px 10px 60px 10px; /* top right bottom left - EXTRA bottom padding */
         }
         
         .sankey-link {
@@ -1055,10 +1055,10 @@
             
             // ENHANCED MARGINS - Much larger to prevent label cutoff
             const margin = { 
-                top: 50,     // Increased from 30
-                right: 300,  // Increased from 200 - MUCH more space for labels
-                bottom: 50,  // Increased from 30
-                left: 100    // Increased from 50 - MUCH more space for labels
+                top: 50, 
+                right: 300,  
+                bottom: 80,  // INCREASED from 50 to 80 - more bottom space
+                left: 100    
             };
             
             const container = document.getElementById('sankey-chart');
@@ -1070,19 +1070,21 @@
             const linkCount = data.links.length;
             const baseHeight = 1000; // Increased from 800
             const heightPerNode = 70; // Increased from 50 - more space per node
+            const extraBottomBuffer = 120;
             const calculatedHeight = Math.max(
                 baseHeight, 
-                nodeCount * heightPerNode + linkCount * 8 + 300 // More buffer
+                nodeCount * heightPerNode + linkCount * 8 + 300 + extraBottomBuffer // More buffer
             );
             const height = calculatedHeight - margin.top - margin.bottom;
             
-            console.log(`📊 EXTRA generous chart dimensions: ${containerWidth}x${calculatedHeight} (${nodeCount} nodes, ${linkCount} links)`);
+            console.log(`📊 BOTTOM-SAFE dimensions: ${containerWidth}x${calculatedHeight + 40} (extra bottom buffer: ${extraBottomBuffer}px)`);
             
             // Rest of your existing SVG creation code...
             const svg = d3.select('#sankey-chart')
                 .append('svg')
                 .attr('width', width + margin.left + margin.right)
-                .attr('height', height + margin.top + margin.bottom);
+                .attr('height', height + margin.top + margin.bottom + 40) // Extra 40px for safety
+                .style('overflow', 'visible'); // Don't clip content
                 
             const g = svg.append('g')
                 .attr('transform', `translate(${margin.left},${margin.top})`);
