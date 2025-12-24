@@ -363,13 +363,15 @@
         }
         
         #sankey-chart-container {
-            margin-top: 30px;
+            margin-top: 40px; /* Increased margin */
             width: 100%;
+            padding: 0 20px; /* Add horizontal padding to container */
         }
 
         #sankey-chart svg {
             display: block;
             margin: 0 auto;
+            overflow: visible; /* Allow content to extend beyond SVG bounds */
         }
         
         .sankey-chart-header {
@@ -394,9 +396,10 @@
             border: 1px solid #ddd;
             border-radius: 8px;
             overflow: auto; /* Enable scrolling */
-            max-height: 600px; /* Reasonable max height for scrolling */
+            max-height: 700px; /* Increased max height */
             width: 100%;
-            min-height: 400px; /* Minimum height */
+            min-height: 500px; /* Increased minimum height */
+            padding: 10px; /* Add internal padding */
         }
         
         .sankey-link {
@@ -1052,28 +1055,28 @@
             
             // ENHANCED MARGINS - Much larger to prevent label cutoff
             const margin = { 
-                top: 30, 
-                right: 200,  // Increased for right-side labels
-                bottom: 30, 
-                left: 50     // Increased for left-side labels
+                top: 50,     // Increased from 30
+                right: 300,  // Increased from 200 - MUCH more space for labels
+                bottom: 50,  // Increased from 30
+                left: 100    // Increased from 50 - MUCH more space for labels
             };
             
             const container = document.getElementById('sankey-chart');
-            const containerWidth = Math.max(container.getBoundingClientRect().width, 1200);
+            const containerWidth = Math.max(container.getBoundingClientRect().width, 1400);
             const width = containerWidth - margin.left - margin.right;
             
             // ENHANCED HEIGHT CALCULATION - Much more generous
             const nodeCount = data.nodes.length;
             const linkCount = data.links.length;
-            const baseHeight = 800; // Increased base
-            const heightPerNode = 50; // More space per node
+            const baseHeight = 1000; // Increased from 800
+            const heightPerNode = 70; // Increased from 50 - more space per node
             const calculatedHeight = Math.max(
                 baseHeight, 
-                nodeCount * heightPerNode + linkCount * 5 + 200
+                nodeCount * heightPerNode + linkCount * 8 + 300 // More buffer
             );
             const height = calculatedHeight - margin.top - margin.bottom;
             
-            console.log(`📊 Enhanced chart dimensions: ${containerWidth}x${calculatedHeight} (${nodeCount} nodes, ${linkCount} links)`);
+            console.log(`📊 EXTRA generous chart dimensions: ${containerWidth}x${calculatedHeight} (${nodeCount} nodes, ${linkCount} links)`);
             
             // Rest of your existing SVG creation code...
             const svg = d3.select('#sankey-chart')
@@ -1086,8 +1089,8 @@
             
             // Create Sankey generator
             const sankey = d3.sankey()
-                .nodeWidth(15)
-                .nodePadding(10)
+                .nodeWidth(20)
+                .nodePadding(20)
                 .extent([[1, 1], [width - 1, height - 6]]);
             
             // Process the data through the Sankey layout
@@ -1333,12 +1336,12 @@ Total flow: ${d.value.toLocaleString()} users`);
                 .attr('x', d => {
                     // More sophisticated label positioning
                     const nodeCenter = (d.x0 + d.x1) / 2;
-                    if (nodeCenter < width * 0.3) {
-                        return d.x1 + 8; // Left side - label to the right
-                    } else if (nodeCenter > width * 0.7) {
-                        return d.x0 - 8; // Right side - label to the left
+                    if (nodeCenter < width * 0.25) {
+                        return d.x1 + 15; // Left side - more space from node
+                    } else if (nodeCenter > width * 0.75) {
+                        return d.x0 - 15; // Right side - more space from node
                     } else {
-                        return nodeCenter; // Middle - label centered
+                        return nodeCenter; // Middle - centered
                     }
                 })
                 .attr('y', d => (d.y1 + d.y0) / 2)
@@ -1353,10 +1356,10 @@ Total flow: ${d.value.toLocaleString()} users`);
                         return 'middle';
                     }
                 })
-                .style('font-size', '12px')
+                .style('font-size', '13px')
                 .style('font-weight', '600')
                 .style('fill', '#333')
-                .style('text-shadow', '1px 1px 2px rgba(255,255,255,0.8)')
+                .style('text-shadow', '2px 2px 4px rgba(255,255,255,0.9)') 
                 .text(d => d.name);
         }
 
