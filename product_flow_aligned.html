@@ -387,7 +387,9 @@
             background: white;
             border: 1px solid #ddd;
             border-radius: 8px;
-            overflow: hidden;
+            overflow: auto; /* Changed from 'hidden' to 'auto' */
+            max-height: 800px; /* Add scrollable container */
+            width: 100%;
         }
         
         .sankey-link {
@@ -1044,7 +1046,10 @@
             const margin = { top: 20, right: 150, bottom: 20, left: 20 };
             const containerWidth = document.getElementById('sankey-chart').offsetWidth || 1200;
             const width = containerWidth - margin.left - margin.right;
-            const height = 600 - margin.top - margin.bottom;
+            const baseHeight = 600;
+            const nodeCount = data.nodes.length;
+            const dynamicHeight = Math.max(baseHeight, nodeCount * 40 + 200);
+            const height = dynamicHeight - margin.top - margin.bottom;
             
             const svg = d3.select('#sankey-chart')
                 .append('svg')
