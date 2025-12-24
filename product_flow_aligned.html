@@ -364,6 +364,12 @@
         
         #sankey-chart-container {
             margin-top: 30px;
+            width: 100%;
+        }
+
+        #sankey-chart svg {
+            display: block;
+            margin: 0 auto;
         }
         
         .sankey-chart-header {
@@ -387,9 +393,10 @@
             background: white;
             border: 1px solid #ddd;
             border-radius: 8px;
-            overflow: auto; /* Changed from 'hidden' to 'auto' */
-            max-height: 800px; /* Add scrollable container */
+            overflow: auto; /* Enable scrolling */
+            max-height: 600px; /* Reasonable max height for scrolling */
             width: 100%;
+            min-height: 400px; /* Minimum height */
         }
         
         .sankey-link {
@@ -1033,7 +1040,7 @@
         }
         
         function renderSankey(data) {
-            console.log('Rendering Sankey with data:', data);
+            console.log('🎨 Rendering enhanced Sankey with comprehensive sizing:', data);
             
             if (!data.nodes.length || !data.links.length) {
                 console.error('No data to render');
@@ -1043,14 +1050,32 @@
             // Clear previous chart
             d3.select('#sankey-chart').selectAll('*').remove();
             
-            const margin = { top: 20, right: 150, bottom: 20, left: 20 };
-            const containerWidth = document.getElementById('sankey-chart').offsetWidth || 1200;
-            const width = containerWidth - margin.left - margin.right;
-            const baseHeight = 600;
-            const nodeCount = data.nodes.length;
-            const dynamicHeight = Math.max(baseHeight, nodeCount * 40 + 200);
-            const height = dynamicHeight - margin.top - margin.bottom;
+            // ENHANCED MARGINS - Much larger to prevent label cutoff
+            const margin = { 
+                top: 30, 
+                right: 200,  // Increased for right-side labels
+                bottom: 30, 
+                left: 50     // Increased for left-side labels
+            };
             
+            const container = document.getElementById('sankey-chart');
+            const containerWidth = Math.max(container.getBoundingClientRect().width, 1200);
+            const width = containerWidth - margin.left - margin.right;
+            
+            // ENHANCED HEIGHT CALCULATION - Much more generous
+            const nodeCount = data.nodes.length;
+            const linkCount = data.links.length;
+            const baseHeight = 800; // Increased base
+            const heightPerNode = 50; // More space per node
+            const calculatedHeight = Math.max(
+                baseHeight, 
+                nodeCount * heightPerNode + linkCount * 5 + 200
+            );
+            const height = calculatedHeight - margin.top - margin.bottom;
+            
+            console.log(`📊 Enhanced chart dimensions: ${containerWidth}x${calculatedHeight} (${nodeCount} nodes, ${linkCount} links)`);
+            
+            // Rest of your existing SVG creation code...
             const svg = d3.select('#sankey-chart')
                 .append('svg')
                 .attr('width', width + margin.left + margin.right)
@@ -1305,12 +1330,33 @@ Total flow: ${d.value.toLocaleString()} users`);
             
             // Add node labels
             node.append('text')
-                .attr('x', d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
+                .attr('x', d => {
+                    // More sophisticated label positioning
+                    const nodeCenter = (d.x0 + d.x1) / 2;
+                    if (nodeCenter < width * 0.3) {
+                        return d.x1 + 8; // Left side - label to the right
+                    } else if (nodeCenter > width * 0.7) {
+                        return d.x0 - 8; // Right side - label to the left
+                    } else {
+                        return nodeCenter; // Middle - label centered
+                    }
+                })
                 .attr('y', d => (d.y1 + d.y0) / 2)
                 .attr('dy', '0.35em')
-                .attr('text-anchor', d => d.x0 < width / 2 ? 'start' : 'end')
-                .style('font-size', '11px')
-                .style('font-weight', '500')
+                .attr('text-anchor', d => {
+                    const nodeCenter = (d.x0 + d.x1) / 2;
+                    if (nodeCenter < width * 0.3) {
+                        return 'start';
+                    } else if (nodeCenter > width * 0.7) {
+                        return 'end';
+                    } else {
+                        return 'middle';
+                    }
+                })
+                .style('font-size', '12px')
+                .style('font-weight', '600')
+                .style('fill', '#333')
+                .style('text-shadow', '1px 1px 2px rgba(255,255,255,0.8)')
                 .text(d => d.name);
         }
 
