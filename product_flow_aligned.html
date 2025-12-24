@@ -920,9 +920,9 @@
         }
         
         function generateSankeyChart(startingProduct) {
-            console.log(`=== Generating Sankey for ${startingProduct} ===`);
+            console.log(`=== Generating VISUAL Sankey for ${startingProduct} (with unconnected terminating portion) ===`);
             
-        // Filter flows that start with the selected product
+            // Filter flows that start with the selected product
             const relevantFlows = flowData.filter(flow => {
                 const steps = flow.sequence.split(' -> ');
                 return steps[0] === startingProduct;
@@ -940,11 +940,11 @@
             const totalStartingUsers = relevantFlows.reduce((sum, flow) => sum + flow.count, 0);
             console.log(`Total users starting with ${startingProduct}: ${totalStartingUsers.toLocaleString()}`);
             
-            // Build ENHANCED Sankey data structure that includes terminating flows
+            // Build enhanced Sankey data structure
             const sankeyData = buildEnhancedSankeyData(relevantFlows, startingProduct);
-            console.log('Enhanced Sankey data built:', sankeyData);
+            console.log('Visual Sankey data built:', sankeyData);
             
-            if (!sankeyData.nodes.length || !sankeyData.links.length) {
+            if (!sankeyData.nodes.length) {
                 console.error('No valid Sankey data generated');
                 return;
             }
@@ -952,9 +952,9 @@
             // Update chart title
             const productName = productConfig[startingProduct].name;
             document.getElementById('sankey-chart-title').textContent = 
-                `Complete User Journey from ${productName}`;
+                `User Journey from ${productName}`;
             document.getElementById('sankey-chart-subtitle').textContent = 
-                `${totalStartingUsers.toLocaleString()} users who started with ${productName} (including those who stopped there)`;
+                `${totalStartingUsers.toLocaleString()} users who started with ${productName} (unconnected portion shows users who stopped there)`;
             
             // Show the chart container first
             document.getElementById('sankey-chart-container').style.display = 'block';
@@ -962,26 +962,20 @@
             // Render the Sankey chart
             try {
                 renderSankey(sankeyData);
-                console.log('Enhanced Sankey chart rendered successfully');
+                console.log('Visual Sankey chart rendered successfully');
             } catch (error) {
                 console.error('Error rendering Sankey chart:', error);
                 document.getElementById('sankey-chart').innerHTML = 
                     '<div style="text-align: center; padding: 40px; color: #e74c3c;">Error rendering chart. Check console for details.</div>';
             }
         }
-                
+                        
         function buildEnhancedSankeyData(flows, startingProduct) {
             const nodes = [];
             const links = [];
             const nodeMap = new Map();
             
-            console.log('Building enhanced Sankey data with terminating flows...');
-            
-            // Find the single-product flow (terminating flow)
-            const singleProductFlow = flows.find(flow => flow.sequence === startingProduct);
-            const terminatingUsers = singleProductFlow ? singleProductFlow.count : 0;
-            
-            console.log(`Terminating users (${startingProduct} only): ${terminatingUsers.toLocaleString()}`);
+            console.log('Building enhanced Sankey data with visual terminating flows...');
             
             // Collect all unique products at each step level
             let maxSteps = 0;
@@ -1006,54 +1000,38 @@
                 });
             });
             
-            // Add a "TERMINATING" node to represent users who stop at the starting product
-            if (terminatingUsers > 0) {
-                const terminatingNodeId = `TERMINATING_step_1`;
-                const terminatingNode = {
-                    id: terminatingNodeId,
-                    name: `No Further Adoption`,
-                    product: 'TERMINATING',
-                    step: 1,
-                    value: terminatingUsers
-                };
-                nodes.push(terminatingNode);
-                nodeMap.set(terminatingNodeId, nodes.length - 1);
-                
-                console.log(`Added terminating node with ${terminatingUsers.toLocaleString()} users`);
+            // Calculate total users for the starting product (including those who terminate)
+            const totalStartingUsers = flows.reduce((sum, flow) => sum + flow.count, 0);
+            const startingNodeId = `${startingProduct}_step_0`;
+            const startingNodeIndex = nodeMap.get(startingNodeId);
+            
+            if (startingNodeIndex !== undefined) {
+                // Set the starting node value to include ALL users (including terminators)
+                nodes[startingNodeIndex].value = totalStartingUsers;
+                console.log(`Starting node ${startingProduct} total value: ${totalStartingUsers.toLocaleString()}`);
             }
             
-            // Create links and accumulate values
+            // Create links and accumulate values for continuing flows only
             flows.forEach(flow => {
                 const steps = flow.sequence.split(' -> ');
                 
-                // Add value to each node in the path
-                steps.forEach((product, stepIndex) => {
-                    const nodeId = `${product}_step_${stepIndex}`;
+                // Skip single-step flows (terminators) for link creation
+                if (steps.length === 1) {
+                    console.log(`Skipping terminator flow: ${flow.sequence} (${flow.count.toLocaleString()} users)`);
+                    return;
+                }
+                
+                // Add value to nodes in multi-step paths (excluding the starting node)
+                steps.slice(1).forEach((product, stepIndex) => {
+                    const actualStepIndex = stepIndex + 1; // Adjust for slice
+                    const nodeId = `${product}_step_${actualStepIndex}`;
                     const nodeIndex = nodeMap.get(nodeId);
                     if (nodeIndex !== undefined) {
                         nodes[nodeIndex].value += flow.count;
                     }
                 });
                 
-                // For single-product flows, create a link to the terminating node
-                if (steps.length === 1 && terminatingUsers > 0) {
-                    const sourceId = `${steps[0]}_step_0`;
-                    const targetId = `TERMINATING_step_1`;
-                    const sourceIndex = nodeMap.get(sourceId);
-                    const targetIndex = nodeMap.get(targetId);
-                    
-                    if (sourceIndex !== undefined && targetIndex !== undefined) {
-                        links.push({
-                            source: sourceIndex,
-                            target: targetIndex,
-                            value: flow.count
-                        });
-                        
-                        console.log(`Added terminating link: ${steps[0]} -> TERMINATING (${flow.count.toLocaleString()} users)`);
-                    }
-                }
-                
-                // Create links between consecutive steps (for multi-step flows)
+                // Create links between consecutive steps
                 for (let i = 0; i < steps.length - 1; i++) {
                     const sourceId = `${steps[i]}_step_${i}`;
                     const targetId = `${steps[i + 1]}_step_${i + 1}`;
@@ -1076,13 +1054,26 @@
                 }
             });
             
+            // Calculate and log the terminating portion
+            const continuingUsers = links
+                .filter(link => {
+                    const sourceNode = nodes[typeof link.source === 'number' ? link.source : link.source.index];
+                    return sourceNode && sourceNode.step === 0;
+                })
+                .reduce((sum, link) => sum + link.value, 0);
+            
+            const terminatingUsers = totalStartingUsers - continuingUsers;
+            
+            console.log(`📊 Flow breakdown for ${startingProduct}:`);
+            console.log(`   Total users: ${totalStartingUsers.toLocaleString()}`);
+            console.log(`   Continuing users: ${continuingUsers.toLocaleString()}`);
+            console.log(`   Terminating users: ${terminatingUsers.toLocaleString()} (${((terminatingUsers/totalStartingUsers)*100).toFixed(1)}%)`);
+            
             console.log('Enhanced Sankey data built:', { 
                 nodes: nodes.length, 
                 links: links.length,
-                terminatingUsers: terminatingUsers.toLocaleString()
+                terminatingPortion: `${((terminatingUsers/totalStartingUsers)*100).toFixed(1)}%`
             });
-            console.log('Sample nodes:', nodes.slice(0, 5));
-            console.log('Sample links:', links.slice(0, 5));
             
             return { nodes, links };
         }
