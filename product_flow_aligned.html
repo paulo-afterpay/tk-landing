@@ -753,7 +753,6 @@
         // Update the displayed total users to match Snowflake data
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('total-users').textContent = (totalUsers / 1000000).toFixed(1) + 'M';
-            document.getElementById('data-timestamp').textContent = new Date().toLocaleDateString();
         });
 
         // Convert the data to the expected format (already has percentage)
