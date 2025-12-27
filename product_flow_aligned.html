@@ -422,9 +422,51 @@
             font-size: 12px;
             font-weight: 500;
         }
+
+        .back-button {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 1000;
+        }
+        
+        .back-button:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            text-decoration: none;
+            color: white;
+        }
+        
+        .back-button:active {
+            transform: translateY(0);
+        }
+        
+        .back-button::before {
+            content: "←";
+            font-size: 16px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
+
+    <a href="index.html" class="back-button">Back to Landing</a>
+    
     <div class="container">
         <div class="header">
             <div class="title">Product Sequencing Frequency</div>
