@@ -21,6 +21,7 @@
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 30px;
+            position: relative;
         }
         
         .data-source-info {
@@ -424,9 +425,9 @@
         }
 
         .back-button {
-        position: fixed;
-        top: 20px;
-        left: 20px;
+        position: absolute;
+        top: -60px;
+        left: 0;
         background: #3498db;
         color: white;
         border: none;
@@ -464,10 +465,11 @@
     </style>
 </head>
 <body>
-
-    <a href="index.html" class="back-button">Back to Landing</a>
     
     <div class="container">
+
+        <a href="index.html" class="back-button">Back to Landing</a>
+        
         <div class="header">
             <div class="title">Product Sequencing Frequency</div>
             <div class="subtitle">A look at the most common user journeys across our credit ecosystem</div>
